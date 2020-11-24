@@ -44,9 +44,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-<<<<<<< HEAD
 
 # google-services.json
 /android/app/google-services.json
-=======
->>>>>>> 3d0d470... Initial commit
