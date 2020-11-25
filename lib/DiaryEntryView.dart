@@ -8,52 +8,64 @@ class DiaryEntryView extends StatefulWidget {
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
 
-class _DiaryEntryViewState extends State<DiaryEntryView> {
-  final int _numPages = 3;
-  final PageController _pageController = PageController(initialPage: 0);
-  int _currentPage = 0;
-  String textContent = "";
-  String initialText = "Write your entry";
-  bool _isEditingText = false;
-  TextEditingController _editingController;
+
+class _EntryTextState extends State<EntryText> {
+  final textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _editingController = TextEditingController(text: textContent);
+
+    textController.addListener(_printLatestValue);
   }
 
   @override
   void dispose() {
-    _editingController.dispose();
+    // Clean up the controller when the widget is removed from the widget tree.
+    // This also removes the _printLatestValue listener.
+    textController.dispose();
     super.dispose();
   }
 
-  Widget _editTextField() {
-    if (_isEditingText)
-      return TextField(
-        onChanged: (newValue) {
-          setState(() {
-            textContent = newValue;
-          });
-        },
-        // decoration: InputDecoration(
-        //   border: InputBorder.none,
-        //   hintText: 'Write your entry',
-        //   // color: Colors.white,
-        //   // fontSize: 24.0,
-        // ),
-        autofocus: true,
-        controller: _editingController,
-      );
-    return Text(
-          initialText,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22.0,
-          ),
-        );
+  _printLatestValue() {
+    print("Text field: ${textController.text}");
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+              controller: textController,
+              onChanged: (text) {
+                print("Text field onchange: $text");
+              },
+    );
+  }
+}
+
+class EntryText extends StatefulWidget {
+  @override
+  _EntryTextState createState() => _EntryTextState();
+}
+
+class _DiaryEntryViewState extends State<DiaryEntryView> {
+  final int _numPages = 3;
+  final PageController _pageController = PageController(initialPage: 0);
+  int _currentPage = 0;
+  // String textContent = "Write an entry...";
+  // bool _isEditingText = false;
+  // TextEditingController _textEditingController;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _textEditingController = TextEditingController(text: textContent);
+  // }
+
+  // @override
+  // void dispose() {
+  //   _textEditingController.dispose();
+  //   super.dispose();
+  // }
 
   /*
   List<Widget> _buildPageIndicator() {
@@ -86,6 +98,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         fontFamily: "Sofia",
         fontWeight: FontWeight.w600,
         fontSize: 23.0,
+        backgroundColor: Colors.blueGrey,
         color: Colors.white); // h1 text color
 
     var _textH2 = TextStyle(
@@ -118,7 +131,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       children: <Widget>[
                         Image(
                           image: AssetImage(
-                              'assets/Template1/image/onBoarding1.jpeg'),
+                              'assets/select_image.png'),
                           height: 400.0,
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -152,16 +165,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
+                              
                               children: <Widget>[
                                 Text(
-                                  'Date State will live here',
+                                  'Date State will live here!',
                                   style: _textH1,
-                                ),
+                                  ),
                                 SizedBox(height: 25.0),
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 15.0, right: 15.0),
-                                  child: _editTextField(),
+                                  child: EntryText(),
                                   // TextField(
                                   //   onChanged: (text) {
                                   //     print("First text field: $text");
@@ -201,20 +215,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               _currentPage != _numPages - 1
                   ? Align(
                       alignment: FractionalOffset.bottomRight,
-                      child: FlatButton(
-                          onPressed: () {
-                            setState(() {
-                              if(_isEditingText) {
-                                _isEditingText = false;
-                              } else {
-                                _isEditingText = true;
-                              }
-                            });
-                            // _pageController.nextPage(
-                            //   duration: Duration(milliseconds: 500),
-                            //   curve: Curves.ease,
-                            // );
-                          },
+                      //child: FlatButton(
+                          // onPressed: () {
+                          //   setState(() {
+                          //     if(_isEditingText) {
+                          //       _isEditingText = false;
+                          //       print("saved text: " + _textEditingController.text);
+                          //     } else {
+                          //       _isEditingText = true;
+                          //     }
+                          //   });
+                          //},
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 20.0),
                             child: Container(
@@ -238,7 +249,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                     letterSpacing: 1.5),
                               )),
                             ),
-                          )),
+                          ),
                     )
                   : Text(''),
               //*/
