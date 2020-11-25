@@ -2,23 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'First_Screen.dart';
 
-// void main() {
-//   runApp(MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: Calendar(title: 'Inkling'),
-//     );
-//   }
-// }
-
 class Calendar extends StatefulWidget {
   Calendar({Key key, this.title}) : super(key: key);
 
@@ -29,18 +12,25 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> {
+  Map<DateTime, List> _entries;
+  List _selectedEntries;
   AnimationController _animationController;
   CalendarController _calendarController;
   DateTime _selectedDay;
-  // int _selectedItem = 0;
-  // var pages = [FirstScreen()];
-
-  // @override
-  // Widget build()
 
   @override
   void initState() {
     super.initState();
+    _selectedDay = DateTime.now();
+
+    _entries = {
+      DateTime.parse("2020-11-25 20:18:04Z"): ['Roppongi'],
+      DateTime.parse("2020-11-20 20:18:04Z"): ['Shinjuku', 'Asakusa'],
+      DateTime.parse("2020-11-16 20:18:04Z"): ['Disney Land'],
+    };
+
+    _selectedEntries = _entries[_selectedDay] ?? [];
+
     _calendarController = CalendarController();
   }
 
@@ -58,6 +48,7 @@ class _CalendarState extends State<Calendar> {
   void _onDaySelected(DateTime day, List events, List holidays) {
     setState(() {
       _selectedDay = day;
+      _selectedEntries = events;
     });
   }
 
@@ -75,7 +66,7 @@ class _CalendarState extends State<Calendar> {
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             _buildTableCalendar(),
-            Text("$_selectedDay"),
+            Expanded(child: _buildEntryList()),
           ],
         ),
       ),
@@ -90,6 +81,7 @@ class _CalendarState extends State<Calendar> {
   Widget _buildTableCalendar() {
     return TableCalendar(
       calendarController: _calendarController,
+      events: _entries,
       startingDayOfWeek: StartingDayOfWeek.monday,
       calendarStyle: CalendarStyle(
         selectedColor: Colors.deepOrange[400],
@@ -106,6 +98,25 @@ class _CalendarState extends State<Calendar> {
         ),
       ),
       onDaySelected: _onDaySelected,
+    );
+  }
+
+  Widget _buildEntryList() {
+    return ListView(
+      children: _selectedEntries
+          .map((event) => Container(
+                decoration: BoxDecoration(
+                  border: Border.all(width: 0.8),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: ListTile(
+                  title: Text(event.toString()),
+                  onTap: () => print('$event tapped!'),
+                ),
+              ))
+          .toList(),
     );
   }
 }
