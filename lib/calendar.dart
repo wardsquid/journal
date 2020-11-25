@@ -1,36 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'First_Screen.dart';
 
-void main() {
-  runApp(MyApp());
-}
+// void main() {
+//   runApp(MyApp());
+// }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Inkling'),
-    );
-  }
-}
+// class MyApp extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Flutter Demo',
+//       theme: ThemeData(
+//         primarySwatch: Colors.blue,
+//       ),
+//       home: Calendar(title: 'Inkling'),
+//     );
+//   }
+// }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+class Calendar extends StatefulWidget {
+  Calendar({Key key, this.title}) : super(key: key);
 
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _CalendarState createState() => _CalendarState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _CalendarState extends State<Calendar> {
   AnimationController _animationController;
   CalendarController _calendarController;
   DateTime _selectedDay;
+  // int _selectedItem = 0;
+  // var pages = [FirstScreen()];
+
+  // @override
+  // Widget build()
 
   @override
   void initState() {
@@ -61,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          widget.title,
+          "Inkling",
         ),
       ),
       body: Center(
