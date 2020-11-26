@@ -23,8 +23,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   File _image;
 
-  CollectionReference user_entries =
-      FirebaseFirestore.instance.collection('user_entries');
+  CollectionReference entries =
+      FirebaseFirestore.instance.collection('entries');
 
   @override
   void initState() {
@@ -260,18 +260,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     final User _user = checkUserLoginStatus();
     final bytes = _image.readAsBytesSync();
     String img64 = base64Encode(bytes);
-    return user_entries
+    return entries
         .add({
-          _user.uid: [
-            {
-              'title': 'Roppongi',
-              'timestamp': DateTime.now(),
-              'content': {'image': img64}
-            }
-          ],
+          'user_id': _user.uid,
+          'title': 'Ryogoku',
+          'timestamp': DateTime.parse("2020-11-09 20:18:04Z"),
+          'content': {
+            'image': img64,
+            'text': 'I went to Ryogoku today. Sumo is fun.'
+          }
         })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+        .then((value) => setState(() {
+              _image = null;
+            }))
+        .catchError((error) => print("Failed to add entry: $error"));
   }
 
   /// Get from gallery
