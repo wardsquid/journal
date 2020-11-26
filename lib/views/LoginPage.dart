@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Sign_In.dart';
-//import 'First_Screen.dart';
-import "Splash_Screen.dart";
+import '../manager/SignIn.dart';
+import 'UserProfile.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -33,12 +32,12 @@ class _LoginPageState extends State<LoginPage> {
     return OutlineButton(
       splashColor: Colors.grey,
       onPressed: () {
-        signInWithGoogle().then((result) {
-          if (result != null) {
+        signInWithGoogle().then((currentUser) {
+          if (currentUser != null) {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) {
-                  return SplashScreenTemplate1();
+                  return UserProfile();
                 },
               ),
             );

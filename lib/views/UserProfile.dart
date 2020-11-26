@@ -1,8 +1,20 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'Login_Page.dart';
-import 'Sign_In.dart';
+import 'LoginPage.dart';
+import '../manager/SignIn.dart';
+import '../manager/Firebase.dart';
 
-class FirstScreen extends StatelessWidget {
+class UserProfile extends StatefulWidget {
+  final User currentUser = checkUserLoginStatus();
+  //UserProfile({this.currentUser});
+  //if (currentUser == null) async {}
+  @override
+  _UserProfile createState() => new _UserProfile(currentUser);
+}
+class _UserProfile extends State<UserProfile> {
+  User currentUser;
+  _UserProfile(this.currentUser);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +33,7 @@ class FirstScreen extends StatelessWidget {
             children: <Widget>[
               CircleAvatar(
                 backgroundImage: NetworkImage(
-                  imageUrl,
+                  currentUser.photoURL,
                 ),
                 radius: 60,
                 backgroundColor: Colors.transparent,
@@ -35,7 +47,7 @@ class FirstScreen extends StatelessWidget {
                     color: Colors.black54),
               ),
               Text(
-                name,
+                currentUser.displayName,
                 style: TextStyle(
                     fontSize: 25,
                     color: Colors.deepPurple,
@@ -50,7 +62,7 @@ class FirstScreen extends StatelessWidget {
                     color: Colors.black54),
               ),
               Text(
-                email,
+                currentUser.email, //email,
                 style: TextStyle(
                     fontSize: 25,
                     color: Colors.deepPurple,

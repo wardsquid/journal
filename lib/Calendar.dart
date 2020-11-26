@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'First_Screen.dart';
+import 'DiaryEntryView.dart';
 
 // void main() {
 //   runApp(MyApp());
@@ -42,6 +42,7 @@ class _CalendarState extends State<Calendar> {
   void initState() {
     super.initState();
     _calendarController = CalendarController();
+    _selectedDay = DateTime.now();
   }
 
   @override
@@ -59,17 +60,21 @@ class _CalendarState extends State<Calendar> {
     setState(() {
       _selectedDay = day;
     });
+    Navigator.push(
+    context,
+    MaterialPageRoute( builder: (context)=> DiaryEntryView()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          "Inkling",
-        ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   title: Text(
+      //     "Inkling",
+      //   ),
+      // ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -98,12 +103,16 @@ class _CalendarState extends State<Calendar> {
         outsideDaysVisible: false,
       ),
       headerStyle: HeaderStyle(
+        formatButtonVisible: false,
+        centerHeaderTitle: true,
+        /*
         formatButtonTextStyle:
             TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
         formatButtonDecoration: BoxDecoration(
           color: Colors.deepOrange[400],
           borderRadius: BorderRadius.circular(16.0),
         ),
+        */
       ),
       onDaySelected: _onDaySelected,
     );

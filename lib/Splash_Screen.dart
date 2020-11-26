@@ -2,15 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'Navigation.dart';
 // import 'package:food_template/Screen/Template1/B5_Profile_Screen/List_Profile_Screen/Another_Template.dart';
 // import 'package:food_template/Screen/Template1/Bottom_Nav_Bar/bottomNavBar.dart';
 // import 'package:food_template/Screen/Template1/Login_Screen/SignIn_Screen.dart';
 // import 'package:food_template/Screen/Template2/Bottom_Nav_Bar/BottomNavigationBar.dart';
 // import 'package:food_template/Screen/Template4/SplashScreen.dart';
 
-import 'DiaryEntryView.dart';
+//import 'DiaryEntryView.dart';
 
-class SplashScreenTemplate1 extends StatelessWidget {
+class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ///Set color status bar
@@ -25,7 +26,7 @@ class SplashScreenTemplate1 extends StatelessWidget {
     ]);
 
     return MaterialApp(
-      home: SplashScreenTemplate1Screen(),
+      home: SplashScreenScreen(),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
           brightness: Brightness.light,
@@ -37,18 +38,18 @@ class SplashScreenTemplate1 extends StatelessWidget {
   }
 }
 
-class SplashScreenTemplate1Screen extends StatefulWidget {
+class SplashScreenScreen extends StatefulWidget {
   @override
-  _SplashScreenTemplate1ScreenState createState() =>
-      _SplashScreenTemplate1ScreenState();
+  _SplashScreenState createState() =>
+      _SplashScreenState();
 }
 
-class _SplashScreenTemplate1ScreenState
-    extends State<SplashScreenTemplate1Screen> {
+class _SplashScreenState
+    extends State<SplashScreenScreen> {
   @override
   void _Navigator() {
     Navigator.of(context).pushReplacement(PageRouteBuilder(
-        pageBuilder: (_, __, ___) => DiaryEntryView(),
+        pageBuilder: (_, __, ___) => Navigation(),
         transitionDuration: Duration(milliseconds: 2000),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           return Opacity(
@@ -58,7 +59,7 @@ class _SplashScreenTemplate1ScreenState
         }));
   }
 
-  /// Set timer SplashScreenTemplate1
+  /// Set timer SplashScreen
   _timer() async {
     return Timer(Duration(milliseconds: 2300), _Navigator);
   }
@@ -75,7 +76,7 @@ class _SplashScreenTemplate1ScreenState
         decoration: BoxDecoration(
             image: DecorationImage(
                 image: AssetImage(
-                    "assets/Template1/image/SplashScreenTemplate1.png"),
+                    "assets/Template1/image/SplashScreen.png"),
                 fit: BoxFit.cover)),
         child: Center(
           child: Padding(
@@ -92,7 +93,7 @@ class _SplashScreenTemplate1ScreenState
                   width: 10.0,
                 ),
                 Text(
-                  "Inkling (Replace Logo)",
+                  "Inkling ",
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 40.0,
