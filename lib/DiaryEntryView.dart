@@ -13,8 +13,8 @@ class DiaryEntryView extends StatefulWidget {
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   TextEditingController _textEditingController;
-  String entryText = "Initial Text";
-  String buttonText = "EDIT/Save (make this smaller)";
+  String entryText = "";
+  String buttonText = "Edit";
   
   File _image;
   final picker = ImagePicker();
@@ -46,14 +46,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_isEditingText)
       return Center(
         child: TextField(
-          onSubmitted: (newValue){
-            setState(() {
-              entryText = newValue;
-              _isEditingText = false;
-            });
+          decoration: InputDecoration(
+            hintText: 'Dear diary...'
+          ),
+          onChanged: (text) {
+            entryText = text;
           },
+          // onSubmitted: (newValue){
+          //   setState(() {
+          //     entryText = newValue;
+          //     _isEditingText = false;
+          //   });
+          // },
           autofocus: true,
           controller: _textEditingController,
+        ),
+      );
+      if (entryText == "")
+        return Text(
+        "Write an entry",
+        style: TextStyle(
+        color: Colors.black,
+        fontSize: 18.0,
         ),
       );
       return Text(
@@ -109,37 +123,40 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 height: MediaQuery.of(context).size.height,
                 child: Stack(
                       children: <Widget>[
-                        _image == null
-                        ? Text('No image selected.')
-                        : Image.file(_image),
-                        // Image(
-                        //   image: AssetImage(
-                        //       'assets/select_image.png'),
-                        //   height: 400.0,
-                        //   width: double.infinity,
-                        //   fit: BoxFit.cover,
-                        // ),
                         Container(
-                          //color: Colors.blueGrey,
-                          margin:
-                              EdgeInsets.only(top: 0.0, bottom: _height / 2.25),
-
-                          /*
-                          // uncomment to fade bottom part of picture
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: FractionalOffset(0.0, 0.0),
-                              end: FractionalOffset(0.0, 1.0),
-                              // stops: [0.0, 1.0],
-                              colors: <Color>[
-                                Color(0xFF1E2026).withOpacity(0.1),
-                                Color(0xFF1E2026).withOpacity(0.3),
-                                Color(0xFF1E2026),
-                                Color(0xFF1E2026),
-                              ],
+                        child: _image == null
+                        ? Container(
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            RaisedButton(
+                              color: Colors.greenAccent,
+                              onPressed: () {
+                                _getFromGallery();
+                              },
+                              child: Text("PICK FROM GALLERY"),
+                            ),
+                            Container(
+                              height: 40.0,
+                            ),
+                            RaisedButton(
+                              color: Colors.lightGreenAccent,
+                              onPressed: () {
+                                _getFromCamera();
+                              },
+                              child: Text("PICK FROM CAMERA"),
+                            )
+                          ],
+                        ),
+                      )
+                        : Container(
+                            child: Image.file(
+                              _image,
+                              fit: BoxFit.cover,
                             ),
                           ),
-                          */
+
                         ),
                         Align(
                           alignment: FractionalOffset.center,
@@ -190,11 +207,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           onPressed: () {
                             setState(() {
                               if(_isEditingText) {
+                                // save updated text
+                                setState(() {
+                                  entryText = _textEditingController.text;
+                                  _isEditingText = false;
+                                });
+
                                 // toggle view mode
+                                buttonText = "Edit";
                                 _isEditingText = false;
                                 // print("saved text: " + _textEditingController.text);
                               } else {
                                 // toggle edit mode
+                                buttonText = "Save";
                                 _isEditingText = true;
                               }
                             });
@@ -232,11 +257,39 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               ),
           ),
         ),
-        floatingActionButton: FloatingActionButton(
-        onPressed: getImage,
-        tooltip: 'Pick Image',
-        child: Icon(Icons.add_a_photo),
-      ),
+      //   floatingActionButton: FloatingActionButton(
+      //   onPressed: getImage,
+      //   tooltip: 'Pick Image',
+      //   child: Icon(Icons.add_a_photo),
+      // ),
       );
+  }
+
+  /// Get from gallery
+  _getFromGallery() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  /// Get from Camera
+  _getFromCamera() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
   }
 }
