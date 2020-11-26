@@ -23,6 +23,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // make sure you call `initializeApp` before using other Firebase services.
   print("Handling a background message: ${message.messageId}");
 }
+
 class MyApp extends StatelessWidget {
   final User _user = checkUserLoginStatus();
 
