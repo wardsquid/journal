@@ -4,6 +4,7 @@ import 'Splash_Screen.dart';
 import 'package:flutter/material.dart';
 import 'views/LoginPage.dart';
 import 'manager/Firebase.dart';
+import 'Navigation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: _user == null ? LoginPage() : SplashScreen(),//UserProfile(currentUser: _user),
+      home: _user == null ? LoginPage() : Navigation(), //SplashScreen(),
     );
   }
 }

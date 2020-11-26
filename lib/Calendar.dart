@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'DiaryEntryView.dart';
 
 class Calendar extends StatefulWidget {
   Calendar({Key key, this.title}) : super(key: key);
@@ -51,10 +50,6 @@ class _CalendarState extends State<Calendar> {
       _selectedDay = day;
       _selectedEntries = events;
     });
-    Navigator.push(
-    context,
-    MaterialPageRoute( builder: (context)=> DiaryEntryView()),
-    );
   }
 
   @override
@@ -97,14 +92,6 @@ class _CalendarState extends State<Calendar> {
       headerStyle: HeaderStyle(
         formatButtonVisible: false,
         centerHeaderTitle: true,
-        /*
-        formatButtonTextStyle:
-            TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
-        formatButtonDecoration: BoxDecoration(
-          color: Colors.deepOrange[400],
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        */
       ),
       onDaySelected: _onDaySelected,
     );
@@ -122,7 +109,7 @@ class _CalendarState extends State<Calendar> {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text(event.toString()),
-                  onTap: () => print('$event tapped!'),
+                  onTap: () => print('$event tapped!'), // replace this with switch page view
                 ),
               ))
           .toList(),
