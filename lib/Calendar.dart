@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'Navigation.dart';
+
 class Calendar extends StatefulWidget {
   Calendar({Key key, this.title}) : super(key: key);
 
@@ -49,6 +50,7 @@ class _CalendarState extends State<Calendar> {
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
+      //switchView(_selectedDay);
     });
   }
 
@@ -108,11 +110,10 @@ class _CalendarState extends State<Calendar> {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
-                    title: Text(event.toString()),
-                    onTap: () => {
-                          print('$event tapped!, $_selectedDay'),
-                        } // replace this with switch page view
-                    ),
+                  title: Text(event.toString()),
+                  onTap: () => print('$event tapped!, $_selectedDay'),
+                  //} // replace this with switch page view
+                ),
               ))
           .toList(),
     );

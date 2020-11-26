@@ -15,7 +15,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   TextEditingController _textEditingController;
   String entryText = "";
   String buttonText = "Edit";
-  
+
   File _image;
   final picker = ImagePicker();
 
@@ -36,6 +36,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.initState();
     _textEditingController = TextEditingController(text: entryText);
   }
+
   @override
   void dispose() {
     _textEditingController.dispose();
@@ -46,9 +47,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_isEditingText)
       return Center(
         child: TextField(
-          decoration: InputDecoration(
-            hintText: 'Dear diary...'
-          ),
+          decoration: InputDecoration(hintText: 'Dear diary...'),
           onChanged: (text) {
             entryText = text;
           },
@@ -62,42 +61,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           controller: _textEditingController,
         ),
       );
-      if (entryText == "")
-        return Text(
+    if (entryText == "")
+      return Text(
         "Write an entry",
         style: TextStyle(
-        color: Colors.black,
-        fontSize: 18.0,
+          color: Colors.black,
+          fontSize: 18.0,
         ),
       );
-      return Text(
-        entryText,
-        style: TextStyle(
+    return Text(
+      entryText,
+      style: TextStyle(
         color: Colors.black,
         fontSize: 18.0,
       ),
     );
   }
 
-<<<<<<< HEAD
-  // @override
-  // void dispose() {
-  //   _textEditingController.dispose();
-  //   super.dispose();
-  // }
-
-  /*
-  List<Widget> _buildPageIndicator() {
-    List<Widget> list = [];
-    for (int i = 0; i < _numPages; i++) {
-      list.add(i == _currentPage ? _indicator(true) : _indicator(false));
-    }
-    return list;
-  }
-*/
-=======
- 
->>>>>>> b92fe1d569aefdfff71c2d733d5ddf8a0c27ece8
   Widget _indicator(bool isActive) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 150),
@@ -140,91 +120,90 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               Container(
                 height: MediaQuery.of(context).size.height,
                 child: Stack(
-                      children: <Widget>[
-                        Container(
-                        child: _image == null
-                        ? Container(
-                        alignment: Alignment.center,
+                  children: <Widget>[
+                    Container(
+                      child: _image == null
+                          ? Container(
+                              alignment: Alignment.center,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  RaisedButton(
+                                    color: Colors.greenAccent,
+                                    onPressed: () {
+                                      _getFromGallery();
+                                    },
+                                    child: Text("PICK FROM GALLERY"),
+                                  ),
+                                  Container(
+                                    height: 40.0,
+                                  ),
+                                  RaisedButton(
+                                    color: Colors.lightGreenAccent,
+                                    onPressed: () {
+                                      _getFromCamera();
+                                    },
+                                    child: Text("PICK FROM CAMERA"),
+                                  )
+                                ],
+                              ),
+                            )
+                          : Container(
+                              child: Image.file(
+                                _image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                    ),
+                    Align(
+                      alignment: FractionalOffset.center,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 25.0),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
-                            RaisedButton(
-                              color: Colors.greenAccent,
-                              onPressed: () {
-                                _getFromGallery();
-                              },
-                              child: Text("PICK FROM GALLERY"),
+                            Text(
+                              'Date State will live here!',
+                              style: _textH1,
                             ),
-                            Container(
-                              height: 40.0,
+                            SizedBox(height: 25.0),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 15.0, right: 15.0),
+                              child: _entryText(),
+                              // TextField(
+                              //   onChanged: (text) {
+                              //     print("First text field: $text");
+                              //     setState(() {
+                              //       textContent = text;
+                              //     });
+                              //   },
+                              //   // decoration: InputDecoration(
+                              //   //   border: InputBorder.none,
+                              //   //   hintText: 'Write your entry',
+                              //   //   // 'Entry State will live here, make this editable',
+                              //   //   // textAlign: TextAlign.center,
+                              //   //   // style: _textH2,
+                              //   // ),
+                              // ),
                             ),
-                            RaisedButton(
-                              color: Colors.lightGreenAccent,
-                              onPressed: () {
-                                _getFromCamera();
-                              },
-                              child: Text("PICK FROM CAMERA"),
-                            )
                           ],
                         ),
-                      )
-                        : Container(
-                            child: Image.file(
-                              _image,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-
-                        ),
-                        Align(
-                          alignment: FractionalOffset.center,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 25.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Text(
-                                  'Date State will live here!',
-                                  style: _textH1,
-                                  ),
-                                SizedBox(height: 25.0),
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 15.0, right: 15.0),
-                                  child: _entryText(),
-                                  // TextField(
-                                  //   onChanged: (text) {
-                                  //     print("First text field: $text");
-                                  //     setState(() {
-                                  //       textContent = text;
-                                  //     });
-                                  //   },
-                                  //   // decoration: InputDecoration(
-                                  //   //   border: InputBorder.none,
-                                  //   //   hintText: 'Write your entry',
-                                  //   //   // 'Entry State will live here, make this editable',
-                                  //   //   // textAlign: TextAlign.center,
-                                  //   //   // style: _textH2,
-                                  //   // ),
-                                  // ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Align(
-                alignment: FractionalOffset.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 270.0),
-                ),
-              ),
-              Align(
-                      alignment: FractionalOffset.bottomRight,
-                      child: FlatButton(
+                      ),
+                    ),
+                    Align(
+                      alignment: FractionalOffset.center,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 270.0),
+                      ),
+                    ),
+                    Align(
+                        alignment: FractionalOffset.bottomRight,
+                        child: FlatButton(
                           onPressed: () {
                             setState(() {
-                              if(_isEditingText) {
+                              if (_isEditingText) {
                                 // save updated text
                                 setState(() {
                                   entryText = _textEditingController.text;
@@ -266,21 +245,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                               )),
                             ),
                           ),
-                         )
-                        )
-                      ],
-                    ),
-                  ),
-                ],
+                        ))
+                  ],
+                ),
               ),
+            ],
           ),
         ),
+      ),
       //   floatingActionButton: FloatingActionButton(
       //   onPressed: getImage,
       //   tooltip: 'Pick Image',
       //   child: Icon(Icons.add_a_photo),
       // ),
-      );
+    );
   }
 
   /// Get from gallery

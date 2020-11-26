@@ -40,12 +40,10 @@ class SplashScreen extends StatelessWidget {
 
 class SplashScreenScreen extends StatefulWidget {
   @override
-  _SplashScreenState createState() =>
-      _SplashScreenState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState
-    extends State<SplashScreenScreen> {
+class _SplashScreenState extends State<SplashScreenScreen> {
   @override
   void _Navigator() {
     Navigator.of(context).pushReplacement(PageRouteBuilder(
@@ -75,8 +73,7 @@ class _SplashScreenState
       body: Container(
         decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage(
-                    "assets/Template1/image/SplashScreen.png"),
+                image: AssetImage("assets/Template1/image/SplashScreen.png"),
                 fit: BoxFit.cover)),
         child: Center(
           child: Padding(

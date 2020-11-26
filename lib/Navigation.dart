@@ -5,14 +5,16 @@ import 'views/UserProfile.dart';
 
 class Navigation extends StatefulWidget {
   @override
-  NavigationState createState() => NavigationState();
+  _NavigationState createState() => _NavigationState();
 }
 
-class NavigationState extends State<Navigation> {
+class _NavigationState extends State<Navigation> {
   //uses the index of PageView's children.
   PageController pageController = PageController(initialPage: 0);
   //for debugging purposes. Will be used to console.log the page transitions.
   int currentPage = 1;
+
+  //_scrollController = ScrollController(initialScrollOffset: 50.0);
 
   @override
   Widget build(BuildContext context) {
@@ -69,5 +71,7 @@ class NavigationState extends State<Navigation> {
 /////
 
 void switchView(DateTime selectedDay) {
-  PageController.animateToPage(page)
+  print('click received');
+  _NavigationState().pageController.animateToPage(1,
+      duration: Duration(milliseconds: 400), curve: Curves.bounceInOut);
 }
