@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 //import 'Choose_Login.dart';
 
@@ -8,75 +10,62 @@ class DiaryEntryView extends StatefulWidget {
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
 
+class _DiaryEntryViewState extends State<DiaryEntryView> {
+  bool _isEditingText = false;
+  TextEditingController _textEditingController;
+  String entryText = "Initial Text";
+  String buttonText = "EDIT/Save (make this smaller)";
+  
+  File _image;
+  final picker = ImagePicker();
 
-class _EntryTextState extends State<EntryText> {
-  final textController = TextEditingController();
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-
-    textController.addListener(_printLatestValue);
+    _textEditingController = TextEditingController(text: entryText);
   }
-
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the widget tree.
-    // This also removes the _printLatestValue listener.
-    textController.dispose();
+    _textEditingController.dispose();
     super.dispose();
   }
 
-  _printLatestValue() {
-    print("Text field: ${textController.text}");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-              controller: textController,
-              onChanged: (text) {
-                print("Text field onchange: $text");
-              },
+  Widget _entryText() {
+    if (_isEditingText)
+      return Center(
+        child: TextField(
+          onSubmitted: (newValue){
+            setState(() {
+              entryText = newValue;
+              _isEditingText = false;
+            });
+          },
+          autofocus: true,
+          controller: _textEditingController,
+        ),
+      );
+      return Text(
+        entryText,
+        style: TextStyle(
+        color: Colors.black,
+        fontSize: 18.0,
+      ),
     );
   }
-}
 
-class EntryText extends StatefulWidget {
-  @override
-  _EntryTextState createState() => _EntryTextState();
-}
-
-class _DiaryEntryViewState extends State<DiaryEntryView> {
-  final int _numPages = 3;
-  final PageController _pageController = PageController(initialPage: 0);
-  int _currentPage = 0;
-  // String textContent = "Write an entry...";
-  // bool _isEditingText = false;
-  // TextEditingController _textEditingController;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _textEditingController = TextEditingController(text: textContent);
-  // }
-
-  // @override
-  // void dispose() {
-  //   _textEditingController.dispose();
-  //   super.dispose();
-  // }
-
-  /*
-  List<Widget> _buildPageIndicator() {
-    List<Widget> list = [];
-    for (int i = 0; i < _numPages; i++) {
-      list.add(i == _currentPage ? _indicator(true) : _indicator(false));
-    }
-    return list;
-  }
-
-*/
+ 
   Widget _indicator(bool isActive) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 150),
@@ -118,24 +107,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             children: <Widget>[
               Container(
                 height: MediaQuery.of(context).size.height,
-                child: PageView(
-                  physics: ClampingScrollPhysics(),
-                  controller: _pageController,
-                  onPageChanged: (int page) {
-                    setState(() {
-                      _currentPage = page;
-                    });
-                  },
-                  children: <Widget>[
-                    Stack(
+                child: Stack(
                       children: <Widget>[
-                        Image(
-                          image: AssetImage(
-                              'assets/select_image.png'),
-                          height: 400.0,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        _image == null
+                        ? Text('No image selected.')
+                        : Image.file(_image),
+                        // Image(
+                        //   image: AssetImage(
+                        //       'assets/select_image.png'),
+                        //   height: 400.0,
+                        //   width: double.infinity,
+                        //   fit: BoxFit.cover,
+                        // ),
                         Container(
                           //color: Colors.blueGrey,
                           margin:
@@ -165,7 +148,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.center,
-                              
                               children: <Widget>[
                                 Text(
                                   'Date State will live here!',
@@ -175,7 +157,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 15.0, right: 15.0),
-                                  child: EntryText(),
+                                  child: _entryText(),
                                   // TextField(
                                   //   onChanged: (text) {
                                   //     print("First text field: $text");
@@ -196,36 +178,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              Align(
+                        Align(
                 alignment: FractionalOffset.center,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 270.0),
-                  //child: Row(
-                  //mainAxisAlignment: MainAxisAlignment.center,
-                  //children: _buildPageIndicator(),
-                  //),
                 ),
               ),
-              _currentPage != _numPages - 1
-                  ? Align(
+              Align(
                       alignment: FractionalOffset.bottomRight,
-                      //child: FlatButton(
-                          // onPressed: () {
-                          //   setState(() {
-                          //     if(_isEditingText) {
-                          //       _isEditingText = false;
-                          //       print("saved text: " + _textEditingController.text);
-                          //     } else {
-                          //       _isEditingText = true;
-                          //     }
-                          //   });
-                          //},
+                      child: FlatButton(
+                          onPressed: () {
+                            setState(() {
+                              if(_isEditingText) {
+                                // toggle view mode
+                                _isEditingText = false;
+                                // print("saved text: " + _textEditingController.text);
+                              } else {
+                                // toggle edit mode
+                                _isEditingText = true;
+                              }
+                            });
+                          },
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 20.0),
                             child: Container(
@@ -240,7 +213,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                   ),
                               child: Center(
                                   child: Text(
-                                "Edit/Save (make this smaller)",
+                                buttonText,
                                 style: TextStyle(
                                     color: Color(0xFFFB8986),
                                     fontSize: 17.0,
@@ -250,13 +223,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                               )),
                             ),
                           ),
-                    )
-                  : Text(''),
-              //*/
-            ],
+                         )
+                        )
+                      ],
+                    ),
+                  ),
+                ],
+              ),
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+        onPressed: getImage,
+        tooltip: 'Pick Image',
+        child: Icon(Icons.add_a_photo),
       ),
-    );
+      );
   }
 }
