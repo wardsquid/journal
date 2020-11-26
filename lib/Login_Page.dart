@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'Sign_In.dart';
-import 'First_Screen.dart';
+//import 'First_Screen.dart';
+import "Splash_Screen.dart";
 
 class LoginPage extends StatefulWidget {
   @override
@@ -37,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) {
-                  return FirstScreen();
+                  return SplashScreenTemplate1();
                 },
               ),
             );
