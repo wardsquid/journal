@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'First_Screen.dart';
+import 'Navigation.dart';
 
 class Calendar extends StatefulWidget {
   Calendar({Key key, this.title}) : super(key: key);
@@ -32,6 +32,7 @@ class _CalendarState extends State<Calendar> {
     _selectedEntries = _entries[_selectedDay] ?? [];
 
     _calendarController = CalendarController();
+    _selectedDay = DateTime.now();
   }
 
   @override
@@ -49,18 +50,19 @@ class _CalendarState extends State<Calendar> {
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
+      //switchView(_selectedDay);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          "Inkling",
-        ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   title: Text(
+      //     "Inkling",
+      //   ),
+      // ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -90,12 +92,8 @@ class _CalendarState extends State<Calendar> {
         outsideDaysVisible: false,
       ),
       headerStyle: HeaderStyle(
-        formatButtonTextStyle:
-            TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
-        formatButtonDecoration: BoxDecoration(
-          color: Colors.deepOrange[400],
-          borderRadius: BorderRadius.circular(16.0),
-        ),
+        formatButtonVisible: false,
+        centerHeaderTitle: true,
       ),
       onDaySelected: _onDaySelected,
     );
@@ -113,7 +111,8 @@ class _CalendarState extends State<Calendar> {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text(event.toString()),
-                  onTap: () => print('$event tapped!'),
+                  onTap: () => print('$event tapped!, $_selectedDay'),
+                  //} // replace this with switch page view
                 ),
               ))
           .toList(),
