@@ -11,6 +11,7 @@ class UserProfile extends StatefulWidget {
   @override
   _UserProfile createState() => new _UserProfile(currentUser);
 }
+
 class _UserProfile extends State<UserProfile> {
   User currentUser;
   _UserProfile(this.currentUser);
@@ -72,7 +73,10 @@ class _UserProfile extends State<UserProfile> {
               RaisedButton(
                 onPressed: () {
                   signOutGoogle();
-                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) {return LoginPage();}), ModalRoute.withName('/'));
+                  Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) {
+                    return LoginPage();
+                  }), ModalRoute.withName('/'));
                 },
                 color: Colors.deepPurple,
                 child: Padding(

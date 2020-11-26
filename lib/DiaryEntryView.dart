@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'manager/Firebase.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 //import 'Choose_Login.dart';
 
@@ -17,19 +22,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   String buttonText = "Edit";
 
   File _image;
-  final picker = ImagePicker();
 
-  Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
+  CollectionReference user_entries =
+      FirebaseFirestore.instance.collection('user_entries');
 
   @override
   void initState() {
@@ -253,12 +248,30 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ),
         ),
       ),
-      //   floatingActionButton: FloatingActionButton(
-      //   onPressed: getImage,
-      //   tooltip: 'Pick Image',
-      //   child: Icon(Icons.add_a_photo),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _saveEntry,
+        tooltip: 'Save Entry',
+        child: Icon(Icons.save),
+      ),
     );
+  }
+
+  _saveEntry() {
+    final User _user = checkUserLoginStatus();
+    final bytes = _image.readAsBytesSync();
+    String img64 = base64Encode(bytes);
+    return user_entries
+        .add({
+          _user.uid: [
+            {
+              'title': 'Roppongi',
+              'timestamp': DateTime.now(),
+              'content': {'image': img64}
+            }
+          ],
+        })
+        .then((value) => print("User Added"))
+        .catchError((error) => print("Failed to add user: $error"));
   }
 
   /// Get from gallery
