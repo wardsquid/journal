@@ -75,7 +75,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
     return list;
   }
-
 */
   Widget _indicator(bool isActive) {
     return AnimatedContainer(

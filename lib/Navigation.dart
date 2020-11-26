@@ -23,7 +23,8 @@ class _NavigationState extends State<Navigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Swipe Navigation'),
+        centerTitle: true,
+        title: Text('Calendar'),
       ),
       body: PageView(
         controller: pageController,
