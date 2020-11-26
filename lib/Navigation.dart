@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'calendar.dart';
 import 'DiaryEntryView.dart';
+import 'views/UserProfile.dart';
 
 class Navigation extends StatefulWidget {
   @override
-  _NavigationState createState() => _NavigationState();
+  NavigationState createState() => NavigationState();
 }
 
-class _NavigationState extends State<Navigation> {
+class NavigationState extends State<Navigation> {
   //uses the index of PageView's children.
   PageController pageController = PageController(initialPage: 0);
   //for debugging purposes. Will be used to console.log the page transitions.
@@ -58,6 +59,7 @@ class _NavigationState extends State<Navigation> {
         children: [
           Calendar(), //index 0
           DiaryEntryView(), //index 1 bc its the middle view
+          UserProfile(),
           Container(color: Colors.red), //index 2
         ],
       ),
@@ -65,3 +67,7 @@ class _NavigationState extends State<Navigation> {
   }
 }
 /////
+
+void switchView(DateTime selectedDay) {
+  PageController.animateToPage(page)
+}

@@ -36,6 +36,7 @@ Future<FirebaseMessaging> setUpNotifications() async {
     provisional: false,
     sound: true,
   );
+  
   print('User granted permission: ${settings.authorizationStatus}');
   return _messaging;
 }

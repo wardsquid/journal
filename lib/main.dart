@@ -13,8 +13,6 @@ void main() async {
   await initializeFirebase();
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  //final currentUser = checkUserLoginStatus();
   runApp(MyApp());
 }
 
