@@ -93,6 +93,72 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
+  Widget _getFAB() {
+    if (_isEditingText == true ||
+        _image == null && titleText == "" && entryText == "") {
+      return Container();
+    } else {
+      return FloatingActionButton(
+        onPressed: _saveEntry,
+        tooltip: 'Save Entry',
+        backgroundColor: Colors.yellow[600],
+        child: Icon(Icons.add),
+      );
+    }
+  }
+
+  _saveEntry() {
+    final User _user = checkUserLoginStatus();
+    String img64;
+    if (_image != null) {
+      final bytes = _image.readAsBytesSync();
+      img64 = base64Encode(bytes);
+    } else {
+      img64 = "";
+    }
+    return entries
+        .add({
+          'user_id': _user.uid,
+          'title': titleText,
+          'timestamp': DateTime.now(),
+          'content': {'image': img64, 'text': entryText}
+        })
+        .then((value) => setState(() {
+              titleText = '';
+              entryText = '';
+              _image = null;
+            }))
+        .catchError((error) => print("Failed to add entry: $error"));
+  }
+
+  /// Get from gallery
+  _getFromGallery() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  /// Get from Camera
+  _getFromCamera() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
   // Widget _indicator(bool isActive) {
   //   return AnimatedContainer(
   //     duration: Duration(milliseconds: 150),
@@ -203,29 +269,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      // Text(
-                      //   'Date State will live here!',
-                      //   style: _textH1,
-                      // ),
                       SizedBox(height: 25.0),
                       Padding(
                         padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                         child: _entryText(),
-                        // TextField(
-                        //   onChanged: (text) {
-                        //     print("First text field: $text");
-                        //     setState(() {
-                        //       textContent = text;
-                        //     });
-                        //   },
-                        //   // decoration: InputDecoration(
-                        //   //   border: InputBorder.none,
-                        //   //   hintText: 'Write your entry',
-                        //   //   // 'Entry State will live here, make this editable',
-                        //   //   // textAlign: TextAlign.center,
-                        //   //   // style: _textH2,
-                        //   // ),
-                        // ),
                       ),
                     ],
                   ),
@@ -288,59 +335,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _saveEntry,
-        tooltip: 'Save Entry',
-        child: Icon(Icons.save),
-      ),
+      floatingActionButton: _getFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
-  }
-
-  _saveEntry() {
-    final User _user = checkUserLoginStatus();
-    final bytes = _image.readAsBytesSync();
-    String img64 = base64Encode(bytes);
-    return entries
-        .add({
-          'user_id': _user.uid,
-          'title': 'Ryogoku',
-          'timestamp': DateTime.parse("2020-11-09 20:18:04Z"),
-          'content': {
-            'image': img64,
-            'text': 'I went to Ryogoku today. Sumo is fun.'
-          }
-        })
-        .then((value) => setState(() {
-              _image = null;
-            }))
-        .catchError((error) => print("Failed to add entry: $error"));
-  }
-
-  /// Get from gallery
-  _getFromGallery() async {
-    PickedFile pickedFile = await ImagePicker().getImage(
-      source: ImageSource.gallery,
-      maxWidth: 1800,
-      maxHeight: 1800,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
-
-  /// Get from Camera
-  _getFromCamera() async {
-    PickedFile pickedFile = await ImagePicker().getImage(
-      source: ImageSource.camera,
-      maxWidth: 1800,
-      maxHeight: 1800,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
   }
 }
