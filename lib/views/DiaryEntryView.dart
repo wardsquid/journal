@@ -6,6 +6,8 @@ import 'dart:io';
 //import 'Choose_Login.dart';
 
 class DiaryEntryView extends StatefulWidget {
+  DateTime activeDate;
+  DiaryEntryView({this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -164,7 +166,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              'Date State will live here!',
+                              widget.activeDate.toString(),
                               style: _textH1,
                             ),
                             SizedBox(height: 25.0),

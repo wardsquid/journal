@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:journal/views/pageView.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'Navigation.dart';
 
 class Calendar extends StatefulWidget {
-  Calendar({Key key, this.title}) : super(key: key);
-
   final String title;
+  final PageController tabController;
+  DateTime activeDate;
+  Calendar({Key key, this.title, this.tabController, this.activeDate})
+      : super(key: key);
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -30,7 +32,6 @@ class _CalendarState extends State<Calendar> {
     };
 
     _selectedEntries = _entries[_selectedDay] ?? [];
-
     _calendarController = CalendarController();
     _selectedDay = DateTime.now();
   }
@@ -50,7 +51,6 @@ class _CalendarState extends State<Calendar> {
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
-      //switchView(_selectedDay);
     });
   }
 
@@ -111,8 +111,15 @@ class _CalendarState extends State<Calendar> {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text(event.toString()),
-                  onTap: () => print('$event tapped!, $_selectedDay'),
-                  //} // replace this with switch page view
+                  onTap: () => {
+                    widget.activeDate = _selectedDay,
+                    widget.tabController.animateToPage(1,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.easeIn),
+                    MainView.of(context).date = _selectedDay,
+                    print('$event tapped!, $_selectedDay'),
+                    print( widget.activeDate.toString()),
+                  },
                 ),
               ))
           .toList(),
