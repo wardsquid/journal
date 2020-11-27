@@ -18,7 +18,9 @@ class DiaryEntryView extends StatefulWidget {
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   TextEditingController _textEditingController;
+  TextEditingController _titleEditingController;
   String entryText = "";
+  String titleText = "";
   String buttonText = "Edit";
 
   File _image;
@@ -30,6 +32,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: entryText);
+    _titleEditingController = TextEditingController(text: titleText);
   }
 
   @override
@@ -40,23 +43,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   Widget _entryText() {
     if (_isEditingText)
-      return Center(
-        child: TextField(
-          decoration: InputDecoration(hintText: 'Dear diary...'),
-          onChanged: (text) {
-            entryText = text;
-          },
-          // onSubmitted: (newValue){
-          //   setState(() {
-          //     entryText = newValue;
-          //     _isEditingText = false;
-          //   });
-          // },
-          autofocus: true,
-          controller: _textEditingController,
-        ),
+      return Column(
+        children: <Widget>[
+          TextField(
+            decoration: InputDecoration(hintText: 'Title is...'),
+            onChanged: (text) {
+              titleText = text;
+            },
+            autofocus: true,
+            controller: _titleEditingController,
+          ),
+          TextField(
+            decoration: InputDecoration(hintText: 'Dear diary...'),
+            onChanged: (text) {
+              entryText = text;
+            },
+            autofocus: false,
+            controller: _textEditingController,
+          )
+        ],
       );
-    if (entryText == "")
+    if (entryText == "" && titleText == "")
       return Text(
         "Write an entry",
         style: TextStyle(
@@ -64,27 +71,40 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           fontSize: 18.0,
         ),
       );
-    return Text(
-      entryText,
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18.0,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          "Title: $titleText",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 24.0,
+          ),
+        ),
+        SizedBox(height: 15),
+        Text(
+          entryText,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18.0,
+          ),
+        )
+      ],
     );
   }
 
-  Widget _indicator(bool isActive) {
-    return AnimatedContainer(
-      duration: Duration(milliseconds: 150),
-      margin: EdgeInsets.symmetric(horizontal: 8.0),
-      height: 5.0,
-      width: isActive ? 24.0 : 16.0,
-      decoration: BoxDecoration(
-        color: /*isActive ? Color(0xFFFB8986) :*/ Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-    );
-  }
+  // Widget _indicator(bool isActive) {
+  //   return AnimatedContainer(
+  //     duration: Duration(milliseconds: 150),
+  //     margin: EdgeInsets.symmetric(horizontal: 8.0),
+  //     height: 5.0,
+  //     width: isActive ? 24.0 : 16.0,
+  //     decoration: BoxDecoration(
+  //       color: /*isActive ? Color(0xFFFB8986) :*/ Colors.white,
+  //       borderRadius: BorderRadius.all(Radius.circular(12)),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -108,18 +128,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         value: SystemUiOverlayStyle.light,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.blueGrey, // background color
+            color: Colors.white, // background color
           ),
-          child: Stack(
+          child: Column(
             children: <Widget>[
-              Container(
-                height: MediaQuery.of(context).size.height,
-                child: Stack(
-                  children: <Widget>[
-                    Container(
+              _isEditingText == true
+                  ? Container(
+                      color: Colors.blueGrey,
+                      height: 300,
                       child: _image == null
                           ? Container(
-                              alignment: Alignment.center,
+                              // alignment: Alignment.center,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
@@ -144,106 +163,127 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                               ),
                             )
                           : Container(
+                              alignment: Alignment.center,
+                              child: Image.file(
+                                _image,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                    )
+                  : Container(
+                      color: Colors.blueGrey,
+                      height: 300,
+                      width: double.infinity,
+                      child: _image == null
+                          ? Center(
+                              child: Text(
+                                "NO IMAGE",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Color(0xFFFB8986),
+                                    fontSize: 24.0,
+                                    fontWeight: FontWeight.w400,
+                                    fontFamily: "Poppins",
+                                    letterSpacing: 1.5),
+                              ),
+                            )
+                          : Container(
+                              alignment: Alignment.center,
                               child: Image.file(
                                 _image,
                                 fit: BoxFit.cover,
                               ),
                             ),
                     ),
-                    Align(
-                      alignment: FractionalOffset.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 25.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              'Date State will live here!',
-                              style: _textH1,
-                            ),
-                            SizedBox(height: 25.0),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 15.0, right: 15.0),
-                              child: _entryText(),
-                              // TextField(
-                              //   onChanged: (text) {
-                              //     print("First text field: $text");
-                              //     setState(() {
-                              //       textContent = text;
-                              //     });
-                              //   },
-                              //   // decoration: InputDecoration(
-                              //   //   border: InputBorder.none,
-                              //   //   hintText: 'Write your entry',
-                              //   //   // 'Entry State will live here, make this editable',
-                              //   //   // textAlign: TextAlign.center,
-                              //   //   // style: _textH2,
-                              //   // ),
-                              // ),
-                            ),
-                          ],
-                        ),
+              Align(
+                alignment: FractionalOffset.center,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 25.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                      // Text(
+                      //   'Date State will live here!',
+                      //   style: _textH1,
+                      // ),
+                      SizedBox(height: 25.0),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                        child: _entryText(),
+                        // TextField(
+                        //   onChanged: (text) {
+                        //     print("First text field: $text");
+                        //     setState(() {
+                        //       textContent = text;
+                        //     });
+                        //   },
+                        //   // decoration: InputDecoration(
+                        //   //   border: InputBorder.none,
+                        //   //   hintText: 'Write your entry',
+                        //   //   // 'Entry State will live here, make this editable',
+                        //   //   // textAlign: TextAlign.center,
+                        //   //   // style: _textH2,
+                        //   // ),
+                        // ),
                       ),
-                    ),
-                    Align(
-                      alignment: FractionalOffset.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 270.0),
-                      ),
-                    ),
-                    Align(
-                        alignment: FractionalOffset.bottomRight,
-                        child: FlatButton(
-                          onPressed: () {
-                            setState(() {
-                              if (_isEditingText) {
-                                // save updated text
-                                setState(() {
-                                  entryText = _textEditingController.text;
-                                  _isEditingText = false;
-                                });
-
-                                // toggle view mode
-                                buttonText = "Edit";
-                                _isEditingText = false;
-                                // print("saved text: " + _textEditingController.text);
-                              } else {
-                                // toggle edit mode
-                                buttonText = "Save";
-                                _isEditingText = true;
-                              }
-                            });
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 20.0),
-                            child: Container(
-                              height: 50.0,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  color: Colors
-                                      .transparent, // background button color
-                                  border: Border.all(
-                                      color: Color(
-                                          0xFFFB8986)) // all border colors
-                                  ),
-                              child: Center(
-                                  child: Text(
-                                buttonText,
-                                style: TextStyle(
-                                    color: Color(0xFFFB8986),
-                                    fontSize: 17.0,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: "Poppins",
-                                    letterSpacing: 1.5),
-                              )),
-                            ),
-                          ),
-                        ))
-                  ],
+                    ],
+                  ),
                 ),
               ),
+              Align(
+                alignment: FractionalOffset.center,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 270.0),
+                ),
+              ),
+              Align(
+                  alignment: FractionalOffset.bottomRight,
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_isEditingText) {
+                          // save updated text
+                          setState(() {
+                            entryText = _textEditingController.text;
+                            _isEditingText = false;
+                          });
+
+                          // toggle view mode
+                          buttonText = "Edit";
+                          _isEditingText = false;
+                          // print("saved text: " + _textEditingController.text);
+                        } else {
+                          // toggle edit mode
+                          buttonText = "Save";
+                          _isEditingText = true;
+                        }
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0),
+                      child: Container(
+                        height: 50.0,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30.0),
+                            color:
+                                Colors.transparent, // background button color
+                            border: Border.all(
+                                color: Color(0xFFFB8986)) // all border colors
+                            ),
+                        child: Center(
+                            child: Text(
+                          buttonText,
+                          style: TextStyle(
+                              color: Color(0xFFFB8986),
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: "Poppins",
+                              letterSpacing: 1.5),
+                        )),
+                      ),
+                    ),
+                  ))
             ],
           ),
         ),
