@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:journal/views/pageView.dart';
+import '../managers/pageView.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Calendar extends StatefulWidget {
@@ -118,7 +118,7 @@ class _CalendarState extends State<Calendar> {
                         curve: Curves.easeIn),
                     MainView.of(context).date = _selectedDay,
                     print('$event tapped!, $_selectedDay'),
-                    print( widget.activeDate.toString()),
+                    print(widget.activeDate.toString()),
                   },
                 ),
               ))
