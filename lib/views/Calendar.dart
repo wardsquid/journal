@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import '../managers/pageView.dart';
 import 'package:table_calendar/table_calendar.dart';
-<<<<<<< HEAD:lib/views/Calendar.dart
-=======
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'manager/Firebase.dart';
+import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
->>>>>>> 5277ddcc7dc88fbec7714f48dd6831d5088e47d1:lib/Calendar.dart
 
 class Calendar extends StatefulWidget {
   final String title;
@@ -28,8 +25,7 @@ class _CalendarState extends State<Calendar> {
   DateTime _selectedDay;
   final User _user = checkUserLoginStatus();
 
-  CollectionReference entries =
-      FirebaseFirestore.instance.collection('entries');
+  CollectionReference entries = getFireStore();
 
   Future<void> getEntries() {
     return entries
@@ -58,12 +54,10 @@ class _CalendarState extends State<Calendar> {
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
-
+    getEntries();
     _selectedEntries = _entries[_selectedDay] ?? [];
     _calendarController = CalendarController();
     _selectedDay = DateTime.now();
-    getEntries();
   }
 
   @override
@@ -78,11 +72,11 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
-    MainView.of(context).date = day; // update all date states to the selected one
+    MainView.of(context).date =
+        day; // update all date states to the selected one
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
-
     });
   }
 

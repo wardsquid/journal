@@ -3,12 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
-<<<<<<< HEAD:lib/views/DiaryEntryView.dart
 import '../managers/Firebase.dart';
 //import 'package:firebase_core/firebase_core.dart';
-=======
-import 'manager/Firebase.dart';
->>>>>>> 5277ddcc7dc88fbec7714f48dd6831d5088e47d1:lib/DiaryEntryView.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
