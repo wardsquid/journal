@@ -25,8 +25,6 @@ class _UserProfile extends State<UserProfile> {
     notificationPlugin.setOnNotificationClick(onNotificationClick);
   }
 
-  onNotificationClick(String payload) {}
-
   _openReminderPopup(context) {
     final format = DateFormat("HH:mm");
     return Alert(
@@ -51,7 +49,10 @@ class _UserProfile extends State<UserProfile> {
         ),
         buttons: [
           DialogButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              Navigator.pop(context);
+              await notificationPlugin.showDailyAtTime(reminderTime);
+            },
             child: Text(
               "Save",
               style: TextStyle(color: Colors.white, fontSize: 20),
@@ -116,8 +117,7 @@ class _UserProfile extends State<UserProfile> {
               SizedBox(height: 40),
               RaisedButton(
                 onPressed: () async {
-                  await notificationPlugin.showNotification();
-                  //_openReminderPopup(context);
+                  _openReminderPopup(context);
                 },
                 color: Colors.deepPurple,
                 child: Padding(
@@ -157,5 +157,9 @@ class _UserProfile extends State<UserProfile> {
         ),
       ),
     );
+  }
+
+  onNotificationClick(String payload) {
+    print('Payload: $payload');
   }
 }

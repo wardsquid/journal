@@ -1,13 +1,13 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'dart:io' show File, Platform;
-
-// final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-//     FlutterLocalNotificationsPlugin();
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationPlugin {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   var initializationSettings;
+  var tokyo;
 
   NotificationPlugin._() {
     init();
@@ -21,6 +21,9 @@ class NotificationPlugin {
     }
 
     initializePlatformSpecifics();
+    tz.initializeTimeZones();
+    tokyo = tz.getLocation('Japan/Tokyo');
+    tz.setLocalLocation(tokyo);
   }
 
   initializePlatformSpecifics() {
@@ -50,36 +53,54 @@ class NotificationPlugin {
     });
   }
 
-  Future<void> showNotification() async {
+  Future<void> showDailyAtTime(TimeOfDay reminderTime) async {
+    //var time = tz.DateTime()
+    // var localTime = tz.DateTime(2010, 1, 1);
+    final now = DateTime.now();
+    final dt = DateTime(
+        now.year, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    var time = tz.TZDateTime.from(dt, tokyo);
+    // var time = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5));
     var androidChannelSpecifics = AndroidNotificationDetails(
-        'CHANNEL_ID', 'CHANNEL_NAME', 'CHANNEL_DESCRIPTION',
-        importance: Importance.max, priority: Priority.high);
+        'Channel-1', 'Reminder', 'For custom reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        // largeIcon: DrawableResourceAndroidBitmap('default_icon'),
+        styleInformation: DefaultStyleInformation(true, true));
 
     var iosChannelSpecifics = IOSNotificationDetails();
     var platformChannelSpecifics = NotificationDetails(
         android: androidChannelSpecifics, iOS: iosChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-        0, 'Test title', 'Test body', platformChannelSpecifics,
-        payload: 'TEST PAYLOAD');
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        '<b>Dear diary...</b>',
+        "Ready to write today's entry?",
+        time,
+        platformChannelSpecifics,
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'Custom reminder');
   }
 }
 
+//   Future<void> showNotification() async {
+//     var androidChannelSpecifics = AndroidNotificationDetails(
+//         'CHANNEL_ID', 'CHANNEL_NAME', 'CHANNEL_DESCRIPTION',
+//         importance: Importance.max,
+//         priority: Priority.high,
+//         playSound: true,
+//         styleInformation: DefaultStyleInformation(true, true));
+
+//     var iosChannelSpecifics = IOSNotificationDetails();
+//     var platformChannelSpecifics = NotificationDetails(
+//         android: androidChannelSpecifics, iOS: iosChannelSpecifics);
+//     await flutterLocalNotificationsPlugin.show(0, '<b>Dear diary...</b>',
+//         "Ready to write today's entry?", platformChannelSpecifics,
+//         payload: 'Custom reminder');
+//   }
+// }
+
 NotificationPlugin notificationPlugin = NotificationPlugin._();
-// Future<void> initializationSettingsAndroid() async {
-//   var initializationSettingsAndroid =
-//       AndroidInitializationSettings('default_icon');
-//   var initializationSettingsIOS = IOSInitializationSettings(
-//       requestAlertPermission: true,
-//       requestBadgePermission: true,
-//       requestSoundPermission: true,
-//       onDidReceiveLocalNotification:
-//           (int id, String title, String body, String payload) async {});
-//   var initializationSettings = InitializationSettings(
-//       android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-//   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-//       onSelectNotification: (String payload) async {
-//     if (payload != null) {
-//       debugPrint('notification payload: ' + payload);
-//     }
-//   });
-//}
