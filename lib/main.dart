@@ -25,7 +25,7 @@ import 'managers/pageView.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializationSettingsAndroid();
+  //await initializationSettingsAndroid();
 
 //initialize settings for Flutter__Local_Notifications_plugin
 /*

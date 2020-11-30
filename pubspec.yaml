@@ -39,6 +39,9 @@ dependencies:
   flutter_local_notifications: ^3.0.1+6
   rflutter_alert: ^1.1.0
   datetime_picker_formfield: ^1.0.0
+  rxdart: ^0.24.1
+  path_provider: ^1.6.11
+  http: ^0.12.1
 
 dev_dependencies:
   flutter_test:

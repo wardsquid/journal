@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'LoginPage.dart';
 import '../managers/SignIn.dart';
 import '../managers/Firebase.dart';
+import '../managers/LocalNotificationManager.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +18,14 @@ class _UserProfile extends State<UserProfile> {
   User currentUser;
   _UserProfile(this.currentUser);
   TimeOfDay reminderTime;
+
+  @override
+  void initState() {
+    super.initState();
+    notificationPlugin.setOnNotificationClick(onNotificationClick);
+  }
+
+  onNotificationClick(String payload) {}
 
   _openReminderPopup(context) {
     final format = DateFormat("HH:mm");
@@ -106,8 +115,9 @@ class _UserProfile extends State<UserProfile> {
               ),
               SizedBox(height: 40),
               RaisedButton(
-                onPressed: () {
-                  _openReminderPopup(context);
+                onPressed: () async {
+                  await notificationPlugin.showNotification();
+                  //_openReminderPopup(context);
                 },
                 color: Colors.deepPurple,
                 child: Padding(
