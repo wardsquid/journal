@@ -3,13 +3,41 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'manager/Firebase.dart';
+import '../managers/Firebase.dart';
+//import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-//import 'Choose_Login.dart';
+String DateDisplay(DateTime date) {
+    const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const List months = [
+      null,
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    String toBeDisplayed = weekday[date.weekday] +
+        ', ' +
+        date.day.toString() +
+        ' ' +
+        months[date.month] +
+        ' ' +
+        date.year.toString();
+    return toBeDisplayed;
+  }
 
 class DiaryEntryView extends StatefulWidget {
+  DateTime activeDate;
+  DiaryEntryView({this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -173,20 +201,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   @override
   Widget build(BuildContext context) {
-    double _height = MediaQuery.of(context).size.height;
+    // double _height = MediaQuery.of(context).size.height;
 
-    var _textH1 = TextStyle(
-        fontFamily: "Sofia",
-        fontWeight: FontWeight.w600,
-        fontSize: 23.0,
-        backgroundColor: Colors.blueGrey,
-        color: Colors.white); // h1 text color
+    // var _textH1 = TextStyle(
+    //     fontFamily: "Sofia",
+    //     fontWeight: FontWeight.w600,
+    //     fontSize: 23.0,
+    //     backgroundColor: Colors.blueGrey,
+    //     color: Colors.white); // h1 text color
 
-    var _textH2 = TextStyle(
-        fontFamily: "Sofia",
-        fontWeight: FontWeight.w200,
-        fontSize: 16.0,
-        color: Colors.white); // h2 text color
+    // var _textH2 = TextStyle(
+    //     fontFamily: "Sofia",
+    //     fontWeight: FontWeight.w200,
+    //     fontSize: 16.0,
+    //     color: Colors.white); // h2 text color
 
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -203,7 +231,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       height: 300,
                       child: _image == null
                           ? Container(
-                              // alignment: Alignment.center,
+                            alignment: Alignment.center,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
@@ -242,7 +270,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       child: _image == null
                           ? Center(
                               child: Text(
-                                "NO IMAGE",
+                                DateDisplay(widget.activeDate),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Color(0xFFFB8986),

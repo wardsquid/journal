@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import '../managers/pageView.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'manager/Firebase.dart';
+import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Calendar extends StatefulWidget {
-  Calendar({Key key, this.title}) : super(key: key);
-
   final String title;
+  final PageController tabController;
+  DateTime activeDate;
+  Calendar({Key key, this.title, this.tabController, this.activeDate})
+      : super(key: key);
 
   @override
   _CalendarState createState() => _CalendarState();
@@ -22,8 +25,7 @@ class _CalendarState extends State<Calendar> {
   DateTime _selectedDay;
   final User _user = checkUserLoginStatus();
 
-  CollectionReference entries =
-      FirebaseFirestore.instance.collection('entries');
+  CollectionReference entries = getFireStore();
 
   Future<void> getEntries() {
     return entries
@@ -52,13 +54,10 @@ class _CalendarState extends State<Calendar> {
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
-
+    getEntries();
     _selectedEntries = _entries[_selectedDay] ?? [];
-
     _calendarController = CalendarController();
     _selectedDay = DateTime.now();
-    getEntries();
   }
 
   @override
@@ -73,22 +72,17 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
+    MainView.of(context).date =
+        day; // update all date states to the selected one
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
-      //switchView(_selectedDay);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   title: Text(
-      //     "Inkling",
-      //   ),
-      // ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
@@ -137,8 +131,15 @@ class _CalendarState extends State<Calendar> {
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text(event.toString()),
-                  onTap: () => print('$event tapped!, $_selectedDay'),
-                  //} // replace this with switch page view
+                  onTap: () => {
+                    widget.activeDate = _selectedDay,
+                    widget.tabController.animateToPage(1,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.easeIn),
+                    MainView.of(context).date = _selectedDay,
+                    print('$event tapped!, $_selectedDay'),
+                    print(widget.activeDate.toString()),
+                  },
                 ),
               ))
           .toList(),

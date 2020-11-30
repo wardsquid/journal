@@ -64,8 +64,9 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/
-    - assets/Template1/image/
-    - assets/Template1/banner/
+    - assets/select_image.png
+    - assets/onBoarding1.jpeg
+    - assets/Template1/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

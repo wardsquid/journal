@@ -1,13 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'LoginPage.dart';
-import '../manager/SignIn.dart';
-import '../manager/Firebase.dart';
+import '../managers/SignIn.dart';
+import '../managers/Firebase.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
-  //UserProfile({this.currentUser});
-  //if (currentUser == null) async {}
   @override
   _UserProfile createState() => new _UserProfile(currentUser);
 }

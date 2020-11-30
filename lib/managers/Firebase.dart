@@ -4,9 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-final FirebaseStorage _storage = FirebaseStorage.instance;
 final FirebaseAuth _auth = FirebaseAuth.instance;
-final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
 Future<String> initializeFirebase() async {
@@ -36,9 +34,18 @@ Future<FirebaseMessaging> setUpNotifications() async {
     provisional: false,
     sound: true,
   );
-  
+
   print('User granted permission: ${settings.authorizationStatus}');
   return _messaging;
 }
 
+FirebaseStorage getStorage() {
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  return _storage;
+}
 
+CollectionReference getFireStore() {
+  CollectionReference entries =
+      FirebaseFirestore.instance.collection('entries');
+  return entries;
+}
