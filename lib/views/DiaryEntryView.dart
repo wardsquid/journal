@@ -9,35 +9,36 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 String DateDisplay(DateTime date) {
-    const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const List months = [
-      null,
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    String toBeDisplayed = weekday[date.weekday] +
-        ', ' +
-        date.day.toString() +
-        ' ' +
-        months[date.month] +
-        ' ' +
-        date.year.toString();
-    return toBeDisplayed;
-  }
+  const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const List months = [
+    null,
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+  String toBeDisplayed = weekday[date.weekday] +
+      ', ' +
+      date.day.toString() +
+      ' ' +
+      months[date.month] +
+      ' ' +
+      date.year.toString();
+  return toBeDisplayed;
+}
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
-  DiaryEntryView({this.activeDate});
+  String documentId;
+  DiaryEntryView({this.documentId, this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -231,7 +232,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       height: 300,
                       child: _image == null
                           ? Container(
-                            alignment: Alignment.center,
+                              alignment: Alignment.center,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
@@ -270,7 +271,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       child: _image == null
                           ? Center(
                               child: Text(
-                                DateDisplay(widget.activeDate),
+                                DateDisplay(widget.activeDate) + " " + widget.documentId,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Color(0xFFFB8986),
