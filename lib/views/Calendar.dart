@@ -31,11 +31,16 @@ class _CalendarState extends State<Calendar> {
   DateTime _selectedDay;
   final User _user = checkUserLoginStatus();
 
-  CollectionReference entries = getFireStore();
+  CollectionReference entries = getFireStoreEntriesDB();
 
-  Future<void> getEntries() {
-    return entries
+  Future<void> getEntries(dateWithMonth) async {
+    Map<DateTime, List> entryParser = {};
+    _entryInfos = [];
+    _entries = {};
+    await entries
         .where('user_id', isEqualTo: _user.uid)
+        .where('timestamp',
+            isGreaterThan: DateTime(dateWithMonth.year, dateWithMonth.month))
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) {
@@ -47,24 +52,38 @@ class _CalendarState extends State<Calendar> {
                 _entryInfos.add(entryInfo);
                 DateTime date = entryInfo["timestamp"].toDate();
                 DateTime formatDate = DateTime(date.year, date.month, date.day);
-                if (_entries.containsKey(formatDate)) {
-                  _entries[formatDate].add(entryInfo["title"]);
+                if (entryParser.containsKey(formatDate)) {
+                  entryParser[formatDate].add(entryInfo["title"]);
                 } else {
-                  _entries[formatDate] = [entryInfo["title"]];
-                  // _entries[formatDate].add(entryInfo["doc_id"]);
+                  entryParser[formatDate] = [entryInfo["title"]];
                 }
-                print(_entries);
+                //print(_entries);
               })
             });
+    setState(() {
+      _selectedDay = DateTime.now();
+      _entries = entryParser;
+      _selectedEntries = _entryInfos
+          .where((entry) =>
+              (entry["timestamp"].toDate().year == _selectedDay.year &&
+                  entry["timestamp"].toDate().month == _selectedDay.month &&
+                  entry["timestamp"].toDate().day == _selectedDay.day))
+          .toList();
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    getEntries();
     _selectedDay = DateTime.now();
-    _selectedEntries = _entries[_selectedDay] ?? [];
-
+    _selectedEntries = [];
+    getEntries(_selectedDay);
+    print(_entries);
+    //     .where((entry) =>
+    //         (entry["timestamp"].toDate().year == _selectedDay.year &&
+    //             entry["timestamp"].toDate().month == _selectedDay.month &&
+    //             entry["timestamp"].toDate().day == _selectedDay.day))
+    //     .toList();
     _calendarController = CalendarController();
   }
 
@@ -80,13 +99,12 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
-    print(events);
+    //print(events);
     List validEntries = _entryInfos
         .where((entry) => (entry["timestamp"].toDate().year == day.year &&
             entry["timestamp"].toDate().month == day.month &&
             entry["timestamp"].toDate().day == day.day))
         .toList();
-    print(validEntries);
     MainView.of(context).date =
         day; // update all date states to the selected one
     setState(() {
@@ -115,6 +133,12 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
+  void _onVisibleDaysChanged(
+      DateTime first, DateTime last, CalendarFormat format) {
+    print(first.toString());
+    getEntries(first);
+  }
+
   Widget _buildTableCalendar() {
     return TableCalendar(
       calendarController: _calendarController,
@@ -131,6 +155,7 @@ class _CalendarState extends State<Calendar> {
         centerHeaderTitle: true,
       ),
       onDaySelected: _onDaySelected,
+      onVisibleDaysChanged: _onVisibleDaysChanged,
     );
   }
 
@@ -152,9 +177,9 @@ class _CalendarState extends State<Calendar> {
                     widget.tabController.animateToPage(1,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeIn),
-                    print('$event tapped!, $_selectedDay'),
-                    print(widget.documentId),
-                    print(widget.activeDate.toString()),
+                    // print('$event tapped!, $_selectedDay'),
+                    // print(widget.documentId),
+                    // print(widget.activeDate.toString()),
                   },
                 ),
               ))
@@ -162,3 +187,6 @@ class _CalendarState extends State<Calendar> {
     );
   }
 }
+
+// typedef void OnVisibleDaysChanged(
+//     DateTime first, DateTime last, CalendarFormat format);

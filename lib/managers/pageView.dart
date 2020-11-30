@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:journal/views/Diary2.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
