@@ -4,10 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../managers/Firebase.dart';
-//import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//import 'Choose_Login.dart';
 String DateDisplay(DateTime date) {
   const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const List months = [
@@ -47,6 +47,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
+  Map<String, dynamic> entryInfo = {
+    "doc_id": "",
+    "title": "",
+    "timestamp": "",
+    "content": {"image": "", "text": ""},
+  };
   String entryText = "";
   String titleText = "";
   String buttonText = "Edit";
@@ -123,20 +129,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _getFAB() {
-    if (_isEditingText == true ||
-        _image == null && titleText == "" && entryText == "") {
-      return Container();
-    } else {
-      return FloatingActionButton(
-        onPressed: _saveEntry,
-        tooltip: 'Save Entry',
-        backgroundColor: Colors.yellow[600],
-        child: Icon(Icons.add),
-      );
-    }
+    // if (_isEditingText == true ||
+    //     _image == null && titleText == "" && entryText == "") {
+    //   return Container();
+    // } else {
+    return FloatingActionButton.extended(
+      onPressed: () => {
+        setState(() {
+          titleText = '';
+          entryText = '';
+          _image = null;
+          entryInfo["doc_id"] = "";
+        })
+      },
+      tooltip: 'Another New Entry',
+      label: Text("New"),
+      backgroundColor: Colors.pink,
+      icon: Icon(Icons.add),
+    );
+    // }
   }
 
-  _saveEntry() {
+  _addNewEntry() {
     String img64;
     if (_image != null) {
       final bytes = _image.readAsBytesSync();
@@ -151,11 +165,32 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'timestamp': DateTime.now(),
           'content': {'image': img64, 'text': entryText}
         })
-        .then((value) => setState(() {
-              titleText = '';
-              entryText = '';
-              _image = null;
-            }))
+        .then((value) => {
+              setState(() {
+                titleText = '';
+                entryText = '';
+                _image = null;
+                entryInfo["doc_id"] = "";
+              })
+            })
+        .catchError((error) => print("Failed to add entry: $error"));
+  }
+
+  _overwriteEntry() {
+    String img64;
+    if (_image != null) {
+      final bytes = _image.readAsBytesSync();
+      img64 = base64Encode(bytes);
+    } else {
+      img64 = "";
+    }
+    return entries
+        .doc(entryInfo["doc_id"])
+        .set({
+          'title': titleText,
+          'content': {'image': img64, 'text': entryText}
+        })
+        .then((value) => {})
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
@@ -187,36 +222,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
-  // Widget _indicator(bool isActive) {
-  //   return AnimatedContainer(
-  //     duration: Duration(milliseconds: 150),
-  //     margin: EdgeInsets.symmetric(horizontal: 8.0),
-  //     height: 5.0,
-  //     width: isActive ? 24.0 : 16.0,
-  //     decoration: BoxDecoration(
-  //       color: /*isActive ? Color(0xFFFB8986) :*/ Colors.white,
-  //       borderRadius: BorderRadius.all(Radius.circular(12)),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // double _height = MediaQuery.of(context).size.height;
-
-    // var _textH1 = TextStyle(
-    //     fontFamily: "Sofia",
-    //     fontWeight: FontWeight.w600,
-    //     fontSize: 23.0,
-    //     backgroundColor: Colors.blueGrey,
-    //     color: Colors.white); // h1 text color
-
-    // var _textH2 = TextStyle(
-    //     fontFamily: "Sofia",
-    //     fontWeight: FontWeight.w200,
-    //     fontSize: 16.0,
-    //     color: Colors.white); // h2 text color
-
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
@@ -224,7 +231,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           decoration: BoxDecoration(
             color: Colors.white, // background color
           ),
-          child: Column(
+          child: ListView(
             children: <Widget>[
               _isEditingText == true
                   ? Container(
@@ -232,7 +239,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       height: 300,
                       child: _image == null
                           ? Container(
-                              alignment: Alignment.center,
+                              // alignment: Alignment.center,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
@@ -271,7 +278,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       child: _image == null
                           ? Center(
                               child: Text(
-                                DateDisplay(widget.activeDate) + " " + widget.documentId,
+                                DateDisplay(widget.activeDate) +
+                                    " " +
+                                    widget.documentId,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Color(0xFFFB8986),
@@ -306,11 +315,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   ),
                 ),
               ),
-              Align(
-                alignment: FractionalOffset.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 270.0),
-                ),
+              Container(
+                height: 40.0,
               ),
               Align(
                   alignment: FractionalOffset.bottomRight,
@@ -318,6 +324,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     onPressed: () {
                       setState(() {
                         if (_isEditingText) {
+                          if (_image == null &&
+                              titleText == "" &&
+                              entryText == "") {
+                          } else if (entryInfo["doc_id"] == "") {
+                            _addNewEntry();
+                          } else {
+                            _overwriteEntry();
+                          }
                           // save updated text
                           setState(() {
                             entryText = _textEditingController.text;
