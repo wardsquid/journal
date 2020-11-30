@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'manager/Firebase.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -22,6 +21,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   String entryText = "";
   String titleText = "";
   String buttonText = "Edit";
+  final User _user = checkUserLoginStatus();
 
   File _image;
 
@@ -108,7 +108,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   _saveEntry() {
-    final User _user = checkUserLoginStatus();
     String img64;
     if (_image != null) {
       final bytes = _image.readAsBytesSync();
