@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journal/views/Diary2.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
@@ -43,8 +44,7 @@ class _MainViewState extends State<MainView> {
               tabController: _pageController,
               activeDate: activeDate), //index 0
           // NOT ACTUAL ERRORS
-          DiaryEntryView(
-              activeDate: activeDate), //index 1 bc its the middle view
+          DiaryEntryView(activeDate: activeDate),
           UserProfile(),
           Container(color: Colors.red), //index 2
         ]);

@@ -48,21 +48,17 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
+    MainView.of(context).date = day; // update all date states to the selected one
     setState(() {
       _selectedDay = day;
       _selectedEntries = events;
+
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   title: Text(
-      //     "Inkling",
-      //   ),
-      // ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
