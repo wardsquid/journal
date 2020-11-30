@@ -9,7 +9,13 @@ class Calendar extends StatefulWidget {
   final String title;
   final PageController tabController;
   DateTime activeDate;
-  Calendar({Key key, this.title, this.tabController, this.activeDate})
+  String documentId;
+  Calendar(
+      {Key key,
+      this.documentId,
+      this.title,
+      this.tabController,
+      this.activeDate})
       : super(key: key);
 
   @override
@@ -45,8 +51,9 @@ class _CalendarState extends State<Calendar> {
                   _entries[formatDate].add(entryInfo["title"]);
                 } else {
                   _entries[formatDate] = [entryInfo["title"]];
+                  // _entries[formatDate].add(entryInfo["doc_id"]);
                 }
-                print(_entryInfos);
+                print(_entries);
               })
             });
   }
@@ -55,9 +62,10 @@ class _CalendarState extends State<Calendar> {
   void initState() {
     super.initState();
     getEntries();
-    _selectedEntries = _entries[_selectedDay] ?? [];
-    _calendarController = CalendarController();
     _selectedDay = DateTime.now();
+    _selectedEntries = _entries[_selectedDay] ?? [];
+
+    _calendarController = CalendarController();
   }
 
   @override
@@ -72,11 +80,18 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
+    print(events);
+    List validEntries = _entryInfos
+        .where((entry) => (entry["timestamp"].toDate().year == day.year &&
+            entry["timestamp"].toDate().month == day.month &&
+            entry["timestamp"].toDate().day == day.day))
+        .toList();
+    print(validEntries);
     MainView.of(context).date =
         day; // update all date states to the selected one
     setState(() {
       _selectedDay = day;
-      _selectedEntries = events;
+      _selectedEntries = validEntries;
     });
   }
 
@@ -130,14 +145,15 @@ class _CalendarState extends State<Calendar> {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
-                  title: Text(event.toString()),
+                  title: Text(event["title"].toString()),
                   onTap: () => {
-                    widget.activeDate = _selectedDay,
+                    MainView.of(context).date = _selectedDay,
+                    MainView.of(context).documentIdReference = event['doc_id'],
                     widget.tabController.animateToPage(1,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeIn),
-                    MainView.of(context).date = _selectedDay,
                     print('$event tapped!, $_selectedDay'),
+                    print(widget.documentId),
                     print(widget.activeDate.toString()),
                   },
                 ),
