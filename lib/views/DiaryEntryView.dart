@@ -1,3 +1,5 @@
+//import 'dart:html';
+import '../managers/pageView.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -37,7 +39,7 @@ String DateDisplay(DateTime date) {
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
-  String documentId;
+  String documentId = "";
   DiaryEntryView({this.documentId, this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
@@ -47,27 +49,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
+  DocumentSnapshot _currentDoc;
+  String entryText = "";
+  String titleText = "";
+  String buttonText = "Edit";
+  final User _user = checkUserLoginStatus();
+  final CollectionReference entries = getFireStoreEntriesDB();
+  File _image;
   Map<String, dynamic> entryInfo = {
     "doc_id": "",
     "title": "",
     "timestamp": "",
     "content": {"image": "", "text": ""},
   };
-  String entryText = "";
-  String titleText = "";
-  String buttonText = "Edit";
-  final User _user = checkUserLoginStatus();
-
-  File _image;
-
-  CollectionReference entries =
-      FirebaseFirestore.instance.collection('entries');
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
+    if (widget.documentId != "") {
+      _currentDoc = readEntry(widget.documentId) as DocumentSnapshot;
+    }
   }
 
   @override
@@ -76,17 +79,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.dispose();
   }
 
+  Future<DocumentSnapshot> readEntry(String documentId) {
+    //if (documentId == null) return null;
+    entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        print('Document data: ${documentSnapshot.data()}');
+      } else {
+        print('Document does not exist on the database');
+      }
+      setState(() {
+        titleText = documentSnapshot.data()["title"];
+        entryText = documentSnapshot.data()["content"]["text"];
+        _textEditingController = TextEditingController(text: entryText);
+        _titleEditingController = TextEditingController(text: titleText);
+      });
+      return documentSnapshot.data();
+    });
+  }
+
   Widget _entryText() {
     if (_isEditingText)
       return Column(
         children: <Widget>[
           TextField(
+            controller: _titleEditingController,
             decoration: InputDecoration(hintText: 'Title is...'),
             onChanged: (text) {
               titleText = text;
             },
             autofocus: true,
-            controller: _titleEditingController,
           ),
           TextField(
             decoration: InputDecoration(hintText: 'Dear diary...'),
@@ -110,7 +131,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          "Title: $titleText",
+          titleText,
           style: TextStyle(
             color: Colors.black,
             fontSize: 24.0,
@@ -128,16 +149,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
-  Widget _getFAB() {
+  Widget _getFloatingButton() {
     // if (_isEditingText == true ||
     //     _image == null && titleText == "" && entryText == "") {
     //   return Container();
     // } else {
     return FloatingActionButton.extended(
       onPressed: () => {
+        MainView.of(context).documentIdReference = "",
+        widget.documentId = "",
         setState(() {
           titleText = '';
           entryText = '';
+          _textEditingController = TextEditingController(text: entryText);
+          _titleEditingController = TextEditingController(text: titleText);
           _image = null;
           entryInfo["doc_id"] = "";
         })
@@ -185,12 +210,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       img64 = "";
     }
     return entries
-        .doc(entryInfo["doc_id"])
-        .set({
+        .doc(widget.documentId)
+        .update({
           'title': titleText,
           'content': {'image': img64, 'text': entryText}
         })
-        .then((value) => {})
+        .then((value) => print(widget.documentId))
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
@@ -327,14 +352,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           if (_image == null &&
                               titleText == "" &&
                               entryText == "") {
-                          } else if (entryInfo["doc_id"] == "") {
+                          } else if (widget.documentId == "") {
                             _addNewEntry();
                           } else {
                             _overwriteEntry();
                           }
                           // save updated text
                           setState(() {
-                            entryText = _textEditingController.text;
+                            // entryText = _textEditingController.text;
                             _isEditingText = false;
                           });
 
@@ -377,7 +402,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ),
         ),
       ),
-      floatingActionButton: _getFAB(),
+      floatingActionButton: _getFloatingButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
