@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import '../managers/pageView.dart';
 import 'package:table_calendar/table_calendar.dart';
+<<<<<<< HEAD:lib/views/Calendar.dart
+=======
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'manager/Firebase.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+>>>>>>> 5277ddcc7dc88fbec7714f48dd6831d5088e47d1:lib/Calendar.dart
 
 class Calendar extends StatefulWidget {
   final String title;
@@ -14,26 +20,50 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> {
-  Map<DateTime, List> _entries;
+  Map<DateTime, List> _entries = {};
+  List _entryInfos = [];
   List _selectedEntries;
   AnimationController _animationController;
   CalendarController _calendarController;
   DateTime _selectedDay;
+  final User _user = checkUserLoginStatus();
+
+  CollectionReference entries =
+      FirebaseFirestore.instance.collection('entries');
+
+  Future<void> getEntries() {
+    return entries
+        .where('user_id', isEqualTo: _user.uid)
+        .get()
+        .then((QuerySnapshot querySnapshot) => {
+              querySnapshot.docs.forEach((doc) {
+                Map<String, dynamic> entryInfo = {
+                  "doc_id": doc.id,
+                  "title": doc["title"],
+                  "timestamp": doc["timestamp"],
+                };
+                _entryInfos.add(entryInfo);
+                DateTime date = entryInfo["timestamp"].toDate();
+                DateTime formatDate = DateTime(date.year, date.month, date.day);
+                if (_entries.containsKey(formatDate)) {
+                  _entries[formatDate].add(entryInfo["title"]);
+                } else {
+                  _entries[formatDate] = [entryInfo["title"]];
+                }
+                print(_entryInfos);
+              })
+            });
+  }
 
   @override
   void initState() {
     super.initState();
     _selectedDay = DateTime.now();
 
-    _entries = {
-      DateTime.parse("2020-11-25 20:18:04Z"): ['Roppongi'],
-      DateTime.parse("2020-11-20 20:18:04Z"): ['Shinjuku', 'Asakusa'],
-      DateTime.parse("2020-11-16 20:18:04Z"): ['Disney Land'],
-    };
-
     _selectedEntries = _entries[_selectedDay] ?? [];
     _calendarController = CalendarController();
     _selectedDay = DateTime.now();
+    getEntries();
   }
 
   @override
