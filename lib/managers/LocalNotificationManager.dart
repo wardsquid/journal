@@ -7,7 +7,7 @@ import 'package:timezone/timezone.dart' as tz;
 class NotificationPlugin {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   var initializationSettings;
-  var tokyo;
+  var localLocation;
 
   NotificationPlugin._() {
     init();
@@ -22,8 +22,9 @@ class NotificationPlugin {
 
     initializePlatformSpecifics();
     tz.initializeTimeZones();
-    tokyo = tz.getLocation('Japan/Tokyo');
-    tz.setLocalLocation(tokyo);
+    var locations = tz.timeZoneDatabase.locations;
+    localLocation = tz.getLocation('Asia/Tokyo');
+    tz.setLocalLocation(localLocation);
   }
 
   initializePlatformSpecifics() {
@@ -54,20 +55,19 @@ class NotificationPlugin {
   }
 
   Future<void> showDailyAtTime(TimeOfDay reminderTime) async {
-    //var time = tz.DateTime()
-    // var localTime = tz.DateTime(2010, 1, 1);
-    final now = DateTime.now();
-    final dt = DateTime(
-        now.year, now.month, now.day, reminderTime.hour, reminderTime.minute);
-    var time = tz.TZDateTime.from(dt, tokyo);
-    // var time = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 5));
+    print(reminderTime);
+    var now = DateTime.now();
+    var dt = DateTime(
+        7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    var time = tz.TZDateTime.from(dt, localLocation);
+    print("time $time");
     var androidChannelSpecifics = AndroidNotificationDetails(
         'Channel-1', 'Reminder', 'For custom reminders',
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
-        // largeIcon: DrawableResourceAndroidBitmap('default_icon'),
+        largeIcon: DrawableResourceAndroidBitmap('default_icon'),
         styleInformation: DefaultStyleInformation(true, true));
 
     var iosChannelSpecifics = IOSNotificationDetails();
@@ -82,25 +82,9 @@ class NotificationPlugin {
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
         payload: 'Custom reminder');
   }
 }
-
-//   Future<void> showNotification() async {
-//     var androidChannelSpecifics = AndroidNotificationDetails(
-//         'CHANNEL_ID', 'CHANNEL_NAME', 'CHANNEL_DESCRIPTION',
-//         importance: Importance.max,
-//         priority: Priority.high,
-//         playSound: true,
-//         styleInformation: DefaultStyleInformation(true, true));
-
-//     var iosChannelSpecifics = IOSNotificationDetails();
-//     var platformChannelSpecifics = NotificationDetails(
-//         android: androidChannelSpecifics, iOS: iosChannelSpecifics);
-//     await flutterLocalNotificationsPlugin.show(0, '<b>Dear diary...</b>',
-//         "Ready to write today's entry?", platformChannelSpecifics,
-//         payload: 'Custom reminder');
-//   }
-// }
 
 NotificationPlugin notificationPlugin = NotificationPlugin._();

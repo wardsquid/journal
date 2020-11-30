@@ -18,6 +18,7 @@ class _UserProfile extends State<UserProfile> {
   User currentUser;
   _UserProfile(this.currentUser);
   TimeOfDay reminderTime;
+  bool isTimeSet = false;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _UserProfile extends State<UserProfile> {
                       TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
                 );
                 reminderTime = time;
+                isTimeSet = true;
                 print("reminder time set to  " + reminderTime.toString());
                 return DateTimeField.convert(time);
               },
@@ -49,9 +51,12 @@ class _UserProfile extends State<UserProfile> {
         ),
         buttons: [
           DialogButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              await notificationPlugin.showDailyAtTime(reminderTime);
+              if (isTimeSet) {
+                setNotification(reminderTime);
+                isTimeSet = false;
+              }
             },
             child: Text(
               "Save",
@@ -157,6 +162,10 @@ class _UserProfile extends State<UserProfile> {
         ),
       ),
     );
+  }
+
+  setNotification(TimeOfDay reminderTime) async {
+    await notificationPlugin.showDailyAtTime(reminderTime);
   }
 
   onNotificationClick(String payload) {
