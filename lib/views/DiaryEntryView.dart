@@ -56,7 +56,7 @@ class DiaryEntryView extends StatefulWidget {
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
-
+  List<double> _coordinates;
   // Controllers
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
@@ -134,48 +134,50 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
-  Future<String> getExifFromFile() async {
+  Future<List<double>> getExifFromFile(File selectedPhoto) async {
     print("called");
-    if (_image == null) {
+    if (selectedPhoto == null) {
       print('none found');
       return null;
     }
-
-    Uint8List bytes = await _image.readAsBytes();
+    Uint8List bytes = await selectedPhoto.readAsBytes();
     Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
-    var sb = StringBuffer();
-    print(exifTags.keys.toString());
-    if (exifTags.containsKey('GPS GPSLongitude')) //&&
-    // exifTags.containsKey('GPS GPSLongitude') && )
-    {
-      // final latitudeValue = exifTags['GPS GPSLatitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
-      // final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
+    // print(exifTags.keys.toString());
+    // exifTags.forEach((k, v) {
+    //   print("$k: $v \n");
+    // });
+    if (exifTags.containsKey('GPS GPSLongitude') &&
+        exifTags.containsKey('GPS GPSLongitudeRef') &&
+        exifTags.containsKey('GPS GPSLatitude') &&
+        exifTags.containsKey('GPS GPSLatitudeRef')) {
+      final latitudeValue = exifTags['GPS GPSLatitude']
+          .values
+          .map<double>((item) =>
+              (item.numerator.toDouble() / item.denominator.toDouble()))
+          .toList();
+      final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
 
-      // final longitudeValue = exifTags['GPS GPSLongitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
-      // final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
+      final longitudeValue = exifTags['GPS GPSLongitude']
+          .values
+          .map<double>((item) =>
+              (item.numerator.toDouble() / item.denominator.toDouble()))
+          .toList();
+      final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
 
-      // double latitude = latitudeValue[0]
-      //   + (latitudeValue[1] / 60)
-      //   + (latitudeValue[2] / 3600);
+      double latitude = latitudeValue[0] +
+          (latitudeValue[1] / 60) +
+          (latitudeValue[2] / 3600);
 
-      // double longitude = longitudeValue[0]
-      //   + (longitudeValue[1] / 60)
-      //   + (longitudeValue[2] / 3600);
+      double longitude = longitudeValue[0] +
+          (longitudeValue[1] / 60) +
+          (longitudeValue[2] / 3600);
 
-      // if (latitudeSignal == 'S') latitude = -latitude;
-      // if (longitudeSignal == 'W') longitude = -longitude;
+      if (latitudeSignal == 'S') latitude = -latitude;
+      if (longitudeSignal == 'W') longitude = -longitude;
 
-      //     print(exifTag["GPS GPSLongitude"]);
-      //     print(exifTag["GPS GPSLongitude"].runtimeType);
+      List<double> coordinatesSet = List.from([latitude, longitude]);
+      return coordinatesSet;
     }
-    // if (data.containsKey('JPEGThumbnail')) {
-
-    //   exifTags.forEach((k, v) {
-    //     sb.write("$k: $v \n");
-    //   });
-    //   print("here here here here");
-    //   print(sb.toString());
-    //   return sb.toString();
   }
 
   Widget _entryText() {
@@ -233,7 +235,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _getFloatingButton() {
-// <<<<<<< HEAD
     if (_isEditingText == true ||
         _image == null && titleText == "" && entryText == "") {
       return Container();
@@ -366,12 +367,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxHeight: 1800,
     );
     if (pickedFile != null) {
+      getExifFromFile(File(pickedFile.path));
+      Map<String, double> labelMap = await readLabel(File(pickedFile.path));
+      print(labelMap.toString());
       setState(() {
         _image = File(pickedFile.path);
       });
-      getExifFromFile();
-      Map<String, double> labelMap = await readLabel(_image);
-      print(labelMap.toString());
     }
   }
 

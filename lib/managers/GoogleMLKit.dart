@@ -22,3 +22,6 @@ Future<Map<String, double>> readLabel(File pickedImage) async {
 }
 // food 0.9634792384,
 // tyre 0.574532432
+// String functiongeneratingtext(Map<String, double> labelMap){
+//   //code
+// }

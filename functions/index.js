@@ -1,5 +1,4 @@
 const functions = require('firebase-functions');
-const parser = require('exif-parser');
 const axios = require("axios");
 
 
