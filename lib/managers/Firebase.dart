@@ -49,3 +49,46 @@ CollectionReference getFireStoreEntriesDB() {
       FirebaseFirestore.instance.collection('entries');
   return entries;
 }
+
+CollectionReference getFireStoreUsersDB() {
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  return users;
+}
+
+Future<void> addUser() async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  users
+      .doc(currentUser.uid)
+      .set({
+        'reminder': null,
+        'friends': [
+          {'name': 'Vic', 'email': 'wow@email.com'},
+          {'name': 'Dustin', 'email': 'cool@email.com'}
+        ],
+        'journals': [
+          {'uid': 'uid1', 'name': "CC15's super secret diary"},
+        ],
+        'entries': ['uid1', 'uid2', 'uid3', 'uid4']
+      })
+      .then((value) => {print("Successfully added user $currentUser")})
+      .catchError((error) => {print("Failed to add user: $error")});
+}
+
+Future<bool> checkUserExists() async {
+  bool exists = false;
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) {
+    if (documentSnapshot.exists) {
+      print('User exists');
+      exists = true;
+    } else {
+      print('User does not exist on the database');
+      exists = false;
+    }
+  }).catchError(
+      (error) => {print('Error occured while checking for user $currentUser')});
+
+  return (exists);
+}

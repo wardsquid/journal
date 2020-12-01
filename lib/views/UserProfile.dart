@@ -7,6 +7,7 @@ import '../managers/LocalNotificationManager.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -42,6 +43,7 @@ class _UserProfile extends State<UserProfile> {
                       TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
                 );
                 reminderTime = time;
+                updateUserInfo(reminderTime);
                 isTimeSet = true;
                 print("reminder time set to  " + reminderTime.toString());
                 return DateTimeField.convert(time);
@@ -170,5 +172,17 @@ class _UserProfile extends State<UserProfile> {
 
   onNotificationClick(String payload) {
     print('Payload: $payload');
+  }
+
+  updateUserInfo(TimeOfDay reminderTime) {
+    final CollectionReference users = getFireStoreUsersDB();
+    var now = DateTime.now();
+    var dt = DateTime(
+        7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    return users
+        .doc(currentUser.uid)
+        .update({'reminder': dt})
+        .then((value) => print(currentUser.uid))
+        .catchError((error) => print("Failed to update reminder time: $error"));
   }
 }
