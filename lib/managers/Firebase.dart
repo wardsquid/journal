@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'LocalNotificationManager.dart';
@@ -55,6 +56,10 @@ Future<FirebaseMessaging> setUpNotifications() async {
 
   print('User granted permission: ${settings.authorizationStatus}');
   return _messaging;
+}
+FirebaseFunctions getFunction() {
+  final FirebaseFunctions _functions = FirebaseFunctions.instance;
+  return _functions;
 }
 
 FirebaseStorage getStorage() {

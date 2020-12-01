@@ -21,14 +21,7 @@ Future<Map<String, double>> readLabel(File pickedImage) async {
   }
 }
 
-/*
-{
-  food: .90000,
-  pizza: .97773
-}
-*/
-// food 0.9634792384,
-// tyre 0.574532432
+
 String generateText(Map<String, double> labelMap) {
   //create string variable to house all concatenations
   String generatedText = "";
