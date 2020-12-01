@@ -54,12 +54,12 @@ class NotificationPlugin {
     });
   }
 
-  Future<void> showDailyAtTime(TimeOfDay reminderTime) async {
-    print(reminderTime);
-    var now = DateTime.now();
-    var dt = DateTime(
-        7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
-    var time = tz.TZDateTime.from(dt, localLocation);
+  Future<void> showDailyAtTime(DateTime reminderTime) async {
+    print("showDailyAtTime: $reminderTime");
+    // var now = DateTime.now();
+    // var dt = DateTime(
+    //     7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    var time = tz.TZDateTime.from(reminderTime, localLocation);
     print("time $time");
     var androidChannelSpecifics = AndroidNotificationDetails(
         'Channel-1', 'Reminder', 'For custom reminders',

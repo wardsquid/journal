@@ -43,7 +43,6 @@ class _UserProfile extends State<UserProfile> {
                       TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
                 );
                 reminderTime = time;
-                updateUserInfo(reminderTime);
                 isTimeSet = true;
                 print("reminder time set to  " + reminderTime.toString());
                 return DateTimeField.convert(time);
@@ -56,7 +55,8 @@ class _UserProfile extends State<UserProfile> {
             onPressed: () {
               Navigator.pop(context);
               if (isTimeSet) {
-                setNotification(reminderTime);
+                updateReminder(reminderTime);
+                //setNotification(reminderTime);
                 isTimeSet = false;
               }
             },
@@ -166,7 +166,7 @@ class _UserProfile extends State<UserProfile> {
     );
   }
 
-  setNotification(TimeOfDay reminderTime) async {
+  setNotification(DateTime reminderTime) async {
     await notificationPlugin.showDailyAtTime(reminderTime);
   }
 
@@ -174,15 +174,18 @@ class _UserProfile extends State<UserProfile> {
     print('Payload: $payload');
   }
 
-  updateUserInfo(TimeOfDay reminderTime) {
+  updateReminder(TimeOfDay reminderTime) {
     final CollectionReference users = getFireStoreUsersDB();
     var now = DateTime.now();
     var dt = DateTime(
         7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
-    return users
+    users
         .doc(currentUser.uid)
         .update({'reminder': dt})
-        .then((value) => print(currentUser.uid))
+        .then((value) =>
+            print("Updated ${currentUser.displayName}'s reminder to $dt"))
         .catchError((error) => print("Failed to update reminder time: $error"));
+
+    setNotification(dt);
   }
 }
