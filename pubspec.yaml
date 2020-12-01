@@ -1,4 +1,4 @@
-name: journal
+name: inkling
 description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
@@ -43,7 +43,8 @@ dependencies:
   path_provider: ^1.6.11
   http: ^0.12.1
   timezone: ^0.5.9
-  url_launcher: ^5.4.0
+  linkable: ^1.0.4
+  url_launcher: ^5.4.10
 
 dev_dependencies:
   flutter_test:
