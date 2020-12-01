@@ -1,19 +1,23 @@
-//import 'dart:html';
+// dart imports
+import 'dart:io';
+import 'dart:convert';
+import 'dart:core';
 import 'dart:typed_data';
-
-import '../managers/pageView.dart';
+// import dependencies
+import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'dart:convert';
+import 'package:url_launcher/url_launcher.dart';
+// import managers
 import '../managers/Firebase.dart';
+import '../managers/pageView.dart';
+import '../managers/GoogleMLKit.dart';
+// import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:core';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
-//import 'Choose_Login.dart';
 String DateDisplay(DateTime date) {
   const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const List months = [
@@ -51,25 +55,28 @@ class DiaryEntryView extends StatefulWidget {
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
+  String buttonText = "Edit";
+
+  // Controllers
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
-  DocumentSnapshot _currentDoc;
+
   String entryText = "";
   String titleText = "";
-  String buttonText = "Edit";
-  String tempEntryText = "";
-  String tempTitleText = "";
-  File tempImage;
-  Uint8List _downloadImage;
+  File _image;
+  String _bucketUrl = '';
+  // Firebase Related initializations (via managers/Firebase.dart)
   final User _user = checkUserLoginStatus();
   final CollectionReference entries = getFireStoreEntriesDB();
-  File _image;
+  final FirebaseStorage _storage = getStorage();
+  // Future<DocumentSnapshot> _currentDoc;
 
+  //
   Map<String, dynamic> entryInfo = {
     "doc_id": "",
     "title": "",
     "timestamp": "",
-    "content": {"image": "", "text": ""},
+    "content": {"image": false, "text": ""},
   };
   final Uri _emailLaunchUri = Uri(
       scheme: 'mailto',
@@ -82,7 +89,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     _textEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
     if (widget.documentId != "") {
-      _currentDoc = readEntry(widget.documentId) as DocumentSnapshot;
+      // _currentDoc =
+      readEntry(widget.documentId); //as DocumentSnapshot;
     }
   }
 
@@ -92,34 +100,86 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.dispose();
   }
 
-  Future<DocumentSnapshot> readEntry(String documentId) {
-    //if (documentId == null) return null;
+  Future<void> downloadURLImage() async {
+    String setUrl = await _storage
+        .ref("${_user.uid}/${widget.documentId}")
+        .getDownloadURL();
+    setState(() {
+      _bucketUrl = setUrl;
+    });
+    print(_bucketUrl);
+  }
+
+  Future<void> readEntry(String documentId) async {
+    print('called');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
         print('Document data: ${documentSnapshot.data()}');
+        // return documentSnapshot;
       } else {
         print('Document does not exist on the database');
+      }
+      if (documentSnapshot.data()["content"]["image"] == true) {
+        downloadURLImage();
+      } else {
+        _bucketUrl = '';
       }
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
-        // String img64 = documentSnapshot.data()["content"]["image"];
-        // print(img64);
-        // if (img64 != "") {
-        //   _downloadImage = Base64Decoder().convert(img64);
-        // }
+        _isEditingText = false;
         _textEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
-      return documentSnapshot.data();
     });
+  }
+
+  Future<String> getExifFromFile() async {
+    print("called");
+    if (_image == null) {
+      print('none found');
+      return null;
+    }
+
+    Uint8List bytes = await _image.readAsBytes();
+    Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
+    var sb = StringBuffer();
+    print(exifTags.keys.toString());
+    if (exifTags.containsKey('GPS GPSLongitude')) //&&
+    // exifTags.containsKey('GPS GPSLongitude') && )
+    {
+      // final latitudeValue = exifTags['GPS GPSLatitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+      // final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
+
+      // final longitudeValue = exifTags['GPS GPSLongitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+      // final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
+
+      // double latitude = latitudeValue[0]
+      //   + (latitudeValue[1] / 60)
+      //   + (latitudeValue[2] / 3600);
+
+      // double longitude = longitudeValue[0]
+      //   + (longitudeValue[1] / 60)
+      //   + (longitudeValue[2] / 3600);
+
+      // if (latitudeSignal == 'S') latitude = -latitude;
+      // if (longitudeSignal == 'W') longitude = -longitude;
+
+      //     print(exifTag["GPS GPSLongitude"]);
+      //     print(exifTag["GPS GPSLongitude"].runtimeType);
+    }
+    // if (data.containsKey('JPEGThumbnail')) {
+
+    //   exifTags.forEach((k, v) {
+    //     sb.write("$k: $v \n");
+    //   });
+    //   print("here here here here");
+    //   print(sb.toString());
+    //   return sb.toString();
   }
 
   Widget _entryText() {
     if (_isEditingText) {
-      tempEntryText = entryText;
-      tempTitleText = titleText;
-      tempImage = _image;
       return Column(
         children: <Widget>[
           TextField(
@@ -173,86 +233,128 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _getFloatingButton() {
-    // if (_isEditingText == true ||
-    //     _image == null && titleText == "" && entryText == "") {
-    //   return Container();
-    // } else {
-    return FloatingActionButton.extended(
-      onPressed: () => {
-        if (_isEditingText && widget.documentId != "")
-          {
-            setState(() {
-              _isEditingText = false;
-              buttonText = "Edit";
-              titleText = tempTitleText;
-              entryText = tempEntryText;
-              _image = tempImage;
-              _textEditingController = TextEditingController(text: entryText);
-              _titleEditingController = TextEditingController(text: titleText);
-            })
-          }
-        else
-          {
-            MainView.of(context).documentIdReference = "",
-            widget.documentId = "",
-            setState(() {
-              titleText = '';
-              entryText = '';
-              _textEditingController = TextEditingController(text: entryText);
-              _titleEditingController = TextEditingController(text: titleText);
-              _image = null;
-              buttonText = "Edit";
-              _isEditingText = false;
-            })
-          },
-      },
-      label: _isEditingText ? Text("Cancel") : Text("New"),
-      backgroundColor: Colors.pink,
-      icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
-    );
-    // }
+// <<<<<<< HEAD
+    if (_isEditingText == true ||
+        _image == null && titleText == "" && entryText == "") {
+      return Container();
+// =======
+//     // if (_isEditingText == true ||
+//     //     _image == null && titleText == "" && entryText == "") {
+//     //   return Container();
+//     // } else {
+//     return FloatingActionButton.extended(
+//       onPressed: () => {
+//         if (_isEditingText && widget.documentId != "")
+//           {
+//             setState(() {
+//               _isEditingText = false;
+//               buttonText = "Edit";
+//               titleText = tempTitleText;
+//               entryText = tempEntryText;
+//               _image = tempImage;
+//               _textEditingController = TextEditingController(text: entryText);
+//               _titleEditingController = TextEditingController(text: titleText);
+//             })
+//           }
+//         else
+//           {
+//             MainView.of(context).documentIdReference = "",
+//             widget.documentId = "",
+//             setState(() {
+//               titleText = '';
+//               entryText = '';
+//               _textEditingController = TextEditingController(text: entryText);
+//               _titleEditingController = TextEditingController(text: titleText);
+//               _image = null;
+//               buttonText = "Edit";
+//               _isEditingText = false;
+//             })
+//           },
+//       },
+//       label: _isEditingText ? Text("Cancel") : Text("New"),
+//       backgroundColor: Colors.pink,
+//       icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
+//     );
+//     // }
+//   }
+
+//   _addNewEntry() {
+//     String img64;
+//     if (_image != null) {
+//       final bytes = _image.readAsBytesSync();
+//       img64 = base64Encode(bytes);
+// >>>>>>> 2e32b9f4020da84dc377d9572fc0dbdf586fb984
+    } else {
+      return FloatingActionButton.extended(
+        onPressed: () => {
+          MainView.of(context).documentIdReference = "",
+          widget.documentId = "",
+          setState(() {
+            _bucketUrl = '';
+            titleText = '';
+            entryText = '';
+            _textEditingController = TextEditingController(text: entryText);
+            _titleEditingController = TextEditingController(text: titleText);
+            _image = null;
+            entryInfo["doc_id"] = "";
+            _isEditingText = true;
+          })
+        },
+        tooltip: 'Another New Entry',
+        label: Text("New"),
+        backgroundColor: Colors.pink,
+        icon: Icon(Icons.add),
+      );
+    }
   }
 
-  _addNewEntry() {
-    String img64;
-    if (_image != null) {
-      final bytes = _image.readAsBytesSync();
-      img64 = base64Encode(bytes);
-    } else {
-      img64 = "";
-    }
+  Future<void> _addNewEntry() {
     return entries
         .add({
           'user_id': _user.uid,
           'title': titleText,
           'timestamp': DateTime.now(),
-          'content': {'image': img64, 'text': entryText}
+          'content': {
+            'image': (_image != null) ? true : false,
+            'text': entryText
+          }
         })
         .then((value) => {
-              setState(() {
-                titleText = '';
-                entryText = '';
-                _image = null;
-              })
+              if (_image != null)
+                {
+                  _storage
+                      .ref("${_user.uid}/${value.id}")
+                      .putFile(_image)
+                      .then((value) => print("Photo Uploaded Successfully"))
+                      .catchError(
+                          (error) => print("Failed to upload photo: $error"))
+                },
+              print(value.id),
             })
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
-  _overwriteEntry() {
-    String img64;
-    if (_image != null) {
-      final bytes = _image.readAsBytesSync();
-      img64 = base64Encode(bytes);
-    } else {
-      img64 = "";
-    }
+  Future<void> _overwriteEntry() {
     return entries
         .doc(widget.documentId)
         .update({
           'title': titleText,
-          'content': {'image': img64, 'text': entryText}
+          'content': {
+            'image': (_image != null) ? true : false,
+            'text': entryText
+          }
         })
-        .then((value) => print(widget.documentId))
+        .then((value) => {
+              if (_image != null)
+                {
+                  _storage
+                      .ref("${_user.uid}/${widget.documentId}")
+                      .putFile(_image)
+                      .then((value) => print("Photo Uploaded Successfully"))
+                      .catchError(
+                          (error) => print("Failed to upload photo: $error"))
+                }
+            })
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
@@ -267,6 +369,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         _image = File(pickedFile.path);
       });
+      getExifFromFile();
+      Map<String, double> labelMap = await readLabel(_image);
+      print(labelMap.toString());
     }
   }
 
@@ -299,7 +404,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   ? Container(
                       color: Colors.blueGrey,
                       height: 300,
-                      child: _image == null && _downloadImage == null
+                      child: _image == null
                           ? Container(
                               // alignment: Alignment.center,
                               child: Column(
@@ -327,42 +432,33 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             )
                           : Container(
                               alignment: Alignment.center,
-                              child: _image != null
-                                  ? Image.file(
-                                      _image,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.memory(_downloadImage),
-                            ),
+                              child: Image.file(
+                                _image,
+                                fit: BoxFit.cover,
+                              )),
                     )
                   : Container(
                       color: Colors.blueGrey,
                       height: 300,
                       width: double.infinity,
-                      child: _image == null && _downloadImage == null
-                          ? Center(
-                              child: Text(
-                                DateDisplay(widget.activeDate) +
-                                    " " +
-                                    widget.documentId,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    color: Color(0xFFFB8986),
-                                    fontSize: 24.0,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: "Poppins",
-                                    letterSpacing: 1.5),
-                              ),
+                      child: _image == null
+                          ? Container(
+                              alignment: Alignment.center,
+                              child: FadeInImage(
+                                  image: NetworkImage(_bucketUrl),
+                                  placeholder:
+                                      AssetImage("assets/placeholder.png"),
+                                  fit: BoxFit.cover),
                             )
                           : Container(
                               alignment: Alignment.center,
-                              child: _image != null
-                                  ? Image.file(
-                                      _image,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.memory(_downloadImage),
-                            ),
+                              child: //_image != null ?
+                                  Image.file(
+                                _image,
+                                fit: BoxFit.cover,
+                              )
+                              // : Image.memory(_downloadImage),
+                              ),
                     ),
               Align(
                 alignment: FractionalOffset.center,
