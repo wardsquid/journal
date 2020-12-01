@@ -8,6 +8,8 @@ import 'dart:convert';
 import '../managers/Firebase.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:core';
+import 'package:url_launcher/url_launcher.dart';
 
 //import 'Choose_Login.dart';
 String DateDisplay(DateTime date) {
@@ -62,6 +64,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     "timestamp": "",
     "content": {"image": "", "text": ""},
   };
+  final Uri _emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'teamwardsquid@gmail.com',
+      queryParameters: {'subject': 'Report:'});
 
   @override
   void initState() {
@@ -345,7 +351,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               ),
               Align(
                   alignment: FractionalOffset.bottomRight,
-                  child: FlatButton(
+                  child: TextButton(
                     onPressed: () {
                       setState(() {
                         if (_isEditingText) {
@@ -396,6 +402,42 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                               letterSpacing: 1.5),
                         )),
                       ),
+                    ),
+                  )),
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      launch(_emailLaunchUri.toString());
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0),
+                      child: Container(
+                          height: 50.0,
+                          width: 130.0,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color:
+                                  Colors.transparent, // background button color
+                              border: Border.all(
+                                  color: Colors.grey) // all border colors
+                              ),
+                          child: Row(children: <Widget>[
+                            Text(
+                              "Report",
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 17.0,
+                                  fontWeight: FontWeight.w400,
+                                  fontFamily: "Poppins",
+                                  letterSpacing: 1.5),
+                            ),
+                            Icon(
+                              Icons.mail,
+                              color: Colors.grey,
+                              size: 30.0,
+                            ),
+                          ], mainAxisAlignment: MainAxisAlignment.center)),
                     ),
                   ))
             ],
