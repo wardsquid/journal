@@ -127,10 +127,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
+        _isEditingText = false;
         _textEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
-      // return documentSnapshot.data();
     });
   }
 
@@ -179,7 +179,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _entryText() {
-    if (_isEditingText)
+    if (_isEditingText) {
       return Column(
         children: <Widget>[
           TextField(
@@ -200,7 +200,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           )
         ],
       );
-    if (entryText == "" && titleText == "")
+    }
+    if (entryText == "" && titleText == "") {
       return Text(
         "Write an entry",
         style: TextStyle(
@@ -208,6 +209,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           fontSize: 18.0,
         ),
       );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -231,9 +233,57 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _getFloatingButton() {
+// <<<<<<< HEAD
     if (_isEditingText == true ||
         _image == null && titleText == "" && entryText == "") {
       return Container();
+// =======
+//     // if (_isEditingText == true ||
+//     //     _image == null && titleText == "" && entryText == "") {
+//     //   return Container();
+//     // } else {
+//     return FloatingActionButton.extended(
+//       onPressed: () => {
+//         if (_isEditingText && widget.documentId != "")
+//           {
+//             setState(() {
+//               _isEditingText = false;
+//               buttonText = "Edit";
+//               titleText = tempTitleText;
+//               entryText = tempEntryText;
+//               _image = tempImage;
+//               _textEditingController = TextEditingController(text: entryText);
+//               _titleEditingController = TextEditingController(text: titleText);
+//             })
+//           }
+//         else
+//           {
+//             MainView.of(context).documentIdReference = "",
+//             widget.documentId = "",
+//             setState(() {
+//               titleText = '';
+//               entryText = '';
+//               _textEditingController = TextEditingController(text: entryText);
+//               _titleEditingController = TextEditingController(text: titleText);
+//               _image = null;
+//               buttonText = "Edit";
+//               _isEditingText = false;
+//             })
+//           },
+//       },
+//       label: _isEditingText ? Text("Cancel") : Text("New"),
+//       backgroundColor: Colors.pink,
+//       icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
+//     );
+//     // }
+//   }
+
+//   _addNewEntry() {
+//     String img64;
+//     if (_image != null) {
+//       final bytes = _image.readAsBytesSync();
+//       img64 = base64Encode(bytes);
+// >>>>>>> 2e32b9f4020da84dc377d9572fc0dbdf586fb984
     } else {
       return FloatingActionButton.extended(
         onPressed: () => {
@@ -400,27 +450,15 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                       AssetImage("assets/placeholder.png"),
                                   fit: BoxFit.cover),
                             )
-                          // ? Center(
-                          //     child: Text(
-                          //       DateDisplay(widget.activeDate) +
-                          //           " " +
-                          //           widget.documentId,
-                          //       textAlign: TextAlign.center,
-                          //       style: TextStyle(
-                          //           color: Color(0xFFFB8986),
-                          //           fontSize: 24.0,
-                          //           fontWeight: FontWeight.w400,
-                          //           fontFamily: "Poppins",
-                          //           letterSpacing: 1.5),
-                          //     ),
-                          //   )
                           : Container(
                               alignment: Alignment.center,
-                              child: Image.file(
+                              child: //_image != null ?
+                                  Image.file(
                                 _image,
                                 fit: BoxFit.cover,
+                              )
+                              // : Image.memory(_downloadImage),
                               ),
-                            ),
                     ),
               Align(
                 alignment: FractionalOffset.center,
@@ -446,32 +484,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
                     onPressed: () {
-                      setState(() {
-                        if (_isEditingText) {
-                          if (_image == null &&
-                              titleText == "" &&
-                              entryText == "") {
-                          } else if (widget.documentId == "") {
-                            _addNewEntry();
-                          } else {
-                            _overwriteEntry();
-                          }
-                          // save updated text
-                          setState(() {
-                            // entryText = _textEditingController.text;
-                            _isEditingText = false;
-                          });
-
-                          // toggle view mode
+                      if (_isEditingText) {
+                        if (_image == null &&
+                            titleText == "" &&
+                            entryText == "") {
+                        } else if (widget.documentId == "") {
+                          _addNewEntry();
+                        } else {
+                          _overwriteEntry();
+                        }
+                        // toggle view mode
+                        setState(() {
                           buttonText = "Edit";
                           _isEditingText = false;
-                          // print("saved text: " + _textEditingController.text);
-                        } else {
-                          // toggle edit mode
+                        });
+                      } else {
+                        // toggle edit mode
+                        setState(() {
                           buttonText = "Save";
                           _isEditingText = true;
-                        }
-                      });
+                        });
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20.0),

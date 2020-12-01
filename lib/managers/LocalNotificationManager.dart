@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io' show File, Platform;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'Firebase.dart';
 
 class NotificationPlugin {
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
@@ -22,7 +23,6 @@ class NotificationPlugin {
 
     initializePlatformSpecifics();
     tz.initializeTimeZones();
-    var locations = tz.timeZoneDatabase.locations;
     localLocation = tz.getLocation('Asia/Tokyo');
     tz.setLocalLocation(localLocation);
   }
@@ -54,13 +54,15 @@ class NotificationPlugin {
     });
   }
 
-  Future<void> showDailyAtTime(TimeOfDay reminderTime) async {
-    print(reminderTime);
+  Future<void> showDailyAtTime(DateTime reminderTime) async {
+    print("showDailyAtTime: $reminderTime");
+
     var now = DateTime.now();
     var dt = DateTime(
         7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
-    var time = tz.TZDateTime.from(dt, localLocation);
-    print("time $time");
+    var time = tz.TZDateTime.from(reminderTime, localLocation);
+    print("TZ time: $time");
+
     var androidChannelSpecifics = AndroidNotificationDetails(
         'Channel-1', 'Reminder', 'For custom reminders',
         importance: Importance.max,
