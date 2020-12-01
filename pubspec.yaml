@@ -43,6 +43,7 @@ dependencies:
   path_provider: ^1.6.11
   http: ^0.12.1
   timezone: ^0.5.9
+  tflite: ^1.1.1
   linkable: ^1.0.4
   url_launcher: ^5.4.10
   exif: ^1.0.3
@@ -71,6 +72,8 @@ flutter:
     - assets/select_image.png
     - assets/onBoarding1.jpeg
     - assets/Template1/
+    - assets/model.tflite
+    - assets/labels.txt
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

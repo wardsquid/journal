@@ -65,6 +65,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   String entryText = "";
   String titleText = "";
+  String tempTitleText = "";
+  String tempEntryText = "";
   File _image;
   String _bucketUrl = '';
   // Firebase Related initializations (via managers/Firebase.dart)
@@ -74,13 +76,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   final FirebaseFunctions _functions = getFunction();
   // Future<DocumentSnapshot> _currentDoc;
 
-  //
-  Map<String, dynamic> entryInfo = {
-    "doc_id": "",
-    "title": "",
-    "timestamp": "",
-    "content": {"image": false, "text": ""},
-  };
   final Uri _emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'teamwardsquid@gmail.com',
@@ -192,78 +187,51 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _getFloatingButton() {
-    if (_isEditingText == true ||
-        _image == null && titleText == "" && entryText == "") {
-      return Container();
-// =======
-//     // if (_isEditingText == true ||
-//     //     _image == null && titleText == "" && entryText == "") {
-//     //   return Container();
-//     // } else {
-//     return FloatingActionButton.extended(
-//       onPressed: () => {
-//         if (_isEditingText && widget.documentId != "")
-//           {
-//             setState(() {
-//               _isEditingText = false;
-//               buttonText = "Edit";
-//               titleText = tempTitleText;
-//               entryText = tempEntryText;
-//               _image = tempImage;
-//               _textEditingController = TextEditingController(text: entryText);
-//               _titleEditingController = TextEditingController(text: titleText);
-//             })
-//           }
-//         else
-//           {
-//             MainView.of(context).documentIdReference = "",
-//             widget.documentId = "",
-//             setState(() {
-//               titleText = '';
-//               entryText = '';
-//               _textEditingController = TextEditingController(text: entryText);
-//               _titleEditingController = TextEditingController(text: titleText);
-//               _image = null;
-//               buttonText = "Edit";
-//               _isEditingText = false;
-//             })
-//           },
-//       },
-//       label: _isEditingText ? Text("Cancel") : Text("New"),
-//       backgroundColor: Colors.pink,
-//       icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
-//     );
-//     // }
-//   }
-
-//   _addNewEntry() {
-//     String img64;
-//     if (_image != null) {
-//       final bytes = _image.readAsBytesSync();
-//       img64 = base64Encode(bytes);
-// >>>>>>> 2e32b9f4020da84dc377d9572fc0dbdf586fb984
-    } else {
-      return FloatingActionButton.extended(
-        onPressed: () => {
-          MainView.of(context).documentIdReference = "",
-          widget.documentId = "",
-          setState(() {
-            _bucketUrl = '';
-            titleText = '';
-            entryText = '';
-            _textEditingController = TextEditingController(text: entryText);
-            _titleEditingController = TextEditingController(text: titleText);
-            _image = null;
-            entryInfo["doc_id"] = "";
-            _isEditingText = true;
-          })
-        },
-        tooltip: 'Another New Entry',
-        label: Text("New"),
-        backgroundColor: Colors.pink,
-        icon: Icon(Icons.add),
-      );
-    }
+    return FloatingActionButton.extended(
+      onPressed: () => {
+        if (_isEditingText && widget.documentId != "")
+          {
+            setState(() {
+              _isEditingText = false;
+              buttonText = "Edit";
+              titleText = tempTitleText;
+              entryText = tempEntryText;
+              _textEditingController = TextEditingController(text: entryText);
+              _titleEditingController = TextEditingController(text: titleText);
+            })
+          }
+        else if (_isEditingText && widget.documentId == "")
+          {
+            setState(() {
+              titleText = '';
+              entryText = '';
+              _textEditingController = TextEditingController(text: entryText);
+              _titleEditingController = TextEditingController(text: titleText);
+              _image = null;
+              _bucketUrl = "";
+              buttonText = "Edit";
+              _isEditingText = false;
+            })
+          }
+        else
+          {
+            MainView.of(context).documentIdReference = "",
+            widget.documentId = "",
+            setState(() {
+              titleText = '';
+              entryText = '';
+              _textEditingController = TextEditingController(text: entryText);
+              _titleEditingController = TextEditingController(text: titleText);
+              _image = null;
+              buttonText = "Save";
+              _isEditingText = true;
+            })
+          },
+      },
+      label: _isEditingText ? Text("Cancel") : Text("New"),
+      backgroundColor: Colors.pink,
+      icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
+    );
   }
 
   Future<void> _addNewEntry() {
@@ -335,15 +303,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         });
         location = results.data;
       }
+      Map<String, double> labelMap = await readLabel(File(pickedFile.path));
+      String generatedText = generateText(labelMap);
+      print(generatedText);
 
-      // Map<String, double> labelMap = await readLabel(File(pickedFile.path));
-      // print(labelMap.toString());
       setState(() {
         _image = File(pickedFile.path);
         if (location != null) {
-          entryText = "I went to $location ... \n";
+          entryText = "I went to $location ... \n" + generatedText;
         } else {
-          entryText = "";
+          entryText = generatedText;
         }
         _textEditingController = TextEditingController(text: entryText);
       });
@@ -459,6 +428,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
                     onPressed: () {
+                      setState(() {
+                        tempTitleText = titleText;
+                        tempEntryText = entryText;
+                      });
                       if (_isEditingText) {
                         if (_image == null &&
                             titleText == "" &&
