@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'LoginPage.dart';
 import '../managers/SignIn.dart';
 import '../managers/Firebase.dart';
+import '../managers/LocalNotificationManager.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:intl/intl.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -13,6 +17,54 @@ class UserProfile extends StatefulWidget {
 class _UserProfile extends State<UserProfile> {
   User currentUser;
   _UserProfile(this.currentUser);
+  TimeOfDay reminderTime;
+  bool isTimeSet = false;
+
+  @override
+  void initState() {
+    super.initState();
+    notificationPlugin.setOnNotificationClick(onNotificationClick);
+  }
+
+  _openReminderPopup(context) {
+    final format = DateFormat("HH:mm");
+    return Alert(
+        context: context,
+        title: "Set a daily reminder",
+        content: Column(
+          children: <Widget>[
+            DateTimeField(
+              format: format,
+              onShowPicker: (context, currentValue) async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime:
+                      TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
+                );
+                reminderTime = time;
+                isTimeSet = true;
+                print("reminder time set to  " + reminderTime.toString());
+                return DateTimeField.convert(time);
+              },
+            ),
+          ],
+        ),
+        buttons: [
+          DialogButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (isTimeSet) {
+                setNotification(reminderTime);
+                isTimeSet = false;
+              }
+            },
+            child: Text(
+              "Save",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+          )
+        ]).show();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +121,23 @@ class _UserProfile extends State<UserProfile> {
               ),
               SizedBox(height: 40),
               RaisedButton(
+                onPressed: () async {
+                  _openReminderPopup(context);
+                },
+                color: Colors.deepPurple,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Set Reminder',
+                    style: TextStyle(fontSize: 25, color: Colors.white),
+                  ),
+                ),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
+              ),
+              SizedBox(height: 40),
+              RaisedButton(
                 onPressed: () {
                   signOutGoogle();
                   Navigator.of(context).pushAndRemoveUntil(
@@ -87,11 +156,19 @@ class _UserProfile extends State<UserProfile> {
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(40)),
-              )
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  setNotification(TimeOfDay reminderTime) async {
+    await notificationPlugin.showDailyAtTime(reminderTime);
+  }
+
+  onNotificationClick(String payload) {
+    print('Payload: $payload');
   }
 }
