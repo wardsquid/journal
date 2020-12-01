@@ -23,6 +23,7 @@ if (flutterVersionName == null) {
 
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+googleServices {disableVersionCheck = true}
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
@@ -60,5 +61,36 @@ flutter {
 }
 
 dependencies {
+    //api 'com.google.firebase:firebase-ml-vision-label-model:20.0.2'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'com.google.android.gms:play-services-vision-common:19.1.2'
+    implementation 'com.google.android.gms:play-services-vision:20.1.2'
+    implementation 'com.google.android.gms:play-services-vision-image-labeling-internal:16.0.5'
+    api 'com.google.firebase:firebase-ml-vision:24.1.0'
+    api 'com.google.firebase:firebase-ml-vision-image-label-model:20.0.2'
+
+
+/*
+
+
+
+
+
+    api 'com.google.firebase:firebase-ml-vision-face-model:20.0.2'
+    //implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    // implementation 'com.google.mlkit:image-labeling:17.0.0'
+    //implementation 'com.google.android.gms:play-services-mlkit-image-labeling:16.0.0'
+    implementation 'com.google.mlkit:image-labeling:17.0.0'
+    implementation 'com.google.firebase:firebase-config:20.0.0'
+    implementation 'com.google.android.gms:play-services-vision:20.1.2'
+    implementation 'com.google.android.gms:play-services-vision-common:19.1.2'
+    implementation 'com.google.android.gms:play-services-vision-image-label:18.1.0'
+
+
+    //api 'com.google.firebase:firebase-ml-vision-face-model:17.0.2'
+    // api 'com.google.firebase:firebase-ml-vision-image-label-model:19.0.2'
+*/
 }
+  
+

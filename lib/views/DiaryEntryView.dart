@@ -116,37 +116,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
     var sb = StringBuffer();
     print(exifTags.keys.toString());
-    if (exifTags.containsKey('GPS GPSLongitude')) //&& 
-    // exifTags.containsKey('GPS GPSLongitude') && ) 
+    if (exifTags.containsKey('GPS GPSLongitude')) //&&
+    // exifTags.containsKey('GPS GPSLongitude') && )
     {
+      // final latitudeValue = exifTags['GPS GPSLatitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+      // final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
 
-  // final latitudeValue = exifTags['GPS GPSLatitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
-  // final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
+      // final longitudeValue = exifTags['GPS GPSLongitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+      // final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
 
+      // double latitude = latitudeValue[0]
+      //   + (latitudeValue[1] / 60)
+      //   + (latitudeValue[2] / 3600);
 
-  // final longitudeValue = exifTags['GPS GPSLongitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
-  // final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
+      // double longitude = longitudeValue[0]
+      //   + (longitudeValue[1] / 60)
+      //   + (longitudeValue[2] / 3600);
 
-  // double latitude = latitudeValue[0]
-  //   + (latitudeValue[1] / 60)
-  //   + (latitudeValue[2] / 3600);
+      // if (latitudeSignal == 'S') latitude = -latitude;
+      // if (longitudeSignal == 'W') longitude = -longitude;
 
-  // double longitude = longitudeValue[0]
-  //   + (longitudeValue[1] / 60)
-  //   + (longitudeValue[2] / 3600);
-
-  // if (latitudeSignal == 'S') latitude = -latitude;
-  // if (longitudeSignal == 'W') longitude = -longitude;
-
-
-
-
-
-
-
-
-  //     print(exifTag["GPS GPSLongitude"]);
-  //     print(exifTag["GPS GPSLongitude"].runtimeType);
+      //     print(exifTag["GPS GPSLongitude"]);
+      //     print(exifTag["GPS GPSLongitude"].runtimeType);
     }
     // if (data.containsKey('JPEGThumbnail')) {
 
