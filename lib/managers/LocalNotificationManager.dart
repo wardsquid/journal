@@ -1,24 +1,90 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'dart:io' show File, Platform;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+class NotificationPlugin {
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  var initializationSettings;
+  var localLocation;
 
-Future<void> initializationSettingsAndroid() async {
-  var initializationSettingsAndroid =
-      AndroidInitializationSettings('default_icon');
-  var initializationSettingsIOS = IOSInitializationSettings(
+  NotificationPlugin._() {
+    init();
+  }
+
+  init() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    if (Platform.isIOS) {
+      _requestIOSPermission();
+    }
+
+    initializePlatformSpecifics();
+    tz.initializeTimeZones();
+    var locations = tz.timeZoneDatabase.locations;
+    localLocation = tz.getLocation('Asia/Tokyo');
+    tz.setLocalLocation(localLocation);
+  }
+
+  initializePlatformSpecifics() {
+    var initializationSettingsAndroid =
+        AndroidInitializationSettings('default_icon');
+    var initializationSettingsIOS = IOSInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
-      onDidReceiveLocalNotification:
-          (int id, String title, String body, String payload) async {});
-  var initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: (String payload) async {
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
-    }
-  });
+    );
+
+    initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+  }
+
+  _requestIOSPermission() {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        .requestPermissions(alert: true, badge: true, sound: true);
+  }
+
+  setOnNotificationClick(Function onNotificationClick) async {
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      onNotificationClick(payload);
+    });
+  }
+
+  Future<void> showDailyAtTime(TimeOfDay reminderTime) async {
+    print(reminderTime);
+    var now = DateTime.now();
+    var dt = DateTime(
+        7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    var time = tz.TZDateTime.from(dt, localLocation);
+    print("time $time");
+    var androidChannelSpecifics = AndroidNotificationDetails(
+        'Channel-1', 'Reminder', 'For custom reminders',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        largeIcon: DrawableResourceAndroidBitmap('default_icon'),
+        styleInformation: DefaultStyleInformation(true, true));
+
+    var iosChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        android: androidChannelSpecifics, iOS: iosChannelSpecifics);
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        '<b>Dear diary...</b>',
+        "Ready to write today's entry?",
+        time,
+        platformChannelSpecifics,
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: 'Custom reminder');
+  }
 }
+
+NotificationPlugin notificationPlugin = NotificationPlugin._();
