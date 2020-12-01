@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'LocalNotificationManager.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -10,10 +11,27 @@ final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 Future<String> initializeFirebase() async {
   try {
     await Firebase.initializeApp();
+    getReminder();
     return 'done';
   } catch (error) {
     return error;
   }
+}
+
+Future<void> getReminder() async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  var reminderTime;
+
+  users
+      .doc(currentUser.uid)
+      .snapshots()
+      .listen((DocumentSnapshot documentSnapshot) {
+    var data = documentSnapshot.get("reminder");
+    reminderTime = DateTime.parse(data.toDate().toString());
+    print("data from snapshot: $reminderTime");
+    notificationPlugin.showDailyAtTime(reminderTime);
+  }).onError((error) => {print("Error getting reminder: $error")});
 }
 
 User checkUserLoginStatus() {
@@ -48,4 +66,47 @@ CollectionReference getFireStoreEntriesDB() {
   CollectionReference entries =
       FirebaseFirestore.instance.collection('entries');
   return entries;
+}
+
+CollectionReference getFireStoreUsersDB() {
+  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  return users;
+}
+
+Future<void> addUser() async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  users
+      .doc(currentUser.uid)
+      .set({
+        'reminder': null,
+        'friends': [
+          {'name': 'Vic', 'email': 'wow@email.com'},
+          {'name': 'Dustin', 'email': 'cool@email.com'}
+        ],
+        'journals': [
+          {'uid': 'uid1', 'name': "CC15's super secret diary"},
+        ],
+        'entries': ['uid1', 'uid2', 'uid3', 'uid4']
+      })
+      .then((value) => {print("Successfully added user $currentUser")})
+      .catchError((error) => {print("Failed to add user: $error")});
+}
+
+Future<bool> checkUserExists() async {
+  bool exists = false;
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) {
+    if (documentSnapshot.exists) {
+      print('User exists');
+      exists = true;
+    } else {
+      print('User does not exist on the database');
+      exists = false;
+    }
+  }).catchError(
+      (error) => {print('Error occured while checking for user $currentUser')});
+
+  return (exists);
 }

@@ -7,6 +7,8 @@ import '../managers/LocalNotificationManager.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:linkable/linkable.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -54,7 +56,7 @@ class _UserProfile extends State<UserProfile> {
             onPressed: () {
               Navigator.pop(context);
               if (isTimeSet) {
-                setNotification(reminderTime);
+                updateReminder(reminderTime);
                 isTimeSet = false;
               }
             },
@@ -157,6 +159,13 @@ class _UserProfile extends State<UserProfile> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(40)),
               ),
+              SizedBox(height: 150),
+              Linkable(
+                linkColor: Colors.white,
+                textColor: Colors.deepPurple,
+                text:
+                    "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
+              ),
             ],
           ),
         ),
@@ -164,11 +173,26 @@ class _UserProfile extends State<UserProfile> {
     );
   }
 
-  setNotification(TimeOfDay reminderTime) async {
+  setNotification(DateTime reminderTime) async {
     await notificationPlugin.showDailyAtTime(reminderTime);
   }
 
   onNotificationClick(String payload) {
     print('Payload: $payload');
+  }
+
+  updateReminder(TimeOfDay reminderTime) {
+    final CollectionReference users = getFireStoreUsersDB();
+    var now = DateTime.now();
+    var dt = DateTime(
+        7777, now.month, now.day, reminderTime.hour, reminderTime.minute);
+    users
+        .doc(currentUser.uid)
+        .update({'reminder': dt})
+        .then((value) =>
+            print("Updated ${currentUser.displayName}'s reminder to $dt"))
+        .catchError((error) => print("Failed to update reminder time: $error"));
+
+    setNotification(dt);
   }
 }
