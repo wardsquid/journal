@@ -249,6 +249,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               _textEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
+              _bucketUrl = "";
               buttonText = "Edit";
               _isEditingText = false;
             })
