@@ -12,11 +12,13 @@ import 'package:url_launcher/url_launcher.dart';
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
+import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 String DateDisplay(DateTime date) {
   const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -69,6 +71,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   final User _user = checkUserLoginStatus();
   final CollectionReference entries = getFireStoreEntriesDB();
   final FirebaseStorage _storage = getStorage();
+  final FirebaseFunctions _functions = getFunction();
   // Future<DocumentSnapshot> _currentDoc;
 
   //
@@ -132,52 +135,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _titleEditingController = TextEditingController(text: titleText);
       });
     });
-  }
-
-  Future<List<double>> getExifFromFile(File selectedPhoto) async {
-    print("called");
-    if (selectedPhoto == null) {
-      print('none found');
-      return null;
-    }
-    Uint8List bytes = await selectedPhoto.readAsBytes();
-    Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
-    // print(exifTags.keys.toString());
-    // exifTags.forEach((k, v) {
-    //   print("$k: $v \n");
-    // });
-    if (exifTags.containsKey('GPS GPSLongitude') &&
-        exifTags.containsKey('GPS GPSLongitudeRef') &&
-        exifTags.containsKey('GPS GPSLatitude') &&
-        exifTags.containsKey('GPS GPSLatitudeRef')) {
-      final latitudeValue = exifTags['GPS GPSLatitude']
-          .values
-          .map<double>((item) =>
-              (item.numerator.toDouble() / item.denominator.toDouble()))
-          .toList();
-      final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
-
-      final longitudeValue = exifTags['GPS GPSLongitude']
-          .values
-          .map<double>((item) =>
-              (item.numerator.toDouble() / item.denominator.toDouble()))
-          .toList();
-      final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
-
-      double latitude = latitudeValue[0] +
-          (latitudeValue[1] / 60) +
-          (latitudeValue[2] / 3600);
-
-      double longitude = longitudeValue[0] +
-          (longitudeValue[1] / 60) +
-          (longitudeValue[2] / 3600);
-
-      if (latitudeSignal == 'S') latitude = -latitude;
-      if (longitudeSignal == 'W') longitude = -longitude;
-
-      List<double> coordinatesSet = List.from([latitude, longitude]);
-      return coordinatesSet;
-    }
   }
 
   Widget _entryText() {
@@ -367,11 +324,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxHeight: 1800,
     );
     if (pickedFile != null) {
-      getExifFromFile(File(pickedFile.path));
-      Map<String, double> labelMap = await readLabel(File(pickedFile.path));
-      print(labelMap.toString());
+      List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
+      String location;
+      if (_coordinates.toString() != '[]') {
+        final HttpsCallable httpsCallable =
+            _functions.httpsCallable("getLocation");
+        final results = await httpsCallable.call({
+          "lat": _coordinates[0].toString(),
+          "lon": _coordinates[1].toString()
+        });
+        location = results.data;
+      }
+
+      // Map<String, double> labelMap = await readLabel(File(pickedFile.path));
+      // print(labelMap.toString());
       setState(() {
         _image = File(pickedFile.path);
+        if (location != null) {
+          entryText = "I went to $location ... \n";
+        } else {
+          entryText = "";
+        }
+        _textEditingController = TextEditingController(text: entryText);
       });
     }
   }
