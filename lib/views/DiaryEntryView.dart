@@ -339,6 +339,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       getExifFromFile();
       Map<String, double> labelMap = await readLabel(_image);
       print(labelMap.toString());
+      String generatedText = generateText(labelMap);
+      print(generatedText);
+      setState(() {
+        entryText = generatedText;
+        _textEditingController = TextEditingController(text: entryText);
+      });
     }
   }
 

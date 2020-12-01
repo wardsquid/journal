@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
-import '../views/MLDemo.dart';
+import '../views/TFLite.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -48,8 +48,8 @@ class _MainViewState extends State<MainView> {
           // NOT ACTUAL ERRORS
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
-          // MLDemo(),
-          Container(color: Colors.red), //index 2
+          //TFLite() TF ML functions may not need
+          //Container(color: Colors.red), //index 2
         ]);
   }
 }
