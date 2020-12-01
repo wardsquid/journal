@@ -1,4 +1,6 @@
 //import 'dart:html';
+import 'dart:typed_data';
+
 import '../managers/pageView.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,9 +57,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   String entryText = "";
   String titleText = "";
   String buttonText = "Edit";
+  String tempEntryText = "";
+  String tempTitleText = "";
+  File tempImage;
+  Uint8List _downloadImage;
   final User _user = checkUserLoginStatus();
   final CollectionReference entries = getFireStoreEntriesDB();
   File _image;
+
   Map<String, dynamic> entryInfo = {
     "doc_id": "",
     "title": "",
@@ -96,6 +103,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
+        // String img64 = documentSnapshot.data()["content"]["image"];
+        // print(img64);
+        // if (img64 != "") {
+        //   _downloadImage = Base64Decoder().convert(img64);
+        // }
         _textEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
@@ -104,7 +116,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _entryText() {
-    if (_isEditingText)
+    if (_isEditingText) {
+      tempEntryText = entryText;
+      tempTitleText = titleText;
+      tempImage = _image;
       return Column(
         children: <Widget>[
           TextField(
@@ -125,7 +140,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           )
         ],
       );
-    if (entryText == "" && titleText == "")
+    }
+    if (entryText == "" && titleText == "") {
       return Text(
         "Write an entry",
         style: TextStyle(
@@ -133,6 +149,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           fontSize: 18.0,
         ),
       );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -162,21 +179,36 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     // } else {
     return FloatingActionButton.extended(
       onPressed: () => {
-        MainView.of(context).documentIdReference = "",
-        widget.documentId = "",
-        setState(() {
-          titleText = '';
-          entryText = '';
-          _textEditingController = TextEditingController(text: entryText);
-          _titleEditingController = TextEditingController(text: titleText);
-          _image = null;
-          entryInfo["doc_id"] = "";
-        })
+        if (_isEditingText && widget.documentId != "")
+          {
+            setState(() {
+              _isEditingText = false;
+              buttonText = "Edit";
+              titleText = tempTitleText;
+              entryText = tempEntryText;
+              _image = tempImage;
+              _textEditingController = TextEditingController(text: entryText);
+              _titleEditingController = TextEditingController(text: titleText);
+            })
+          }
+        else
+          {
+            MainView.of(context).documentIdReference = "",
+            widget.documentId = "",
+            setState(() {
+              titleText = '';
+              entryText = '';
+              _textEditingController = TextEditingController(text: entryText);
+              _titleEditingController = TextEditingController(text: titleText);
+              _image = null;
+              buttonText = "Edit";
+              _isEditingText = false;
+            })
+          },
       },
-      tooltip: 'Another New Entry',
-      label: Text("New"),
+      label: _isEditingText ? Text("Cancel") : Text("New"),
       backgroundColor: Colors.pink,
-      icon: Icon(Icons.add),
+      icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
     );
     // }
   }
@@ -201,7 +233,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 titleText = '';
                 entryText = '';
                 _image = null;
-                entryInfo["doc_id"] = "";
               })
             })
         .catchError((error) => print("Failed to add entry: $error"));
@@ -268,7 +299,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   ? Container(
                       color: Colors.blueGrey,
                       height: 300,
-                      child: _image == null
+                      child: _image == null && _downloadImage == null
                           ? Container(
                               // alignment: Alignment.center,
                               child: Column(
@@ -296,17 +327,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             )
                           : Container(
                               alignment: Alignment.center,
-                              child: Image.file(
-                                _image,
-                                fit: BoxFit.cover,
-                              ),
+                              child: _image != null
+                                  ? Image.file(
+                                      _image,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.memory(_downloadImage),
                             ),
                     )
                   : Container(
                       color: Colors.blueGrey,
                       height: 300,
                       width: double.infinity,
-                      child: _image == null
+                      child: _image == null && _downloadImage == null
                           ? Center(
                               child: Text(
                                 DateDisplay(widget.activeDate) +
@@ -323,10 +356,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             )
                           : Container(
                               alignment: Alignment.center,
-                              child: Image.file(
-                                _image,
-                                fit: BoxFit.cover,
-                              ),
+                              child: _image != null
+                                  ? Image.file(
+                                      _image,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.memory(_downloadImage),
                             ),
                     ),
               Align(
@@ -353,32 +388,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
                     onPressed: () {
-                      setState(() {
-                        if (_isEditingText) {
-                          if (_image == null &&
-                              titleText == "" &&
-                              entryText == "") {
-                          } else if (widget.documentId == "") {
-                            _addNewEntry();
-                          } else {
-                            _overwriteEntry();
-                          }
-                          // save updated text
-                          setState(() {
-                            // entryText = _textEditingController.text;
-                            _isEditingText = false;
-                          });
-
-                          // toggle view mode
+                      if (_isEditingText) {
+                        if (_image == null &&
+                            titleText == "" &&
+                            entryText == "") {
+                        } else if (widget.documentId == "") {
+                          _addNewEntry();
+                        } else {
+                          _overwriteEntry();
+                        }
+                        // toggle view mode
+                        setState(() {
                           buttonText = "Edit";
                           _isEditingText = false;
-                          // print("saved text: " + _textEditingController.text);
-                        } else {
-                          // toggle edit mode
+                        });
+                      } else {
+                        // toggle edit mode
+                        setState(() {
                           buttonText = "Save";
                           _isEditingText = true;
-                        }
-                      });
+                        });
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 20.0),
