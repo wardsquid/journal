@@ -44,7 +44,7 @@ FirebaseStorage getStorage() {
   return _storage;
 }
 
-CollectionReference getFireStore() {
+CollectionReference getFireStoreEntriesDB() {
   CollectionReference entries =
       FirebaseFirestore.instance.collection('entries');
   return entries;

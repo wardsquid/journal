@@ -9,7 +9,13 @@ class Calendar extends StatefulWidget {
   final String title;
   final PageController tabController;
   DateTime activeDate;
-  Calendar({Key key, this.title, this.tabController, this.activeDate})
+  String documentId;
+  Calendar(
+      {Key key,
+      this.documentId,
+      this.title,
+      this.tabController,
+      this.activeDate})
       : super(key: key);
 
   @override
@@ -25,11 +31,16 @@ class _CalendarState extends State<Calendar> {
   DateTime _selectedDay;
   final User _user = checkUserLoginStatus();
 
-  CollectionReference entries = getFireStore();
+  CollectionReference entries = getFireStoreEntriesDB();
 
-  Future<void> getEntries() {
-    return entries
+  Future<void> getEntries(dateWithMonth) async {
+    Map<DateTime, List> entryParser = {};
+    _entryInfos = [];
+    _entries = {};
+    await entries
         .where('user_id', isEqualTo: _user.uid)
+        .where('timestamp',
+            isGreaterThan: DateTime(dateWithMonth.year, dateWithMonth.month))
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) {
@@ -41,23 +52,39 @@ class _CalendarState extends State<Calendar> {
                 _entryInfos.add(entryInfo);
                 DateTime date = entryInfo["timestamp"].toDate();
                 DateTime formatDate = DateTime(date.year, date.month, date.day);
-                if (_entries.containsKey(formatDate)) {
-                  _entries[formatDate].add(entryInfo["title"]);
+                if (entryParser.containsKey(formatDate)) {
+                  entryParser[formatDate].add(entryInfo["title"]);
                 } else {
-                  _entries[formatDate] = [entryInfo["title"]];
+                  entryParser[formatDate] = [entryInfo["title"]];
                 }
-                print(_entryInfos);
+                //print(_entries);
               })
             });
+    setState(() {
+      _selectedDay = DateTime.now();
+      _entries = entryParser;
+      _selectedEntries = _entryInfos
+          .where((entry) =>
+              (entry["timestamp"].toDate().year == _selectedDay.year &&
+                  entry["timestamp"].toDate().month == _selectedDay.month &&
+                  entry["timestamp"].toDate().day == _selectedDay.day))
+          .toList();
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    getEntries();
-    _selectedEntries = _entries[_selectedDay] ?? [];
-    _calendarController = CalendarController();
     _selectedDay = DateTime.now();
+    _selectedEntries = [];
+    getEntries(_selectedDay);
+    print(_entries);
+    //     .where((entry) =>
+    //         (entry["timestamp"].toDate().year == _selectedDay.year &&
+    //             entry["timestamp"].toDate().month == _selectedDay.month &&
+    //             entry["timestamp"].toDate().day == _selectedDay.day))
+    //     .toList();
+    _calendarController = CalendarController();
   }
 
   @override
@@ -72,11 +99,17 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
+    //print(events);
+    List validEntries = _entryInfos
+        .where((entry) => (entry["timestamp"].toDate().year == day.year &&
+            entry["timestamp"].toDate().month == day.month &&
+            entry["timestamp"].toDate().day == day.day))
+        .toList();
     MainView.of(context).date =
         day; // update all date states to the selected one
     setState(() {
       _selectedDay = day;
-      _selectedEntries = events;
+      _selectedEntries = validEntries;
     });
   }
 
@@ -100,6 +133,12 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
+  void _onVisibleDaysChanged(
+      DateTime first, DateTime last, CalendarFormat format) {
+    print(first.toString());
+    getEntries(first);
+  }
+
   Widget _buildTableCalendar() {
     return TableCalendar(
       calendarController: _calendarController,
@@ -116,6 +155,7 @@ class _CalendarState extends State<Calendar> {
         centerHeaderTitle: true,
       ),
       onDaySelected: _onDaySelected,
+      onVisibleDaysChanged: _onVisibleDaysChanged,
     );
   }
 
@@ -130,15 +170,16 @@ class _CalendarState extends State<Calendar> {
                 margin:
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
-                  title: Text(event.toString()),
+                  title: Text(event["title"].toString()),
                   onTap: () => {
-                    widget.activeDate = _selectedDay,
+                    MainView.of(context).date = _selectedDay,
+                    MainView.of(context).documentIdReference = event['doc_id'],
                     widget.tabController.animateToPage(1,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeIn),
-                    MainView.of(context).date = _selectedDay,
-                    print('$event tapped!, $_selectedDay'),
-                    print(widget.activeDate.toString()),
+                    // print('$event tapped!, $_selectedDay'),
+                    // print(widget.documentId),
+                    // print(widget.activeDate.toString()),
                   },
                 ),
               ))
@@ -146,3 +187,6 @@ class _CalendarState extends State<Calendar> {
     );
   }
 }
+
+// typedef void OnVisibleDaysChanged(
+//     DateTime first, DateTime last, CalendarFormat format);

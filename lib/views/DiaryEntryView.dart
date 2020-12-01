@@ -1,43 +1,46 @@
+//import 'dart:html';
+import '../managers/pageView.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
 import '../managers/Firebase.dart';
-//import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//import 'Choose_Login.dart';
 String DateDisplay(DateTime date) {
-    const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const List months = [
-      null,
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
-    ];
-    String toBeDisplayed = weekday[date.weekday] +
-        ', ' +
-        date.day.toString() +
-        ' ' +
-        months[date.month] +
-        ' ' +
-        date.year.toString();
-    return toBeDisplayed;
-  }
+  const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const List months = [
+    null,
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
+  String toBeDisplayed = weekday[date.weekday] +
+      ', ' +
+      date.day.toString() +
+      ' ' +
+      months[date.month] +
+      ' ' +
+      date.year.toString();
+  return toBeDisplayed;
+}
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
-  DiaryEntryView({this.activeDate});
+  String documentId = "";
+  DiaryEntryView({this.documentId, this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -46,21 +49,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
+  DocumentSnapshot _currentDoc;
   String entryText = "";
   String titleText = "";
   String buttonText = "Edit";
   final User _user = checkUserLoginStatus();
-
+  final CollectionReference entries = getFireStoreEntriesDB();
   File _image;
-
-  CollectionReference entries =
-      FirebaseFirestore.instance.collection('entries');
+  Map<String, dynamic> entryInfo = {
+    "doc_id": "",
+    "title": "",
+    "timestamp": "",
+    "content": {"image": "", "text": ""},
+  };
 
   @override
   void initState() {
     super.initState();
     _textEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
+    if (widget.documentId != "") {
+      _currentDoc = readEntry(widget.documentId) as DocumentSnapshot;
+    }
   }
 
   @override
@@ -69,17 +79,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.dispose();
   }
 
+  Future<DocumentSnapshot> readEntry(String documentId) {
+    //if (documentId == null) return null;
+    entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
+      if (documentSnapshot.exists) {
+        print('Document data: ${documentSnapshot.data()}');
+      } else {
+        print('Document does not exist on the database');
+      }
+      setState(() {
+        titleText = documentSnapshot.data()["title"];
+        entryText = documentSnapshot.data()["content"]["text"];
+        _textEditingController = TextEditingController(text: entryText);
+        _titleEditingController = TextEditingController(text: titleText);
+      });
+      return documentSnapshot.data();
+    });
+  }
+
   Widget _entryText() {
     if (_isEditingText)
       return Column(
         children: <Widget>[
           TextField(
+            controller: _titleEditingController,
             decoration: InputDecoration(hintText: 'Title is...'),
             onChanged: (text) {
               titleText = text;
             },
             autofocus: true,
-            controller: _titleEditingController,
           ),
           TextField(
             decoration: InputDecoration(hintText: 'Dear diary...'),
@@ -103,7 +131,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          "Title: $titleText",
+          titleText,
           style: TextStyle(
             color: Colors.black,
             fontSize: 24.0,
@@ -121,21 +149,33 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
-  Widget _getFAB() {
-    if (_isEditingText == true ||
-        _image == null && titleText == "" && entryText == "") {
-      return Container();
-    } else {
-      return FloatingActionButton(
-        onPressed: _saveEntry,
-        tooltip: 'Save Entry',
-        backgroundColor: Colors.yellow[600],
-        child: Icon(Icons.add),
-      );
-    }
+  Widget _getFloatingButton() {
+    // if (_isEditingText == true ||
+    //     _image == null && titleText == "" && entryText == "") {
+    //   return Container();
+    // } else {
+    return FloatingActionButton.extended(
+      onPressed: () => {
+        MainView.of(context).documentIdReference = "",
+        widget.documentId = "",
+        setState(() {
+          titleText = '';
+          entryText = '';
+          _textEditingController = TextEditingController(text: entryText);
+          _titleEditingController = TextEditingController(text: titleText);
+          _image = null;
+          entryInfo["doc_id"] = "";
+        })
+      },
+      tooltip: 'Another New Entry',
+      label: Text("New"),
+      backgroundColor: Colors.pink,
+      icon: Icon(Icons.add),
+    );
+    // }
   }
 
-  _saveEntry() {
+  _addNewEntry() {
     String img64;
     if (_image != null) {
       final bytes = _image.readAsBytesSync();
@@ -150,11 +190,32 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'timestamp': DateTime.now(),
           'content': {'image': img64, 'text': entryText}
         })
-        .then((value) => setState(() {
-              titleText = '';
-              entryText = '';
-              _image = null;
-            }))
+        .then((value) => {
+              setState(() {
+                titleText = '';
+                entryText = '';
+                _image = null;
+                entryInfo["doc_id"] = "";
+              })
+            })
+        .catchError((error) => print("Failed to add entry: $error"));
+  }
+
+  _overwriteEntry() {
+    String img64;
+    if (_image != null) {
+      final bytes = _image.readAsBytesSync();
+      img64 = base64Encode(bytes);
+    } else {
+      img64 = "";
+    }
+    return entries
+        .doc(widget.documentId)
+        .update({
+          'title': titleText,
+          'content': {'image': img64, 'text': entryText}
+        })
+        .then((value) => print(widget.documentId))
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
@@ -186,36 +247,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
-  // Widget _indicator(bool isActive) {
-  //   return AnimatedContainer(
-  //     duration: Duration(milliseconds: 150),
-  //     margin: EdgeInsets.symmetric(horizontal: 8.0),
-  //     height: 5.0,
-  //     width: isActive ? 24.0 : 16.0,
-  //     decoration: BoxDecoration(
-  //       color: /*isActive ? Color(0xFFFB8986) :*/ Colors.white,
-  //       borderRadius: BorderRadius.all(Radius.circular(12)),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // double _height = MediaQuery.of(context).size.height;
-
-    // var _textH1 = TextStyle(
-    //     fontFamily: "Sofia",
-    //     fontWeight: FontWeight.w600,
-    //     fontSize: 23.0,
-    //     backgroundColor: Colors.blueGrey,
-    //     color: Colors.white); // h1 text color
-
-    // var _textH2 = TextStyle(
-    //     fontFamily: "Sofia",
-    //     fontWeight: FontWeight.w200,
-    //     fontSize: 16.0,
-    //     color: Colors.white); // h2 text color
-
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
@@ -223,7 +256,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           decoration: BoxDecoration(
             color: Colors.white, // background color
           ),
-          child: Column(
+          child: ListView(
             children: <Widget>[
               _isEditingText == true
                   ? Container(
@@ -231,7 +264,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       height: 300,
                       child: _image == null
                           ? Container(
-                            alignment: Alignment.center,
+                              // alignment: Alignment.center,
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: <Widget>[
@@ -270,7 +303,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       child: _image == null
                           ? Center(
                               child: Text(
-                                DateDisplay(widget.activeDate),
+                                DateDisplay(widget.activeDate) +
+                                    " " +
+                                    widget.documentId,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Color(0xFFFB8986),
@@ -305,11 +340,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   ),
                 ),
               ),
-              Align(
-                alignment: FractionalOffset.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 270.0),
-                ),
+              Container(
+                height: 40.0,
               ),
               Align(
                   alignment: FractionalOffset.bottomRight,
@@ -317,9 +349,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     onPressed: () {
                       setState(() {
                         if (_isEditingText) {
+                          if (_image == null &&
+                              titleText == "" &&
+                              entryText == "") {
+                          } else if (widget.documentId == "") {
+                            _addNewEntry();
+                          } else {
+                            _overwriteEntry();
+                          }
                           // save updated text
                           setState(() {
-                            entryText = _textEditingController.text;
+                            // entryText = _textEditingController.text;
                             _isEditingText = false;
                           });
 
@@ -362,7 +402,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ),
         ),
       ),
-      floatingActionButton: _getFAB(),
+      floatingActionButton: _getFloatingButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }

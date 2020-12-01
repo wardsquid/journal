@@ -1,7 +1,10 @@
 // FireBase
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'managers/Firebase.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Local Notifications
+import 'managers/LocalNotificationManager.dart';
 
 // Flutter Material
 import 'package:flutter/material.dart';
@@ -12,7 +15,6 @@ import 'managers/pageView.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await initializeFirebase();
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

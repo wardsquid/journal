@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:journal/views/Diary2.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
@@ -9,15 +8,15 @@ class MainView extends StatefulWidget {
   _MainViewState createState() => _MainViewState();
 
   static _MainViewState of(BuildContext context) =>
-    context.findAncestorStateOfType<_MainViewState>();
+      context.findAncestorStateOfType<_MainViewState>();
 }
-
 
 class _MainViewState extends State<MainView> {
   static PageController _pageController;
   DateTime activeDate = DateTime.now();
-
+  String documentId = "";
   set date(DateTime value) => setState(() => activeDate = value);
+  set documentIdReference(String value) => setState(() => documentId = value);
 
   void initState() {
     super.initState();
@@ -36,15 +35,17 @@ class _MainViewState extends State<MainView> {
         controller: _pageController,
         onPageChanged: (index) {
           print(activeDate);
+          print(documentId);
         },
         children: [
           // NOT ACTUAL ERRORS
           Calendar(
               title: "Diary Calendar",
               tabController: _pageController,
-              activeDate: activeDate), //index 0
+              activeDate: activeDate,
+              documentId: documentId), //index 0
           // NOT ACTUAL ERRORS
-          DiaryEntryView(activeDate: activeDate),
+          DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
           Container(color: Colors.red), //index 2
         ]);
@@ -52,3 +53,4 @@ class _MainViewState extends State<MainView> {
 }
 
 typedef void DateTimeCallback(DateTime val);
+typedef void StringCallback(String val);
