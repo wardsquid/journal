@@ -8,6 +8,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:linkable/linkable.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -157,6 +158,13 @@ class _UserProfile extends State<UserProfile> {
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(40)),
+              ),
+              SizedBox(height: 150),
+              Linkable(
+                linkColor: Colors.white,
+                textColor: Colors.deepPurple,
+                text:
+                    "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
               ),
             ],
           ),
