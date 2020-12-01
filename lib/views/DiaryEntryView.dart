@@ -1,4 +1,6 @@
-//import 'dart:html';
+import 'dart:typed_data';
+
+import 'package:exif/exif.dart';
 import '../managers/pageView.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -95,6 +97,59 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       });
       return documentSnapshot.data();
     });
+  }
+
+  Future<String> getExifFromFile() async {
+    print("called");
+    if (_image == null) {
+      print('none found');
+      return null;
+    }
+
+    Uint8List bytes = await _image.readAsBytes();
+    Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
+    var sb = StringBuffer();
+    print(exifTags.keys.toString());
+    if (exifTags.containsKey('GPS GPSLongitude')) //&& 
+    // exifTags.containsKey('GPS GPSLongitude') && ) 
+    {
+
+  // final latitudeValue = exifTags['GPS GPSLatitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+  // final latitudeSignal = exifTags['GPS GPSLatitudeRef'].printable;
+
+
+  // final longitudeValue = exifTags['GPS GPSLongitude'].values.map<double>( (item) => (item.numerator.toDouble() / item.denominator.toDouble()) ).toList();
+  // final longitudeSignal = exifTags['GPS GPSLongitudeRef'].printable;
+
+  // double latitude = latitudeValue[0]
+  //   + (latitudeValue[1] / 60)
+  //   + (latitudeValue[2] / 3600);
+
+  // double longitude = longitudeValue[0]
+  //   + (longitudeValue[1] / 60)
+  //   + (longitudeValue[2] / 3600);
+
+  // if (latitudeSignal == 'S') latitude = -latitude;
+  // if (longitudeSignal == 'W') longitude = -longitude;
+
+
+
+
+
+
+
+
+  //     print(exifTag["GPS GPSLongitude"]);
+  //     print(exifTag["GPS GPSLongitude"].runtimeType);
+    }
+    // if (data.containsKey('JPEGThumbnail')) {
+
+    //   exifTags.forEach((k, v) {
+    //     sb.write("$k: $v \n");
+    //   });
+    //   print("here here here here");
+    //   print(sb.toString());
+    //   return sb.toString();
   }
 
   Widget _entryText() {
@@ -230,6 +285,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         _image = File(pickedFile.path);
       });
+      getExifFromFile();
     }
   }
 
