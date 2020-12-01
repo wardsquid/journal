@@ -56,7 +56,6 @@ class _UserProfile extends State<UserProfile> {
               Navigator.pop(context);
               if (isTimeSet) {
                 updateReminder(reminderTime);
-                //setNotification(reminderTime);
                 isTimeSet = false;
               }
             },
