@@ -48,7 +48,7 @@ class _MainViewState extends State<MainView> {
           // NOT ACTUAL ERRORS
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
-          MLDemo(),
+          // MLDemo(),
           Container(color: Colors.red), //index 2
         ]);
   }
