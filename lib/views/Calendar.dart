@@ -26,10 +26,10 @@ class _CalendarState extends State<Calendar> {
   Map<DateTime, List> _entries = {};
   List _entryInfos = [];
   List _selectedEntries;
-  AnimationController _animationController;
   CalendarController _calendarController;
   DateTime _selectedDay;
   final User _user = checkUserLoginStatus();
+  int _selectedIndex = 0;
 
   CollectionReference entries = getFireStoreEntriesDB();
 
@@ -89,7 +89,6 @@ class _CalendarState extends State<Calendar> {
 
   @override
   void dispose() {
-    _animationController.dispose();
     _calendarController.dispose();
     super.dispose();
   }
@@ -113,6 +112,12 @@ class _CalendarState extends State<Calendar> {
     });
   }
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +134,25 @@ class _CalendarState extends State<Calendar> {
         onPressed: _makeEntry,
         tooltip: 'New Entry',
         child: Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business),
+            label: 'Business',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'School',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
       ),
     );
   }
