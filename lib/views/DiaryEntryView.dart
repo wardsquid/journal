@@ -145,6 +145,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             autofocus: true,
           ),
           TextField(
+            maxLines: null,
             decoration: InputDecoration(hintText: 'Dear diary...'),
             onChanged: (text) {
               entryText = text;
