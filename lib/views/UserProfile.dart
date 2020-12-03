@@ -233,146 +233,9 @@ class _UserProfile extends State<UserProfile> {
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        return AlertDialog(
-                          actions: <Widget>[
-                            FlatButton(
-                              child: Text(
-                                'Close',
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            )
-                          ],
-                          content: Stack(
-                            clipBehavior: Clip.none,
-                            children: <Widget>[
-                              // Container(
-                              //   height: 150,
-                              //   width: 200,
-                              //   child: ListView.builder(
-                              //     itemCount: friends.length,
-                              //     itemBuilder:
-                              //         (BuildContext buildContext, int index) =>
-                              //             ListTile(
-                              //       title: Text(
-                              //           "${friends[index]["name"]}: \n ${friends[index]["email"]}"),
-                              //     ),
-                              //     shrinkWrap: true,
-                              //   ),
-                              // ),
-                              // Padding(
-                              //   padding: const EdgeInsets.all(8.0),
-                              //   child: RaisedButton(
-                              //     child: Text("Add"),
-                              //     onPressed: () {
-                              //       if (_formKey.currentState.validate()) {
-                              //         _formKey.currentState.save();
-                              //       }
-                              //     },
-                              //   ),
-                              // ),
-                              Form(
-                                key: _formKey,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Text(
-                                      "FRIEND'S INFO:",
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black54),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: TextFormField(
-                                        controller: _emailController,
-                                        onSaved: (String value) {
-                                          setState(() {
-                                            _name = value;
-                                          });
-                                          _emailController.clear();
-                                        },
-                                        decoration: InputDecoration(
-                                          hintText: "Name",
-                                          suffixIcon: IconButton(
-                                            onPressed: () =>
-                                                _emailController.clear(),
-                                            icon: Icon(Icons.clear),
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value.isEmpty) {
-                                            return 'Please enter some text';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: TextFormField(
-                                        controller: _nameController,
-                                        onChanged: (text) {},
-                                        onSaved: (String value) {
-                                          setState(() {
-                                            _email = value;
-                                          });
-                                          _addFriend();
-                                          _getNewFriends();
-                                          _nameController.clear();
-                                        },
-                                        decoration: InputDecoration(
-                                          hintText: "Email Address",
-                                          suffixIcon: IconButton(
-                                            onPressed: () =>
-                                                _nameController.clear(),
-                                            icon: Icon(Icons.clear),
-                                          ),
-                                        ),
-                                        validator: (value) {
-                                          if (value.isEmpty) {
-                                            return 'Please enter some text';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: RaisedButton(
-                                        child: Text("Add"),
-                                        onPressed: () {
-                                          if (_formKey.currentState
-                                              .validate()) {
-                                            _formKey.currentState.save();
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    Container(
-                                      height: 150,
-                                      width: 200,
-                                      child: ListView.builder(
-                                        itemCount: friends.length,
-                                        itemBuilder: (BuildContext buildContext,
-                                                int index) =>
-                                            ListTile(
-                                          title: Text(
-                                              "${friends[index]["name"]}: \n ${friends[index]["email"]}"),
-                                        ),
-                                        shrinkWrap: true,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      });
+                        return _buildFriendsList();
+                      },
+                      barrierDismissible: false);
                 },
               ),
               SizedBox(height: 80),
@@ -385,6 +248,160 @@ class _UserProfile extends State<UserProfile> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFriendsList() {
+    return AlertDialog(
+      title: Text("Your Friends List"),
+      content: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                height: 350,
+                width: 300,
+                child: ListView.builder(
+                  itemCount: friends.length,
+                  itemBuilder: (BuildContext buildContext, int index) =>
+                      ListTile(
+                    title: Text(
+                        "${friends[index]["name"]} \n ${friends[index]["email"]}"),
+                  ),
+                  shrinkWrap: true,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text("Add"),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return _buildAddFriendForm();
+                      },
+                      barrierDismissible: false,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Close',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
+  }
+
+  Widget _buildAddFriendForm() {
+    return AlertDialog(
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Close',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+      content: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  "FRIEND'S INFO:",
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    controller: _emailController,
+                    onSaved: (String value) {
+                      setState(() {
+                        _name = value;
+                      });
+                      _emailController.clear();
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Name",
+                      suffixIcon: IconButton(
+                        onPressed: () => _emailController.clear(),
+                        icon: Icon(Icons.clear),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    controller: _nameController,
+                    onChanged: (text) {},
+                    onSaved: (String value) {
+                      setState(() {
+                        _email = value;
+                      });
+                      _addFriend();
+                      _nameController.clear();
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Email Address",
+                      suffixIcon: IconButton(
+                        onPressed: () => _nameController.clear(),
+                        icon: Icon(Icons.clear),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton(
+                    child: Text("Add"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
