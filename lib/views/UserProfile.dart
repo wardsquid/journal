@@ -254,7 +254,8 @@ class _UserProfile extends State<UserProfile> {
 
   Widget _buildFriendsList() {
     return AlertDialog(
-      title: Text("Your Friends List"),
+      contentPadding: EdgeInsets.all(0.0),
+      title: Text("Your Friends:"),
       content: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
@@ -309,17 +310,7 @@ class _UserProfile extends State<UserProfile> {
 
   Widget _buildAddFriendForm() {
     return AlertDialog(
-      actions: <Widget>[
-        FlatButton(
-          child: Text(
-            'Close',
-            style: TextStyle(fontSize: 15),
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        )
-      ],
+      contentPadding: EdgeInsets.all(0.0),
       content: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
@@ -328,13 +319,6 @@ class _UserProfile extends State<UserProfile> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(
-                  "FRIEND'S INFO:",
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black54),
-                ),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextFormField(
@@ -390,7 +374,7 @@ class _UserProfile extends State<UserProfile> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: RaisedButton(
-                    child: Text("Add"),
+                    child: Text("Send Request"),
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
@@ -403,6 +387,17 @@ class _UserProfile extends State<UserProfile> {
           ),
         ],
       ),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Close',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
     );
   }
 
