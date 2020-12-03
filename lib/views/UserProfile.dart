@@ -22,11 +22,30 @@ class _UserProfile extends State<UserProfile> {
   TimeOfDay reminderTime;
   bool isTimeSet = false;
   final _formKey = GlobalKey<FormState>();
+  var _emailController = TextEditingController();
+  var _nameController = TextEditingController();
+  final CollectionReference users = getFireStoreUsersDB();
+  final User _user = checkUserLoginStatus();
+  String _email = "";
+  String _name = "";
+  List<dynamic> friends = [];
 
   @override
   void initState() {
     super.initState();
     notificationPlugin.setOnNotificationClick(onNotificationClick);
+    _getNewFriends();
+  }
+
+  Future<void> _getNewFriends() async {
+    await users
+        .doc(_user.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) => {
+              setState(() {
+                friends = documentSnapshot.data()["friends"];
+              })
+            });
   }
 
   _openReminderPopup(context) {
@@ -67,6 +86,42 @@ class _UserProfile extends State<UserProfile> {
             ),
           )
         ]).show();
+  }
+
+  Future<void> _addFriend() async {
+    Map<String, dynamic> friend = {'name': _name, 'email': _email};
+    bool yourVariableName = await checkFriendEmail(_email);
+    print("friends exist = $yourVariableName");
+    if (yourVariableName) {
+      return users.doc(_user.uid).update({
+        'friends': FieldValue.arrayUnion([friend])
+      }).then((value) => {});
+    } else {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('The Email address does not exist.'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Please input correctly.'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -163,34 +218,68 @@ class _UserProfile extends State<UserProfile> {
               ),
               SizedBox(height: 40),
               RaisedButton(
+                color: Colors.deepPurple,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Friends',
+                    style: TextStyle(fontSize: 25, color: Colors.white),
+                  ),
+                ),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
                 onPressed: () {
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Text(
+                                'Close',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            )
+                          ],
                           content: Stack(
                             clipBehavior: Clip.none,
                             children: <Widget>[
-                              Positioned(
-                                right: -40.0,
-                                top: -40.0,
-                                child: InkResponse(
-                                  onTap: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: CircleAvatar(
-                                    child: Icon(Icons.close),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                ),
-                              ),
+                              // Container(
+                              //   height: 150,
+                              //   width: 200,
+                              //   child: ListView.builder(
+                              //     itemCount: friends.length,
+                              //     itemBuilder:
+                              //         (BuildContext buildContext, int index) =>
+                              //             ListTile(
+                              //       title: Text(
+                              //           "${friends[index]["name"]}: \n ${friends[index]["email"]}"),
+                              //     ),
+                              //     shrinkWrap: true,
+                              //   ),
+                              // ),
+                              // Padding(
+                              //   padding: const EdgeInsets.all(8.0),
+                              //   child: RaisedButton(
+                              //     child: Text("Add"),
+                              //     onPressed: () {
+                              //       if (_formKey.currentState.validate()) {
+                              //         _formKey.currentState.save();
+                              //       }
+                              //     },
+                              //   ),
+                              // ),
                               Form(
                                 key: _formKey,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
                                     Text(
-                                      'EMAIL ADDRESS:',
+                                      "FRIEND'S INFO:",
                                       style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
@@ -199,9 +288,50 @@ class _UserProfile extends State<UserProfile> {
                                     Padding(
                                       padding: EdgeInsets.all(8.0),
                                       child: TextFormField(
+                                        controller: _emailController,
                                         onSaved: (String value) {
-                                          print(value);
+                                          setState(() {
+                                            _name = value;
+                                          });
+                                          _emailController.clear();
                                         },
+                                        decoration: InputDecoration(
+                                          hintText: "Name",
+                                          suffixIcon: IconButton(
+                                            onPressed: () =>
+                                                _emailController.clear(),
+                                            icon: Icon(Icons.clear),
+                                          ),
+                                        ),
+                                        validator: (value) {
+                                          if (value.isEmpty) {
+                                            return 'Please enter some text';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: TextFormField(
+                                        controller: _nameController,
+                                        onChanged: (text) {},
+                                        onSaved: (String value) {
+                                          setState(() {
+                                            _email = value;
+                                          });
+                                          _addFriend();
+                                          _getNewFriends();
+                                          _nameController.clear();
+                                        },
+                                        decoration: InputDecoration(
+                                          hintText: "Email Address",
+                                          suffixIcon: IconButton(
+                                            onPressed: () =>
+                                                _nameController.clear(),
+                                            icon: Icon(Icons.clear),
+                                          ),
+                                        ),
                                         validator: (value) {
                                           if (value.isEmpty) {
                                             return 'Please enter some text';
@@ -213,7 +343,7 @@ class _UserProfile extends State<UserProfile> {
                                     Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: RaisedButton(
-                                        child: Text("Send"),
+                                        child: Text("Add"),
                                         onPressed: () {
                                           if (_formKey.currentState
                                               .validate()) {
@@ -221,7 +351,21 @@ class _UserProfile extends State<UserProfile> {
                                           }
                                         },
                                       ),
-                                    )
+                                    ),
+                                    Container(
+                                      height: 150,
+                                      width: 200,
+                                      child: ListView.builder(
+                                        itemCount: friends.length,
+                                        itemBuilder: (BuildContext buildContext,
+                                                int index) =>
+                                            ListTile(
+                                          title: Text(
+                                              "${friends[index]["name"]}: \n ${friends[index]["email"]}"),
+                                        ),
+                                        shrinkWrap: true,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -230,17 +374,6 @@ class _UserProfile extends State<UserProfile> {
                         );
                       });
                 },
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Add Friend',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
-                  ),
-                ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
               ),
               SizedBox(height: 80),
               Linkable(
