@@ -306,7 +306,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       }
       Map<String, double> labelMap = await readLabel(File(pickedFile.path));
       String generatedText = generateText(labelMap);
-      print(generatedText);
+
+      // print(generatedText);
 
       setState(() {
         _image = File(pickedFile.path);
