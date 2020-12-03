@@ -26,6 +26,7 @@ Future<void> getSpotifyAuth() async {
       scope:
           "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
   print("Auth token retrieved: $_authenticationToken");
+  await loadSpotifyTrack();
   return _authenticationToken;
 }
 
@@ -61,7 +62,7 @@ Future<void> loadSpotifyTrack() async {
     print("href: ${_currentTrack.href}");
     print("imageUrl: ${_currentTrack.imageUrl}");
   } else {
-    throw Exception('Failed to fetch track');
+    print('Failed to load track');
   }
 }
 
