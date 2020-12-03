@@ -57,6 +57,7 @@ Future<FirebaseMessaging> setUpNotifications() async {
   print('User granted permission: ${settings.authorizationStatus}');
   return _messaging;
 }
+
 FirebaseFunctions getFunction() {
   final FirebaseFunctions _functions = FirebaseFunctions.instance;
   return _functions;
@@ -115,3 +116,17 @@ Future<bool> checkUserExists() async {
 
   return (exists);
 }
+
+dynamic checkFriendEmail(String email) async {
+  final HttpsCallable httpsCallable =
+      FirebaseFunctions.instance.httpsCallable("checkFriendEmail");
+  final results =
+      await httpsCallable.call({"email": email});
+  return results.data;
+}
+
+/*
+  How to use checkFriendEmail
+  bool your_variable_name = await checkFriendEmail("insert email string here");
+  print("friends exist = ${your_variable_name}");
+*/
