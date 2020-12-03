@@ -95,7 +95,26 @@ class _UserProfile extends State<UserProfile> {
     if (yourVariableName) {
       return users.doc(_user.uid).update({
         'friends': FieldValue.arrayUnion([friend])
-      }).then((value) => {});
+      }).then((value) => {
+            _getNewFriends(),
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Successfully Added!'),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('Close'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            )
+          });
     } else {
       return showDialog<void>(
         context: context,
@@ -374,7 +393,7 @@ class _UserProfile extends State<UserProfile> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: RaisedButton(
-                    child: Text("Send Request"),
+                    child: Text("Add"),
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
@@ -394,6 +413,7 @@ class _UserProfile extends State<UserProfile> {
             style: TextStyle(fontSize: 15),
           ),
           onPressed: () {
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
           },
         )
