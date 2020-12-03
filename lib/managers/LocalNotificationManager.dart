@@ -29,7 +29,7 @@ class NotificationPlugin {
 
   initializePlatformSpecifics() {
     var initializationSettingsAndroid =
-        AndroidInitializationSettings('default_icon');
+        AndroidInitializationSettings('app_icon');
     var initializationSettingsIOS = IOSInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -69,7 +69,7 @@ class NotificationPlugin {
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
-        largeIcon: DrawableResourceAndroidBitmap('default_icon'),
+        largeIcon: DrawableResourceAndroidBitmap('app_icon'),
         styleInformation: DefaultStyleInformation(true, true));
 
     var iosChannelSpecifics = IOSNotificationDetails();
