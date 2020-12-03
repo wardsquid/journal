@@ -196,6 +196,7 @@ class _CalendarState extends State<Calendar> {
                 child: ListTile(
                   title: Text(event["title"].toString()),
                   onTap: () => {
+                    //mainview.of(context).cloudtags  =
                     MainView.of(context).date = _selectedDay,
                     MainView.of(context).documentIdReference = event['doc_id'],
                     widget.tabController.animateToPage(1,
