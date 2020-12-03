@@ -11,13 +11,7 @@ import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
 
 // Spotify
-import 'package:spotify_sdk/models/connection_status.dart';
-import 'package:spotify_sdk/models/crossfade_state.dart';
-import 'package:spotify_sdk/models/image_uri.dart';
-import 'package:spotify_sdk/models/player_context.dart';
-import 'package:spotify_sdk/models/player_state.dart';
-import 'package:spotify_sdk/spotify_sdk.dart';
-
+import 'managers/Spotify.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -26,7 +20,7 @@ void main() async {
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await DotEnv().load('.env');
-  print(DotEnv().env['CLIENT_ID']);
+  await initializeSpotify();
   runApp(MyApp());
 }
 
