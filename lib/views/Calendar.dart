@@ -33,7 +33,7 @@ class _CalendarState extends State<Calendar> {
 
   CollectionReference entries = getFireStoreEntriesDB();
 
-  Future<void> getEntries(dateWithMonth) async {
+  Future<void> getCalendarEntries(dateWithMonth) async {
     Map<DateTime, List> entryParser = {};
     _entryInfos = [];
     _entries = {};
@@ -77,13 +77,8 @@ class _CalendarState extends State<Calendar> {
     super.initState();
     _selectedDay = DateTime.now();
     _selectedEntries = [];
-    getEntries(_selectedDay);
+    getCalendarEntries(_selectedDay);
     print(_entries);
-    //     .where((entry) =>
-    //         (entry["timestamp"].toDate().year == _selectedDay.year &&
-    //             entry["timestamp"].toDate().month == _selectedDay.month &&
-    //             entry["timestamp"].toDate().day == _selectedDay.day))
-    //     .toList();
     _calendarController = CalendarController();
   }
 
@@ -98,7 +93,6 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
-    //print(events);
     List validEntries = _entryInfos
         .where((entry) => (entry["timestamp"].toDate().year == day.year &&
             entry["timestamp"].toDate().month == day.month &&
@@ -160,7 +154,7 @@ class _CalendarState extends State<Calendar> {
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
     print(first.toString());
-    getEntries(first);
+    getCalendarEntries(first);
   }
 
   Widget _buildTableCalendar() {
@@ -198,12 +192,9 @@ class _CalendarState extends State<Calendar> {
                   onTap: () => {
                     MainView.of(context).date = _selectedDay,
                     MainView.of(context).documentIdReference = event['doc_id'],
-                    widget.tabController.animateToPage(1,
+                    widget.tabController.animateToPage(2,
                         duration: Duration(milliseconds: 300),
                         curve: Curves.easeIn),
-                    // print('$event tapped!, $_selectedDay'),
-                    // print(widget.documentId),
-                    // print(widget.activeDate.toString()),
                   },
                 ),
               ))
@@ -211,6 +202,3 @@ class _CalendarState extends State<Calendar> {
     );
   }
 }
-
-// typedef void OnVisibleDaysChanged(
-//     DateTime first, DateTime last, CalendarFormat format);

@@ -1,16 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../managers/Firebase.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
-// String name;
-// String email;
-// String imageUrl;
+
 
 Future<User> signInWithGoogle() async {
-//  await Firebase.initializeApp();
 
   final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
   final GoogleSignInAuthentication googleSignInAuthentication =
@@ -32,18 +28,9 @@ Future<User> signInWithGoogle() async {
     assert(user.displayName != null);
     assert(user.photoURL != null);
 
-    // name = user.displayName;
-    // email = user.email;
-    // imageUrl = user.photoURL;
-    //
-    // if (name.contains(" ")) {
-    //   name = name.substring(0, name.indexOf(" "));
-    // }
-
+   
     final User currentUser = _auth.currentUser;
     assert(user.uid == currentUser.uid);
-
-    //print('signInWithGoogle succeeded: $user');
 
     // Check if user already exists in FireStore
     bool userExists = await checkUserExists();
