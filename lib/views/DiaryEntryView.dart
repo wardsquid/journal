@@ -14,6 +14,7 @@ import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
 import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
+import '../managers/Spotify.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -334,6 +335,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+  // Spotify
+  Widget _getSpotifyTrack() {
+    return RaisedButton(
+        child: Text("Today's track"),
+        color: Colors.greenAccent,
+        onPressed: () => {
+              //playerStateWidget()
+              //getCurrentTrack()
+              //getPlayerState(),
+              fetchTrack()
+            });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -425,6 +439,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               Container(
                 height: 40.0,
               ),
+              if (_isEditingText) Container(child: _getSpotifyTrack()),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(

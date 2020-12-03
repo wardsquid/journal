@@ -20,7 +20,7 @@ void main() async {
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await DotEnv().load('.env');
-  await initializeSpotify();
+  await getSpotifyAuth();
   runApp(MyApp());
 }
 
