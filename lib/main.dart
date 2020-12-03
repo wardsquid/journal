@@ -21,6 +21,7 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await DotEnv().load('.env');
   await getSpotifyAuth();
+  await loadSpotifyTrack();
   runApp(MyApp());
 }
 

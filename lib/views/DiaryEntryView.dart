@@ -60,6 +60,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
+  CurrentTrack currentTrack;
+
   // Controllers
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
@@ -91,6 +93,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
     }
+
+    // Spotify
+    setState(() {
+      currentTrack = fetchSpotifyTrack();
+    });
+    _updateCurrentTrack();
+    // Spotify
   }
 
   @override
@@ -337,17 +346,25 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   // Spotify
-  Widget _getSpotifyTrack() {
-    return RaisedButton(
-        child: Text("Today's track"),
-        color: Colors.greenAccent,
-        onPressed: () => {
-              //playerStateWidget()
-              //getCurrentTrack()
-              //getPlayerState(),
-              fetchTrack()
-            });
+  _updateCurrentTrack() async {
+    await loadSpotifyTrack();
+    setState(() {
+      currentTrack = fetchSpotifyTrack();
+    });
   }
+
+  // Widget _getSpotifyTrack() {
+  //   return RaisedButton(
+  //       child: Text("Today's track"),
+  //       color: Colors.greenAccent,
+  //       onPressed: () => {
+  //             setState(() async {
+  //               currentTrack = await fetchSpotifyTrack();
+  //             })
+  //           });
+  // }
+
+  // Spotify
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +457,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               Container(
                 height: 40.0,
               ),
-              if (_isEditingText) Container(child: _getSpotifyTrack()),
+              Row(children: <Widget>[
+                currentTrack == null
+                    ? Text("No Spotify info available")
+                    : Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Image.network(currentTrack.imageUrl,
+                            width: 70, height: 70),
+                      ),
+                Text(
+                    "Most recent track: ${currentTrack.artist}: ${currentTrack.track}"),
+              ]),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
