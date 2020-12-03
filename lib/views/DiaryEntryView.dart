@@ -465,8 +465,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         child: Image.network(currentTrack.imageUrl,
                             width: 70, height: 70),
                       ),
-                Text(
-                    "Most recent track: ${currentTrack.artist}: ${currentTrack.track}"),
+                Padding(
+                  padding: EdgeInsets.all(16.0),
+                  // TODO: will fix this weird formatting later
+                  child: Text('''Recently played:
+${currentTrack.artist}: 
+${currentTrack.track}'''),
+                )
               ]),
               Align(
                   alignment: FractionalOffset.bottomRight,
