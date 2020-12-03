@@ -1,8 +1,10 @@
+// import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
-import '../views/TFLite.dart';
+import '../views/timeline/TimeLineView.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -21,7 +23,7 @@ class _MainViewState extends State<MainView> {
 
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: 2);
   }
 
   @override
@@ -39,17 +41,15 @@ class _MainViewState extends State<MainView> {
           print(documentId);
         },
         children: [
-          // NOT ACTUAL ERRORS
+          TimeLineView(),
           Calendar(
               title: "Diary Calendar",
               tabController: _pageController,
               activeDate: activeDate,
               documentId: documentId), //index 0
-          // NOT ACTUAL ERRORS
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
           //TFLite() TF ML functions may not need
-          //Container(color: Colors.red), //index 2
         ]);
   }
 }
