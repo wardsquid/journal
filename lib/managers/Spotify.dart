@@ -55,8 +55,9 @@ class RecentTrack {
   final String track;
   final String url;
   final String href;
+  String imageUrl;
 
-  RecentTrack({this.artist, this.track, this.url, this.href});
+  RecentTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
 
   factory RecentTrack.fromJson(Map<String, dynamic> json) {
     return RecentTrack(
@@ -64,6 +65,21 @@ class RecentTrack {
         track: json['items'][0]['track']['name'],
         url: json['items'][0]['track']['external_urls']['spotify'],
         href: json['items'][0]['track']['href']);
+  }
+
+  void getImage() async {
+    Map<String, dynamic> json;
+
+    final response = await http.get(this.href,
+        headers: {'Authorization': 'Bearer ' + _authenticationToken});
+
+    if (response.statusCode == 200) {
+      print("Track ID found");
+      json = jsonDecode(response.body);
+      this.imageUrl = json['album']['images'][0]['url'];
+    } else {
+      print('Track ID not found');
+    }
   }
 }
 
@@ -94,10 +110,13 @@ Future<void> loadRecentSpotifyTrack() async {
   if (response.statusCode == 200) {
     print("Most recent track found");
     _currentTrack = RecentTrack.fromJson(jsonDecode(response.body));
+    await _currentTrack.getImage();
+
     print("artist: ${_currentTrack.artist}");
     print("track: ${_currentTrack.track}");
     print("url: ${_currentTrack.url}");
     print("href: ${_currentTrack.href}");
+    print("imageUrl: ${_currentTrack.imageUrl}");
   } else {
     print('Failed to fetch recent track');
   }
