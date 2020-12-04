@@ -86,7 +86,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String lastWords = "";
-  List<String> tempWords = [];
+  // List<String> tempWords = [];
   String lastError = "";
   String lastStatus = "";
   String _currentLocaleId = "";
@@ -134,22 +134,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   void startListening() {
     if (lastWords != "") {
-      tempWords.add("\n" + lastWords);
+      entryText += " " + lastWords;
     }
     lastWords = "";
     lastError = "";
     speech.listen(
         onResult: resultListener,
-        listenFor: Duration(seconds: 10),
+        listenFor: Duration(seconds: 60),
         localeId: _currentLocaleId,
         onSoundLevelChange: soundLevelListener,
         cancelOnError: true,
         listenMode: ListenMode.confirmation);
-    setState(() {
-      // tempWords.add("\n" + "lastWords");
-      // _textEditingController =
-      //     TextEditingController(text: entryText + tempWords.join(""));
-    });
+    setState(() {});
   }
 
   void stopListening() {
@@ -169,8 +165,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = result.recognizedWords;
-      _textEditingController = TextEditingController(
-          text: entryText + tempWords.join("") + lastWords);
+      _textEditingController =
+          TextEditingController(text: entryText + " " + lastWords);
     });
   }
 
@@ -257,7 +253,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       spreadRadius: level * 1.5,
                       color: Colors.blue.withOpacity(.3))
                 ],
-                color: Colors.blue,
+                color: !_hasSpeech || speech.isListening
+                    ? Colors.blue
+                    : Colors.grey,
                 borderRadius: BorderRadius.all(Radius.circular(50)),
               ),
               child: IconButton(
@@ -584,7 +582,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         setState(() {
                           buttonText = "Edit";
                           _isEditingText = false;
-                          tempWords = [];
+                          // tempWords = [];
                         });
                       } else {
                         // toggle edit mode
