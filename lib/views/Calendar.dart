@@ -4,6 +4,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../managers/DateToHuman.dart';
 
 class Calendar extends StatefulWidget {
   final String title;
@@ -40,7 +41,8 @@ class _CalendarState extends State<Calendar> {
     await entries
         .where('user_id', isEqualTo: _user.uid)
         .where('timestamp',
-            isGreaterThan: DateTime(dateWithMonth.year, dateWithMonth.month))
+            isGreaterThanOrEqualTo:
+                DateTime(dateWithMonth.year, dateWithMonth.month))
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) {
@@ -151,54 +153,74 @@ class _CalendarState extends State<Calendar> {
     );
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// When the calendar active month is changed (swipe)
+///////////////////////////////////////////////////////////////////////
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
     print(first.toString());
     getCalendarEntries(first);
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// Builds the calendar table
+///////////////////////////////////////////////////////////////////////
   Widget _buildTableCalendar() {
-    return TableCalendar(
-      calendarController: _calendarController,
-      events: _entries,
-      startingDayOfWeek: StartingDayOfWeek.monday,
-      calendarStyle: CalendarStyle(
-        selectedColor: Colors.deepOrange[400],
-        todayColor: Colors.deepOrange[200],
-        markersColor: Colors.brown[700],
-        outsideDaysVisible: false,
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+      child: TableCalendar(
+        calendarController: _calendarController,
+        events: _entries,
+        startingDayOfWeek: StartingDayOfWeek.monday,
+        calendarStyle: CalendarStyle(
+          selectedColor: Colors.deepOrange[400],
+          todayColor: Colors.deepOrange[200],
+          markersColor: Colors.brown[700],
+          outsideDaysVisible: false,
+        ),
+        headerStyle: HeaderStyle(
+          formatButtonVisible: false,
+          centerHeaderTitle: true,
+        ),
+        onDaySelected: _onDaySelected,
+        onVisibleDaysChanged: _onVisibleDaysChanged,
       ),
-      headerStyle: HeaderStyle(
-        formatButtonVisible: false,
-        centerHeaderTitle: true,
-      ),
-      onDaySelected: _onDaySelected,
-      onVisibleDaysChanged: _onVisibleDaysChanged,
     );
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// Builds bottom tiles if there are entries on the selected day
+///////////////////////////////////////////////////////////////////////
   Widget _buildEntryList() {
     return ListView(
-      children: _selectedEntries
-          .map((event) => Container(
-                decoration: BoxDecoration(
-                  border: Border.all(width: 0.8),
-                  borderRadius: BorderRadius.circular(12.0),
+        children: _selectedEntries
+            .map(
+              (event) => Container(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+                  child: Card(
+                    elevation: 5,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0)),
+                    child: Column(
+                      children: <Widget>[
+                        ListTile(
+                          // leading: Icon(Icons.menu_book_rounded),
+                          title: Text(event['title'].toString()),
+                          subtitle: Text((event['timestamp'].runtimeType ==
+                                      Timestamp
+                                  ? dateToHumanReadable(
+                                      (event['timestamp'].toDate()))
+                                  : dateToHumanReadable(event['timestamp'])) +
+                              " - shared entry"),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: ListTile(
-                  title: Text(event["title"].toString()),
-                  onTap: () => {
-                    MainView.of(context).date = _selectedDay,
-                    MainView.of(context).documentIdReference = event['doc_id'],
-                    widget.tabController.animateToPage(2,
-                        duration: Duration(milliseconds: 300),
-                        curve: Curves.easeIn),
-                  },
-                ),
-              ))
-          .toList(),
-    );
+              ),
+            )
+            .toList());
   }
 }

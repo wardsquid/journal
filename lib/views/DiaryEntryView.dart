@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
@@ -20,33 +22,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
-String DateDisplay(DateTime date) {
-  const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const List months = [
-    null,
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
-  String toBeDisplayed = weekday[date.weekday] +
-      ', ' +
-      date.day.toString() +
-      ' ' +
-      months[date.month] +
-      ' ' +
-      date.year.toString();
-  return toBeDisplayed;
-}
-
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
@@ -56,6 +31,7 @@ class DiaryEntryView extends StatefulWidget {
 }
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
+  bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
@@ -89,6 +65,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (widget.documentId != "") {
       // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
+    } else {
+      // _isEditingText = true;
     }
   }
 
@@ -98,6 +76,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.dispose();
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// GET IMAGE URL
+///////////////////////////////////////////////////////////////////////
   Future<void> downloadURLImage() async {
     String setUrl = await _storage
         .ref("${_user.uid}/${widget.documentId}")
@@ -108,6 +89,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     print(_bucketUrl);
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// RETRIEVE ENTRY FROM DB
+///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
     print('called');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
@@ -132,6 +116,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// ENTRY TEXT FIELDS
+///////////////////////////////////////////////////////////////////////
   Widget _entryText() {
     if (_isEditingText) {
       return Column(
@@ -152,7 +139,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             },
             autofocus: false,
             controller: _textEditingController,
-          )
+          ),
         ],
       );
     }
@@ -187,6 +174,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// FLOATING BUTTON BEHAVIOUR
+///////////////////////////////////////////////////////////////////////
   Widget _getFloatingButton() {
     return FloatingActionButton.extended(
       onPressed: () => {
@@ -235,6 +225,83 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
+////////////////////////////////////////////////////////////////
+  /// SPEED DIAL
+////////////////////////////////////////////////////////////////
+  Widget speedDial() {
+    return SpeedDial(
+      // both default to 16
+      marginRight: 18,
+      marginBottom: 20,
+      animatedIcon: AnimatedIcons.menu_close,
+      animatedIconTheme: IconThemeData(size: 22.0),
+      // this is ignored if animatedIcon is non null
+      // child: Icon(Icons.add),
+      visible: true, //_dialVisible,
+      // If true user is forced to close dial manually
+      // by tapping main button and overlay is not rendered.
+      closeManually: true,
+      curve: Curves.bounceIn,
+      overlayColor: Colors.black,
+      overlayOpacity: 0.5,
+      onOpen: () => print('OPENING DIAL'),
+      onClose: () => print('DIAL CLOSED'),
+      tooltip: 'Speed Dial',
+      heroTag: 'speed-dial-hero-tag',
+      backgroundColor: Colors.purpleAccent,
+      foregroundColor: Colors.white,
+      elevation: 8.0,
+      shape: CircleBorder(),
+      children: [
+        SpeedDialChild(
+            child: Icon(Icons.add_photo_alternate),
+            backgroundColor: Colors.red,
+            label: 'Add a photo from your Gallery',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('FIRST CHILD')),
+        SpeedDialChild(
+          child: Icon(Icons.add_a_photo),
+          backgroundColor: Colors.blue,
+          label: 'Add from Camera',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('SECOND CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.keyboard_voice),
+          backgroundColor: Colors.green,
+          label: 'Record a voice entry',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('THIRD CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.share),
+          backgroundColor: Colors.orange,
+          label: 'Share with a friend',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('THIRD CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.menu_book),
+          backgroundColor: Colors.brown,
+          label: 'Current Journal: Personal',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => {
+            getUserProfile().then((profile) => print(profile.data().toString())),
+          },
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.plumbing),
+          backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+          label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+          onTap: () => {setState(() => toogleML = !toogleML)},
+        ),
+      ],
+    );
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// ADDS A NEW ENTRY
+///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() {
     return entries
         .add({
@@ -261,6 +328,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// UPDATE DIARY ENTRY
+///////////////////////////////////////////////////////////////////////
   Future<void> _overwriteEntry() {
     return entries
         .doc(widget.documentId)
@@ -285,7 +355,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
-  /// Get from gallery
+  ///////////////////////////////////////////////////////////////////////
+  /// When an image is selected from the Gallery
+  ///////////////////////////////////////////////////////////////////////
   _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
@@ -295,7 +367,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (pickedFile != null) {
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
-      if (_coordinates.toString() != '[]') {
+      if (_coordinates.length == 2) {
         final HttpsCallable httpsCallable =
             _functions.httpsCallable("getLocation");
         final results = await httpsCallable.call({
@@ -321,7 +393,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
-  /// Get from Camera
+///////////////////////////////////////////////////////////////////////
+  /// When an Image is selected from Camera
+///////////////////////////////////////////////////////////////////////
   _getFromCamera() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
@@ -335,193 +409,209 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// MAIN VIEW
+///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // resizeToAvoidBottomInset: false,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white, // background color
           ),
-          child: ListView(
-            children: <Widget>[
-              _isEditingText == true
-                  ? Container(
-                      color: Colors.blueGrey,
-                      height: 300,
-                      child: _image == null
-                          ? Container(
-                              // alignment: Alignment.center,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  RaisedButton(
-                                    color: Colors.greenAccent,
-                                    onPressed: () {
-                                      _getFromGallery();
-                                    },
-                                    child: Text("PICK FROM GALLERY"),
-                                  ),
-                                  Container(
-                                    height: 40.0,
-                                  ),
-                                  RaisedButton(
-                                    color: Colors.lightGreenAccent,
-                                    onPressed: () {
-                                      _getFromCamera();
-                                    },
-                                    child: Text("PICK FROM CAMERA"),
-                                  )
-                                ],
-                              ),
-                            )
-                          : Container(
-                              alignment: Alignment.center,
-                              child: Image.file(
-                                _image,
-                                fit: BoxFit.cover,
-                              )),
-                    )
-                  : Container(
-                      color: Colors.blueGrey,
-                      height: 300,
-                      width: double.infinity,
-                      child: _image == null
-                          ? Container(
-                              alignment: Alignment.center,
-                              child: FadeInImage(
-                                  image: NetworkImage(_bucketUrl),
-                                  placeholder:
-                                      AssetImage("assets/placeholder.png"),
-                                  fit: BoxFit.cover),
-                            )
-                          : Container(
-                              alignment: Alignment.center,
-                              child: //_image != null ?
-                                  Image.file(
-                                _image,
-                                fit: BoxFit.cover,
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0)),
+            child: ListView(
+              children: <Widget>[
+                _isEditingText == true
+                    ? Container(
+                        color: Colors.blueGrey,
+                        height: 300,
+                        child: _image == null
+                            ? Container(
+                                // alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    RaisedButton(
+                                      color: Colors.greenAccent,
+                                      onPressed: () {
+                                        _getFromGallery();
+                                      },
+                                      child: Text("PICK FROM GALLERY"),
+                                    ),
+                                    Container(
+                                      height: 40.0,
+                                    ),
+                                    RaisedButton(
+                                      color: Colors.lightGreenAccent,
+                                      onPressed: () {
+                                        _getFromCamera();
+                                      },
+                                      child: Text("PICK FROM CAMERA"),
+                                    )
+                                  ],
+                                ),
                               )
-                              // : Image.memory(_downloadImage),
-                              ),
-                    ),
-              Align(
-                alignment: FractionalOffset.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 25.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      SizedBox(height: 25.0),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                        child: _entryText(),
+                            : Container(
+                                alignment: Alignment.center,
+                                child: Image.file(
+                                  _image,
+                                  fit: BoxFit.cover,
+                                )),
+                      )
+                    : Container(
+                        color: Colors.blueGrey,
+                        height: 300,
+                        width: double.infinity,
+                        child: _image == null
+                            ? Container(
+                                alignment: Alignment.center,
+                                child: FadeInImage(
+                                    image: NetworkImage(_bucketUrl),
+                                    placeholder:
+                                        AssetImage("assets/placeholder.png"),
+                                    fit: BoxFit.cover),
+                              )
+                            : Container(
+                                alignment: Alignment.center,
+                                child: //_image != null ?
+                                    Image.file(
+                                  _image,
+                                  fit: BoxFit.cover,
+                                )
+                                // : Image.memory(_downloadImage),
+                                ),
                       ),
-                    ],
+                Align(
+                  alignment: FractionalOffset.center,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 25.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(height: 25.0),
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(left: 15.0, right: 15.0),
+                          child: _entryText(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                height: 40.0,
-              ),
-              Align(
-                  alignment: FractionalOffset.bottomRight,
-                  child: TextButton(
-                    onPressed: () {
-                      setState(() {
-                        tempTitleText = titleText;
-                        tempEntryText = entryText;
-                      });
-                      if (_isEditingText) {
-                        if (_image == null &&
-                            titleText == "" &&
-                            entryText == "") {
-                        } else if (widget.documentId == "") {
-                          _addNewEntry();
+                Container(
+                  height: 40.0,
+                ),
+                Align(
+                    alignment: FractionalOffset.bottomRight,
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          tempTitleText = titleText;
+                          tempEntryText = entryText;
+                        });
+                        if (_isEditingText) {
+                          if (_image == null &&
+                              titleText == "" &&
+                              entryText == "") {
+                          } else if (widget.documentId == "") {
+                            _addNewEntry();
+                          } else {
+                            _overwriteEntry();
+                          }
+                          // toggle view mode
+                          setState(() {
+                            buttonText = "Edit";
+                            _isEditingText = false;
+                          });
                         } else {
-                          _overwriteEntry();
+                          // toggle edit mode
+                          setState(() {
+                            buttonText = "Save";
+                            _isEditingText = true;
+                          });
                         }
-                        // toggle view mode
-                        setState(() {
-                          buttonText = "Edit";
-                          _isEditingText = false;
-                        });
-                      } else {
-                        // toggle edit mode
-                        setState(() {
-                          buttonText = "Save";
-                          _isEditingText = true;
-                        });
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Container(
-                        height: 50.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30.0),
-                            color:
-                                Colors.transparent, // background button color
-                            border: Border.all(
-                                color: Color(0xFFFB8986)) // all border colors
-                            ),
-                        child: Center(
-                            child: Text(
-                          buttonText,
-                          style: TextStyle(
-                              color: Color(0xFFFB8986),
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: "Poppins",
-                              letterSpacing: 1.5),
-                        )),
-                      ),
-                    ),
-                  )),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      launch(_emailLaunchUri.toString());
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Container(
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Container(
                           height: 50.0,
-                          width: 130.0,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
+                              borderRadius: BorderRadius.circular(30.0),
                               color:
                                   Colors.transparent, // background button color
                               border: Border.all(
-                                  color: Colors.grey) // all border colors
+                                  color: Color(0xFFFB8986)) // all border colors
                               ),
-                          child: Row(children: <Widget>[
-                            Text(
-                              "Report",
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 17.0,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: "Poppins",
-                                  letterSpacing: 1.5),
-                            ),
-                            Icon(
-                              Icons.mail,
-                              color: Colors.grey,
-                              size: 30.0,
-                            ),
-                          ], mainAxisAlignment: MainAxisAlignment.center)),
-                    ),
-                  ))
-            ],
+                          child: Center(
+                              child: Text(
+                            buttonText,
+                            style: TextStyle(
+                                color: Color(0xFFFB8986),
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: "Poppins",
+                                letterSpacing: 1.5),
+                          )),
+                        ),
+                      ),
+                    )),
+                // Align(
+                //     alignment: Alignment.centerRight,
+                //     child: TextButton(
+                //       onPressed: () {
+                //         launch(_emailLaunchUri.toString());
+                //       },
+                //       child: Padding(
+                //         padding: const EdgeInsets.only(bottom: 20.0),
+                //         child: Container(
+                //             height: 50.0,
+                //             width: 130.0,
+                //             decoration: BoxDecoration(
+                //                 borderRadius: BorderRadius.circular(10.0),
+                //                 color: Colors
+                //                     .transparent, // background button color
+                //                 border: Border.all(
+                //                     color: Colors.grey) // all border colors
+                //                 ),
+                //             // child: Row(children: <Widget>[
+                //             //   Text(
+                //             //     "Report",
+                //             //     style: TextStyle(
+                //             //         color: Colors.grey,
+                //             //         fontSize: 17.0,
+                //             //         fontWeight: FontWeight.w400,
+                //             //         fontFamily: "Poppins",
+                //             //         letterSpacing: 1.5),
+                //             //   ),
+                //             //   Icon(
+                //             //     Icons.mail,
+                //             //     color: Colors.grey,
+                //             //     size: 30.0,
+                //             //   ),
+                //             // ], mainAxisAlignment: MainAxisAlignment.center)),
+                //       ),
+                //     ),
+                //     ),
+                // Transform.translate(
+                //     offset: Offset(
+                //         0.0, -1 * MediaQuery.of(context).viewInsets.bottom),
+                //     child: bottomNavBar(context)),
+                // bottomNavBar(context),
+              ],
+            ),
           ),
         ),
       ),
-      floatingActionButton: _getFloatingButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      floatingActionButton: speedDial(), //_getFloatingButton(),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }

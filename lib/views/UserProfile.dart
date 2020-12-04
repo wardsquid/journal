@@ -22,8 +22,8 @@ class _UserProfile extends State<UserProfile> {
   TimeOfDay reminderTime;
   bool isTimeSet = false;
   final _formKey = GlobalKey<FormState>();
-  var _emailController = TextEditingController();
-  var _nameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
   final CollectionReference users = getFireStoreUsersDB();
   final User _user = checkUserLoginStatus();
   String _email = "";
@@ -156,115 +156,117 @@ class _UserProfile extends State<UserProfile> {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              CircleAvatar(
-                backgroundImage: NetworkImage(
-                  currentUser.photoURL,
-                ),
-                radius: 60,
-                backgroundColor: Colors.transparent,
-              ),
-              SizedBox(height: 40),
-              Text(
-                'NAME',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54),
-              ),
-              Text(
-                currentUser.displayName,
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'EMAIL',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54),
-              ),
-              Text(
-                currentUser.email, //email,
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 40),
-              RaisedButton(
-                onPressed: () async {
-                  _openReminderPopup(context);
-                },
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Set Reminder',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    currentUser.photoURL,
                   ),
+                  radius: 60,
+                  backgroundColor: Colors.transparent,
                 ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
-              ),
-              SizedBox(height: 40),
-              RaisedButton(
-                onPressed: () {
-                  signOutGoogle();
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) {
-                    return LoginPage();
-                  }), ModalRoute.withName('/'));
-                },
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Sign Out',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
+                SizedBox(height: 40),
+                Text(
+                  'NAME',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
+                ),
+                Text(
+                  currentUser.displayName,
+                  style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'EMAIL',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
+                ),
+                Text(
+                  currentUser.email, //email,
+                  style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 40),
+                RaisedButton(
+                  onPressed: () async {
+                    _openReminderPopup(context);
+                  },
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Set Reminder',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
                   ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
                 ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
-              ),
-              SizedBox(height: 40),
-              RaisedButton(
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Friends',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
+                SizedBox(height: 40),
+                RaisedButton(
+                  onPressed: () {
+                    signOutGoogle();
+                    Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) {
+                      return LoginPage();
+                    }), ModalRoute.withName('/'));
+                  },
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Sign Out',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
                   ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
                 ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return _buildFriendsList();
-                      },
-                      barrierDismissible: false);
-                },
-              ),
-              SizedBox(height: 80),
-              Linkable(
-                linkColor: Colors.white,
-                textColor: Colors.deepPurple,
-                text:
-                    "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
-              ),
-            ],
+                SizedBox(height: 40),
+                RaisedButton(
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Friends',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                  ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return _buildFriendsList();
+                        },
+                        barrierDismissible: false);
+                  },
+                ),
+                SizedBox(height: 80),
+                Linkable(
+                  linkColor: Colors.white,
+                  textColor: Colors.deepPurple,
+                  text:
+                      "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -273,47 +275,62 @@ class _UserProfile extends State<UserProfile> {
 
   Widget _buildFriendsList() {
     return AlertDialog(
-      contentPadding: EdgeInsets.all(0.0),
+      // contentPadding: EdgeInsets.all(0.0),
+      // actionsPadding: c,
+      clipBehavior: Clip.antiAliasWithSaveLayer,
       title: Text("Your Friends:"),
-      content: Stack(
-        clipBehavior: Clip.none,
-        children: <Widget>[
-          Column(
+      content: SingleChildScrollView(
+         child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
+              Divider(),
               Container(
-                height: 350,
-                width: 300,
+                // margin: MediaQuery.of(context).viewInsets,
+                height: MediaQuery.of(context).size.height / 2,
+                width: MediaQuery.of(context).size.width,
                 child: ListView.builder(
                   itemCount: friends.length,
                   itemBuilder: (BuildContext buildContext, int index) =>
                       ListTile(
-                    title: Text(
-                        "${friends[index]["name"]} \n ${friends[index]["email"]}"),
+                    title: Text("${friends[index]["name"]}"),
+                    subtitle: Text("${friends[index]["email"]}"),
                   ),
                   shrinkWrap: true,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: RaisedButton(
-                  child: Text("Add"),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return _buildAddFriendForm();
-                      },
-                      barrierDismissible: false,
-                    );
-                  },
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: RaisedButton(
+              //     child: Text("Add"),
+              //     onPressed: () {
+              //       showDialog(
+              //         context: context,
+              //         builder: (BuildContext context) {
+              //           return _buildAddFriendForm();
+              //         },
+              //         barrierDismissible: false,
+              //       );
+              //     },
+              //   ),
+              // ),
+              Divider(),
             ],
           ),
-        ],
+        // ],
       ),
       actions: <Widget>[
+        
+        FlatButton(
+            child: Text("Add"),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return _buildAddFriendForm();
+                },
+                barrierDismissible: false,
+              );
+            }),
         FlatButton(
           child: Text(
             'Close',
@@ -341,17 +358,18 @@ class _UserProfile extends State<UserProfile> {
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextFormField(
-                    controller: _emailController,
+                    autofocus: true,
+                    controller: _nameController,
                     onSaved: (String value) {
                       setState(() {
                         _name = value;
                       });
-                      _emailController.clear();
+                      _nameController.clear();
                     },
                     decoration: InputDecoration(
                       hintText: "Name",
                       suffixIcon: IconButton(
-                        onPressed: () => _emailController.clear(),
+                        onPressed: () => _nameController.clear(),
                         icon: Icon(Icons.clear),
                       ),
                     ),
@@ -366,19 +384,19 @@ class _UserProfile extends State<UserProfile> {
                 Padding(
                   padding: EdgeInsets.all(8.0),
                   child: TextFormField(
-                    controller: _nameController,
+                    controller: _emailController,
                     onChanged: (text) {},
                     onSaved: (String value) {
                       setState(() {
                         _email = value;
                       });
                       _addFriend();
-                      _nameController.clear();
+                      _emailController.clear();
                     },
                     decoration: InputDecoration(
                       hintText: "Email Address",
                       suffixIcon: IconButton(
-                        onPressed: () => _nameController.clear(),
+                        onPressed: () => _emailController.clear(),
                         icon: Icon(Icons.clear),
                       ),
                     ),

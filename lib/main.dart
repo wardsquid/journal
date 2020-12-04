@@ -27,7 +27,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class MyApp extends StatelessWidget {
   final User _user = checkUserLoginStatus();
-
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

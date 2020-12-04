@@ -28,10 +28,12 @@ Future<void> getReminder() async {
       .doc(currentUser.uid)
       .snapshots()
       .listen((DocumentSnapshot documentSnapshot) {
-    var data = documentSnapshot.get("reminder");
-    reminderTime = DateTime.parse(data.toDate().toString());
-    print("data from snapshot: $reminderTime");
-    notificationPlugin.showDailyAtTime(reminderTime);
+    Timestamp data = documentSnapshot.data()["reminder"];
+    if (data != null) {
+      reminderTime = DateTime.parse(data.toDate().toString());
+      print("data from snapshot: $reminderTime");
+      notificationPlugin.showDailyAtTime(reminderTime);
+    }
   }).onError((error) => {print("Error getting reminder: $error")});
 }
 
@@ -85,14 +87,17 @@ Future<void> addUser() async {
   users
       .doc(currentUser.uid)
       .set({
+        'journals_list': ["Personal"],
+        'ML_preference': true,
+        'ML_preference_updated': false,
         'reminder': null,
         'friends': [
           {'name': 'Vic', 'email': 'wow@email.com'},
           {'name': 'Dustin', 'email': 'cool@email.com'}
         ],
-        'journals': [
-          {'uid': 'uid1', 'name': "CC15's super secret diary"},
-        ],
+        // 'journals': [
+        //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
+        // ],
         'entries': ['uid1', 'uid2', 'uid3', 'uid4']
       })
       .then((value) => {print("Successfully added user $currentUser")})
@@ -120,11 +125,16 @@ Future<bool> checkUserExists() async {
 dynamic checkFriendEmail(String email) async {
   final HttpsCallable httpsCallable =
       FirebaseFunctions.instance.httpsCallable("checkFriendEmail");
-  final results =
-      await httpsCallable.call({"email": email});
+  final results = await httpsCallable.call({"email": email});
   return results.data;
 }
 
+getUserProfile() async {
+  User currentUser = checkUserLoginStatus();
+  CollectionReference users = getFireStoreUsersDB();
+  DocumentSnapshot userProfile = await users.doc(currentUser.uid).get();
+  return userProfile;
+}
 /*
   How to use checkFriendEmail
   bool your_variable_name = await checkFriendEmail("insert email string here");
