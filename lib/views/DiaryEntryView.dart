@@ -133,6 +133,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   void startListening() {
+    if (lastWords != "") {
+      tempWords.add("\n" + lastWords);
+    }
     lastWords = "";
     lastError = "";
     speech.listen(
@@ -166,9 +169,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = result.recognizedWords;
-      tempWords.add("\n" + lastWords);
-      _textEditingController =
-          TextEditingController(text: entryText + tempWords.join(""));
+      _textEditingController = TextEditingController(
+          text: entryText + tempWords.join("") + lastWords);
     });
   }
 
