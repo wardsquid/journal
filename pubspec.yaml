@@ -51,6 +51,7 @@ dependencies:
   spotify_sdk: ^1.0.0
   flutter_dotenv: ^2.1.0
   async: ^2.4.2
+  flutter_speed_dial: ^1.2.5
 
 dev_dependencies:
   flutter_test:

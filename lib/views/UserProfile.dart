@@ -21,11 +21,31 @@ class _UserProfile extends State<UserProfile> {
   _UserProfile(this.currentUser);
   TimeOfDay reminderTime;
   bool isTimeSet = false;
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  final CollectionReference users = getFireStoreUsersDB();
+  final User _user = checkUserLoginStatus();
+  String _email = "";
+  String _name = "";
+  List<dynamic> friends = [];
 
   @override
   void initState() {
     super.initState();
     notificationPlugin.setOnNotificationClick(onNotificationClick);
+    _getNewFriends();
+  }
+
+  Future<void> _getNewFriends() async {
+    await users
+        .doc(_user.uid)
+        .get()
+        .then((DocumentSnapshot documentSnapshot) => {
+              setState(() {
+                friends = documentSnapshot.data()["friends"];
+              })
+            });
   }
 
   _openReminderPopup(context) {
@@ -68,9 +88,65 @@ class _UserProfile extends State<UserProfile> {
         ]).show();
   }
 
+  Future<void> _addFriend() async {
+    Map<String, dynamic> friend = {'name': _name, 'email': _email};
+    bool yourVariableName = await checkFriendEmail(_email);
+    print("friends exist = $yourVariableName");
+    if (yourVariableName) {
+      return users.doc(_user.uid).update({
+        'friends': FieldValue.arrayUnion([friend])
+      }).then((value) => {
+            _getNewFriends(),
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Successfully Added!'),
+                  actions: <Widget>[
+                    FlatButton(
+                      child: Text('Close'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            )
+          });
+    } else {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('The Email address does not exist.'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('Please input correctly.'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -80,96 +156,286 @@ class _UserProfile extends State<UserProfile> {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              CircleAvatar(
-                backgroundImage: NetworkImage(
-                  currentUser.photoURL,
-                ),
-                radius: 60,
-                backgroundColor: Colors.transparent,
-              ),
-              SizedBox(height: 40),
-              Text(
-                'NAME',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54),
-              ),
-              Text(
-                currentUser.displayName,
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 20),
-              Text(
-                'EMAIL',
-                style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54),
-              ),
-              Text(
-                currentUser.email, //email,
-                style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.deepPurple,
-                    fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 40),
-              RaisedButton(
-                onPressed: () async {
-                  _openReminderPopup(context);
-                },
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Set Reminder',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    currentUser.photoURL,
                   ),
+                  radius: 60,
+                  backgroundColor: Colors.transparent,
                 ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
-              ),
-              SizedBox(height: 40),
-              RaisedButton(
-                onPressed: () {
-                  signOutGoogle();
-                  Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) {
-                    return LoginPage();
-                  }), ModalRoute.withName('/'));
-                },
-                color: Colors.deepPurple,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Sign Out',
-                    style: TextStyle(fontSize: 25, color: Colors.white),
+                SizedBox(height: 40),
+                Text(
+                  'NAME',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
+                ),
+                Text(
+                  currentUser.displayName,
+                  style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'EMAIL',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
+                ),
+                Text(
+                  currentUser.email, //email,
+                  style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 40),
+                RaisedButton(
+                  onPressed: () async {
+                    _openReminderPopup(context);
+                  },
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Set Reminder',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
                   ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
                 ),
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(40)),
-              ),
-              SizedBox(height: 150),
-              Linkable(
-                linkColor: Colors.white,
-                textColor: Colors.deepPurple,
-                text:
-                    "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
-              ),
-            ],
+                SizedBox(height: 40),
+                RaisedButton(
+                  onPressed: () {
+                    signOutGoogle();
+                    Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) {
+                      return LoginPage();
+                    }), ModalRoute.withName('/'));
+                  },
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Sign Out',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                  ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
+                ),
+                SizedBox(height: 40),
+                RaisedButton(
+                  color: Colors.deepPurple,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Friends',
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                  ),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40)),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return _buildFriendsList();
+                        },
+                        barrierDismissible: false);
+                  },
+                ),
+                SizedBox(height: 80),
+                Linkable(
+                  linkColor: Colors.white,
+                  textColor: Colors.deepPurple,
+                  text:
+                      "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFriendsList() {
+    return AlertDialog(
+      // contentPadding: EdgeInsets.all(0.0),
+      // actionsPadding: c,
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      title: Text("Your Friends:"),
+      content: SingleChildScrollView(
+         child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Divider(),
+              Container(
+                // margin: MediaQuery.of(context).viewInsets,
+                height: MediaQuery.of(context).size.height / 2,
+                width: MediaQuery.of(context).size.width,
+                child: ListView.builder(
+                  itemCount: friends.length,
+                  itemBuilder: (BuildContext buildContext, int index) =>
+                      ListTile(
+                    title: Text("${friends[index]["name"]}"),
+                    subtitle: Text("${friends[index]["email"]}"),
+                  ),
+                  shrinkWrap: true,
+                ),
+              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              //   child: RaisedButton(
+              //     child: Text("Add"),
+              //     onPressed: () {
+              //       showDialog(
+              //         context: context,
+              //         builder: (BuildContext context) {
+              //           return _buildAddFriendForm();
+              //         },
+              //         barrierDismissible: false,
+              //       );
+              //     },
+              //   ),
+              // ),
+              Divider(),
+            ],
+          ),
+        // ],
+      ),
+      actions: <Widget>[
+        
+        FlatButton(
+            child: Text("Add"),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return _buildAddFriendForm();
+                },
+                barrierDismissible: false,
+              );
+            }),
+        FlatButton(
+          child: Text(
+            'Close',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
+  }
+
+  Widget _buildAddFriendForm() {
+    return AlertDialog(
+      contentPadding: EdgeInsets.all(0.0),
+      content: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    autofocus: true,
+                    controller: _nameController,
+                    onSaved: (String value) {
+                      setState(() {
+                        _name = value;
+                      });
+                      _nameController.clear();
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Name",
+                      suffixIcon: IconButton(
+                        onPressed: () => _nameController.clear(),
+                        icon: Icon(Icons.clear),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    controller: _emailController,
+                    onChanged: (text) {},
+                    onSaved: (String value) {
+                      setState(() {
+                        _email = value;
+                      });
+                      _addFriend();
+                      _emailController.clear();
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Email Address",
+                      suffixIcon: IconButton(
+                        onPressed: () => _emailController.clear(),
+                        icon: Icon(Icons.clear),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton(
+                    child: Text("Add"),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Close',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+        )
+      ],
     );
   }
 

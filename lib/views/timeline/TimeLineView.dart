@@ -22,7 +22,7 @@ class _TimeLineView extends State<TimeLineView> {
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
-    print("pushing ${entry.toString()}");
+    // print("pushing ${entry.toString()}");
     setState(() {
       display.add(entry);
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));

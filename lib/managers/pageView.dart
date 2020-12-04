@@ -1,5 +1,5 @@
 // import 'dart:developer';
-
+import 'userInfo.dart' as inkling;
 import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
@@ -34,9 +34,14 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
+    inkling.initializeUserCaching();
     return PageView(
         controller: _pageController,
         onPageChanged: (index) {
+          if (index != 2) {
+            FocusScope.of(context).unfocus();
+          }
+          print(inkling.userProfile.toString());
           print(activeDate);
           print(documentId);
         },
