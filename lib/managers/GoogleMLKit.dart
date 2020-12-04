@@ -21,81 +21,82 @@ Future<Map<String, double>> readLabel(File pickedImage) async {
   }
 }
 
-String generateText(Map<String, double> labelMap) {
-  //create string variable to house all concatenations
-  String generatedText = "";
-  List<String> people = List.from(
-      ['Team', 'Superman', 'Person', 'Superhero', 'Baby', 'Bride', 'Crowd']);
-  List<String> animals = List.from([
-    'Bird',
-    'Shetland sheepdog',
-    'Gerbil',
-    'Bear',
-    'Cat',
-    'Penguin',
-    'Duck',
-    'Turtle',
-    'Crocodile',
-    'Dog',
-    'Butterfly',
-    'Pet'
-  ]);
-  List<String> places = List.from([
-    'Park',
-    'Aquarium',
-    'Circus',
-    'Bridge',
-    'Ferris wheel',
-    'Stadium',
-    'Tower',
-    'Skyline'
-  ]);
-  List<String> food = List.from([
-    'Cheeseburger',
-    'Fast food',
-    'Hot dog',
-    'Meal',
-    'Lunch',
-    'Sushi',
-    'Supper',
-    'Vegetable',
-    'Cappuccino',
-    'Fruit',
-    'Pizza',
-    'Coffee',
-    'Pie',
-    'Wine',
-    'Bread',
-    'Food',
-    'Pho',
-    'Cake',
-    'Alcohol',
-    'Gelato'
-  ]);
-  List<String> events = List.from([
-    'Event',
-    'Graduation',
-    'Competition',
-    'Camping',
-    'Picnic',
-    'Nightclub',
-    'Vacation',
-    'Musical',
-    'Concert',
-    'Casino',
-    'Cycling',
-    'Dance',
-    'Scuba diving',
-    'Fishing',
-    'Swimming',
-    'Running',
-    'Sports',
-    'Eating',
-    'Racing',
-    'Sunset',
-    'Fireworks',
-  ]);
-  List<String> bento = List.from(['bento']);
+List<String> generateText(Map<String, double> labelMap) {
+  //the array of strings we will pass to the createAlert function
+  List<String> generatedTextList = [];
+
+  // List<String> people = List.from(
+  //     ['Team', 'Superman', 'Person', 'Superhero', 'Baby', 'Bride', 'Crowd']);
+  // List<String> animals = List.from([
+  //   'Bird',
+  //   'Shetland sheepdog',
+  //   'Gerbil',
+  //   'Bear',
+  //   'Cat',
+  //   'Penguin',
+  //   'Duck',
+  //   'Turtle',
+  //   'Crocodile',
+  //   'Dog',
+  //   'Butterfly',
+  //   'Pet'
+  // ]);
+  // List<String> places = List.from([
+  //   'Park',
+  //   'Aquarium',
+  //   'Circus',
+  //   'Bridge',
+  //   'Ferris wheel',
+  //   'Stadium',
+  //   'Tower',
+  //   'Skyline'
+  // ]);
+  // List<String> food = List.from([
+  //   'Cheeseburger',
+  //   'Fast food',
+  //   'Hot dog',
+  //   'Meal',
+  //   'Lunch',
+  //   'Sushi',
+  //   'Supper',
+  //   'Vegetable',
+  //   'Cappuccino',
+  //   'Fruit',
+  //   'Pizza',
+  //   'Coffee',
+  //   'Pie',
+  //   'Wine',
+  //   'Bread',
+  //   'Food',
+  //   'Pho',
+  //   'Cake',
+  //   'Alcohol',
+  //   'Gelato'
+  // ]);
+  // List<String> events = List.from([
+  //   'Event',
+  //   'Graduation',
+  //   'Competition',
+  //   'Camping',
+  //   'Picnic',
+  //   'Nightclub',
+  //   'Vacation',
+  //   'Musical',
+  //   'Concert',
+  //   'Casino',
+  //   'Cycling',
+  //   'Dance',
+  //   'Scuba diving',
+  //   'Fishing',
+  //   'Swimming',
+  //   'Running',
+  //   'Sports',
+  //   'Eating',
+  //   'Racing',
+  //   'Sunset',
+  //   'Fireworks',
+  // ]);
+  // List<String> bento = List.from(['bento']);
   List<String> dogPrompts = List.from([
     'I spent time with...',
     'We went to...',
@@ -115,49 +116,45 @@ String generateText(Map<String, double> labelMap) {
   labelMap.forEach((key, value) {
     if (key == 'Dog') {
       dogPrompts.forEach((prompt) {
-        generatedText += prompt;
-        generatedText += '\n';
+        generatedTextList.add(prompt);
       });
     }
     if (key == 'Park') {
       parkPrompts.forEach((prompt) {
-        generatedText += prompt;
-        generatedText += '\n';
+        generatedTextList.add(prompt);
       });
     }
-    if (people.contains(key)) {
-      generatedText +=
-          'Today I spent time with... . \n They were doing... \n Its been.... since I saw them \n I felt... \n';
-      people = List.from([]);
-    }
-    if (animals.contains(key)) {
-      generatedText +=
-          'Today I took a picture of this $key \n It was so...\n After I felt... \n';
-      animals = List.from([]);
-    }
-    if (places.contains(key)) {
-      generatedText +=
-          'Today I spent time at... $key. \n I went there by...\n It was nice to get out of the house and...\n';
-      places = List.from([]);
-    }
-    if (events.contains(key)) {
-      generatedText +=
-          'Today I went to a $key\n It was ...\n I took this picture...\n I hope';
-      events = List.from([]);
-    }
-    if (food.contains(key)) {
-      generatedText += 'Today I enjoyed eating... $key. \n';
-      food = List.from([]);
-    }
-    // if (bento.contains(key)) {
-    //   generatedText +=
-    //       'Today I laid my eyes upon the most beautiful $key. \n It was the finest, most perfect $key \n NEVER in my life did I ever see such fluffy rice, \n most vividly colorful vegetables, \n ...and juciest meat 😍 \n Can you believe it was only 400 yen?!? Its crazy! \n I knew I must eat it so I fought 40 people and 70 more \n just for the chance of trying the worlds most beautiful bento.';
-    //   bento = List.from([]);
-    // }
   });
-  print('generated text: $generatedText');
-  return generatedText;
+  print('generated text: $generatedTextList');
+  return generatedTextList;
 }
 
-
-
+// if (people.contains(key)) {
+//   generatedText +=
+//       'Today I spent time with... . \n They were doing... \n Its been.... since I saw them \n I felt... \n';
+//   people = List.from([]);
+// }
+// if (animals.contains(key)) {
+//   generatedText +=
+//       'Today I took a picture of this $key \n It was so...\n After I felt... \n';
+//   animals = List.from([]);
+// }
+// if (places.contains(key)) {
+//   generatedText +=
+//       'Today I spent time at... $key. \n I went there by...\n It was nice to get out of the house and...\n';
+//   places = List.from([]);
+// }
+// if (events.contains(key)) {
+//   generatedText +=
+//       'Today I went to a $key\n It was ...\n I took this picture...\n I hope';
+//   events = List.from([]);
+// }
+// if (food.contains(key)) {
+//   generatedText += 'Today I enjoyed eating... $key. \n';
+//   food = List.from([]);
+// }
+// if (bento.contains(key)) {
+//   generatedText +=
+//       'Today I laid my eyes upon the most beautiful $key. \n It was the finest, most perfect $key \n NEVER in my life did I ever see such fluffy rice, \n most vividly colorful vegetables, \n ...and juciest meat 😍 \n Can you believe it was only 400 yen?!? Its crazy! \n I knew I must eat it so I fought 40 people and 70 more \n just for the chance of trying the worlds most beautiful bento.';
+//   bento = List.from([]);
+// }

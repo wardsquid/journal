@@ -14,6 +14,7 @@ import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
 import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
+import '../views/alertTest.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -305,15 +306,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         location = results.data;
       }
       Map<String, double> labelMap = await readLabel(File(pickedFile.path));
-      String generatedText = generateText(labelMap);
-      print(generatedText);
-
+      List<String> generatedText = generateText(labelMap);
+      List tags = mlTagConverter(generatedText);
+      String selectedTagsString = null;
+      createTagAlert(context, tags).then((onValue) {
+        selectedTagsString = onValue;
+      });
+      print('afterCreateAlert: ${selectedTagsString}');
       setState(() {
         _image = File(pickedFile.path);
         if (location != null) {
-          entryText = "I went to $location ... \n" + generatedText;
+          entryText = "I went to $location ... \n";
         } else {
-          entryText = generatedText;
+          entryText = entryText;
         }
         _textEditingController = TextEditingController(text: entryText);
       });

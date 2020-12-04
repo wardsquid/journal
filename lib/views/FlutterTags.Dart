@@ -7,13 +7,16 @@ class FlutterTagPage extends StatefulWidget {
   FlutterTagPage({Key key, this.title}) : super(key: key);
 
   final String title;
+  //imported list of mltags that are pulled once
+  //final List mltags;
 
   @override
   _FlutterTagPageState createState() => _FlutterTagPageState();
 }
 
 class _FlutterTagPageState extends State<FlutterTagPage> {
-  List tags = new List();
+  List tags = new List(); //the array of tags
+
   final GlobalKey<TagsState> _globalKey = GlobalKey<TagsState>();
   @override
   Widget build(BuildContext context) {
