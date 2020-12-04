@@ -61,6 +61,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
+
+  // Spotify
+  var _spotifyToken;
   var _currentTrack;
 
   // Controllers
@@ -96,10 +99,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
 
     // Spotify
-    // setState(() {
-    //   _currentTrack = fetchSpotifyTrack();
-    // });
-    // _updateCurrentSpotifyTrack();
+    _spotifyToken = fetchSpotifyToken();
+    if (_spotifyToken != null) {
+      setState(() {
+        _currentTrack = fetchSpotifyTrack();
+      });
+      _updateCurrentSpotifyTrack();
+    }
   }
 
   @override
@@ -365,22 +371,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       ),
       isThreeLine: true,
     );
-//     return Row(children: <Widget>[
-//       _currentTrack == null
-//           ? Text("No Spotify info available")
-//           : Padding(
-//               padding: EdgeInsets.all(16.0),
-//               child:
-//                   Image.network(_currentTrack.imageUrl, width: 70, height: 70),
-//             ),
-//       Padding(
-//         padding: EdgeInsets.all(16.0),
-//         // TODO: will fix this weird formatting later
-//         child: Text('''Recently played:
-// ${_currentTrack.artist}:
-// ${_currentTrack.track}'''),
-//       )
-//     ]);
   }
   // Spotify
 
@@ -476,7 +466,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 height: 40.0,
               ),
               // Spotify
-              // _displaySpotifyTrack(),
+              if (_spotifyToken != null) _displaySpotifyTrack(),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(

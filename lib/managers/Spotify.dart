@@ -35,7 +35,6 @@ Future<void> getSpotifyAuth() async {
 }
 
 fetchSpotifyToken() {
-  print("just fetched track: ${_currentTrack.artist}");
   return _authenticationToken;
 }
 
