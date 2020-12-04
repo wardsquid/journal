@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'dart:typed_data';
 // import dependencies
+import 'package:async/async.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -60,7 +61,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
-  CurrentTrack currentTrack;
+  //CurrentTrack currentTrack;
+  var _currentTrack;
 
   // Controllers
   TextEditingController _textEditingController;
@@ -96,7 +98,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
     // Spotify
     setState(() {
-      currentTrack = fetchSpotifyTrack();
+      _currentTrack = fetchSpotifyTrack();
     });
     _updateCurrentTrack();
     // Spotify
@@ -349,7 +351,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   _updateCurrentTrack() async {
     await loadSpotifyTrack();
     setState(() {
-      currentTrack = fetchSpotifyTrack();
+      _currentTrack = fetchSpotifyTrack();
     });
   }
 
@@ -458,20 +460,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 height: 40.0,
               ),
               Row(children: <Widget>[
-                currentTrack == null
+                _currentTrack == null
                     ? Text("No Spotify info available")
+                    // : Padding(
+                    //     padding: EdgeInsets.all(16.0),
+                    //     child: Image.network(currentTrack.imageUrl,
+                    //         width: 70, height: 70),
+                    //   ),
                     : Padding(
                         padding: EdgeInsets.all(16.0),
-                        child: Image.network(currentTrack.imageUrl,
-                            width: 70, height: 70),
-                      ),
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  // TODO: will fix this weird formatting later
-                  child: Text('''Recently played:
-${currentTrack.artist}: 
-${currentTrack.track}'''),
-                )
+                        // TODO: will fix this weird formatting later
+                        child: Text('''Recently played:
+${_currentTrack.artist}: 
+${_currentTrack.track}'''),
+                      )
               ]),
               Align(
                   alignment: FractionalOffset.bottomRight,

@@ -1,4 +1,5 @@
 // Spotify
+import 'package:async/async.dart';
 import 'package:spotify_sdk/models/connection_status.dart';
 import 'package:spotify_sdk/models/crossfade_state.dart';
 import 'package:spotify_sdk/models/image_uri.dart';
@@ -13,7 +14,8 @@ import 'dart:async';
 import 'dart:convert';
 
 var _authenticationToken;
-CurrentTrack _currentTrack;
+//CurrentTrack _currentTrack;
+var _currentTrack;
 
 Future<void> getSpotifyAuth() async {
   String clientId = DotEnv().env['CLIENT_ID'];
@@ -26,8 +28,7 @@ Future<void> getSpotifyAuth() async {
       scope:
           "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
   print("Auth token retrieved: $_authenticationToken");
-  await loadSpotifyTrack();
-  return _authenticationToken;
+  await loadRecentSpotifyTrack();
 }
 
 class CurrentTrack {
@@ -49,12 +50,30 @@ class CurrentTrack {
   }
 }
 
+class RecentTrack {
+  final String artist;
+  final String track;
+  final String url;
+  final String href;
+
+  RecentTrack({this.artist, this.track, this.url, this.href});
+
+  factory RecentTrack.fromJson(Map<String, dynamic> json) {
+    return RecentTrack(
+        artist: json['items'][0]['track']['artists'][0]['name'],
+        track: json['items'][0]['track']['name'],
+        url: json['items'][0]['track']['external_urls']['spotify'],
+        href: json['items'][0]['track']['href']);
+  }
+}
+
 Future<void> loadSpotifyTrack() async {
   final response = await http.get(
       'https://api.spotify.com/v1/me/player/currently-playing',
       headers: {'Authorization': 'Bearer ' + _authenticationToken});
 
   if (response.statusCode == 200) {
+    print("Current track found");
     _currentTrack = CurrentTrack.fromJson(jsonDecode(response.body));
     print("artist: ${_currentTrack.artist}");
     print("track: ${_currentTrack.track}");
@@ -62,11 +81,30 @@ Future<void> loadSpotifyTrack() async {
     print("href: ${_currentTrack.href}");
     print("imageUrl: ${_currentTrack.imageUrl}");
   } else {
-    print('Failed to load track');
+    print('No current track playing');
+    loadRecentSpotifyTrack();
   }
 }
 
-CurrentTrack fetchSpotifyTrack() {
+Future<void> loadRecentSpotifyTrack() async {
+  final response = await http.get(
+      'https://api.spotify.com/v1/me/player/recently-played',
+      headers: {'Authorization': 'Bearer ' + _authenticationToken});
+
+  if (response.statusCode == 200) {
+    print("Most recent track found");
+    _currentTrack = RecentTrack.fromJson(jsonDecode(response.body));
+    print("artist: ${_currentTrack.artist}");
+    print("track: ${_currentTrack.track}");
+    print("url: ${_currentTrack.url}");
+    print("href: ${_currentTrack.href}");
+  } else {
+    print('Failed to fetch recent track');
+  }
+}
+
+fetchSpotifyTrack() {
+  print("just fetched track: ${_currentTrack.artist}");
   return _currentTrack;
 }
 
