@@ -3,12 +3,16 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:typed_data';
+import 'dart:math';
 // import dependencies
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
@@ -76,6 +80,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   final FirebaseFunctions _functions = getFunction();
   // Future<DocumentSnapshot> _currentDoc;
 
+  //speach_to_text Related initializations
+  bool _hasSpeech = false;
+  double level = 0.0;
+  double minSoundLevel = 50000;
+  double maxSoundLevel = -50000;
+  String lastWords = "";
+  String lastError = "";
+  String lastStatus = "";
+  String _currentLocaleId = "";
+  List<LocaleName> _localeNames = [];
+  final SpeechToText speech = SpeechToText();
+
   final Uri _emailLaunchUri = Uri(
       scheme: 'mailto',
       path: 'teamwardsquid@gmail.com',
@@ -96,6 +112,87 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void dispose() {
     _textEditingController.dispose();
     super.dispose();
+  }
+
+  Future<void> initSpeechState() async {
+    bool hasSpeech = await speech.initialize(
+        onError: errorListener, onStatus: statusListener);
+    if (hasSpeech) {
+      _localeNames = await speech.locales();
+
+      var systemLocale = await speech.systemLocale();
+      _currentLocaleId = systemLocale.localeId;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasSpeech = hasSpeech;
+    });
+  }
+
+  void startListening() {
+    lastWords = "";
+    lastError = "";
+    speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 10),
+        localeId: _currentLocaleId,
+        onSoundLevelChange: soundLevelListener,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation);
+    setState(() {});
+  }
+
+  void stopListening() {
+    speech.stop();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void cancelListening() {
+    speech.cancel();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void resultListener(SpeechRecognitionResult result) {
+    setState(() {
+      lastWords = "${result.recognizedWords} - ${result.finalResult}";
+    });
+  }
+
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
+    setState(() {
+      this.level = level;
+    });
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    // print("Received error status: $error, listening: ${speech.isListening}");
+    setState(() {
+      lastError = "${error.errorMsg} - ${error.permanent}";
+    });
+  }
+
+  void statusListener(String status) {
+    // print(
+    // "Received listener status: $status, listening: ${speech.isListening}");
+    setState(() {
+      lastStatus = "$status";
+    });
+  }
+
+  _switchLang(selectedVal) {
+    setState(() {
+      _currentLocaleId = selectedVal;
+    });
+    print(selectedVal);
   }
 
   Future<void> downloadURLImage() async {
@@ -136,6 +233,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_isEditingText) {
       return Column(
         children: <Widget>[
+          // FlatButton(
+          //   child: Text('Start'),
+          //   onPressed:
+          //       !_hasSpeech || speech.isListening ? null : startListening,
+          // ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: .26,
+                      spreadRadius: level * 1.5,
+                      color: Colors.black.withOpacity(.05))
+                ],
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(50)),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.mic),
+                onPressed:
+                    !_hasSpeech || speech.isListening ? null : startListening,
+              ),
+            ),
+          ),
+          Text(lastWords),
           TextField(
             controller: _titleEditingController,
             decoration: InputDecoration(hintText: 'Title is...'),
@@ -148,7 +274,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             maxLines: null,
             decoration: InputDecoration(hintText: 'Dear diary...'),
             onChanged: (text) {
-              entryText = text;
+              entryText = "$text \n $lastWords";
             },
             autofocus: false,
             controller: _textEditingController,
@@ -430,6 +556,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
                     onPressed: () {
+                      initSpeechState();
                       setState(() {
                         tempTitleText = titleText;
                         tempEntryText = entryText;
