@@ -61,7 +61,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
-  //CurrentTrack currentTrack;
   var _currentTrack;
 
   // Controllers
@@ -97,11 +96,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
 
     // Spotify
-    setState(() {
-      _currentTrack = fetchSpotifyTrack();
-    });
-    _updateCurrentTrack();
-    // Spotify
+    // setState(() {
+    //   _currentTrack = fetchSpotifyTrack();
+    // });
+    // _updateCurrentSpotifyTrack();
   }
 
   @override
@@ -348,24 +346,42 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   // Spotify
-  _updateCurrentTrack() async {
+  _updateCurrentSpotifyTrack() async {
     await loadSpotifyTrack();
     setState(() {
       _currentTrack = fetchSpotifyTrack();
     });
   }
 
-  // Widget _getSpotifyTrack() {
-  //   return RaisedButton(
-  //       child: Text("Today's track"),
-  //       color: Colors.greenAccent,
-  //       onPressed: () => {
-  //             setState(() async {
-  //               currentTrack = await fetchSpotifyTrack();
-  //             })
-  //           });
-  // }
-
+  Widget _displaySpotifyTrack() {
+    return ListTile(
+      leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_currentTrack.track}'),
+      subtitle: Text('${_currentTrack.artist}'),
+      trailing: Icon(
+        Icons.audiotrack,
+        color: Colors.green,
+        size: 50.0,
+      ),
+      isThreeLine: true,
+    );
+//     return Row(children: <Widget>[
+//       _currentTrack == null
+//           ? Text("No Spotify info available")
+//           : Padding(
+//               padding: EdgeInsets.all(16.0),
+//               child:
+//                   Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+//             ),
+//       Padding(
+//         padding: EdgeInsets.all(16.0),
+//         // TODO: will fix this weird formatting later
+//         child: Text('''Recently played:
+// ${_currentTrack.artist}:
+// ${_currentTrack.track}'''),
+//       )
+//     ]);
+  }
   // Spotify
 
   @override
@@ -459,22 +475,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               Container(
                 height: 40.0,
               ),
-              Row(children: <Widget>[
-                _currentTrack == null
-                    ? Text("No Spotify info available")
-                    // : Padding(
-                    //     padding: EdgeInsets.all(16.0),
-                    //     child: Image.network(currentTrack.imageUrl,
-                    //         width: 70, height: 70),
-                    //   ),
-                    : Padding(
-                        padding: EdgeInsets.all(16.0),
-                        // TODO: will fix this weird formatting later
-                        child: Text('''Recently played:
-${_currentTrack.artist}: 
-${_currentTrack.track}'''),
-                      )
-              ]),
+              // Spotify
+              // _displaySpotifyTrack(),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(

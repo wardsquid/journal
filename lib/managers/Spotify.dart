@@ -14,7 +14,6 @@ import 'dart:async';
 import 'dart:convert';
 
 var _authenticationToken;
-//CurrentTrack _currentTrack;
 var _currentTrack;
 
 Future<void> getSpotifyAuth() async {
@@ -22,13 +21,22 @@ Future<void> getSpotifyAuth() async {
   String redirectUrl = DotEnv().env['REDIRECT_URL'];
   print("Initializing Spotify for client $clientId and URI $redirectUrl");
 
-  _authenticationToken = await SpotifySdk.getAuthenticationToken(
-      clientId: clientId,
-      redirectUrl: redirectUrl,
-      scope:
-          "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
-  print("Auth token retrieved: $_authenticationToken");
-  await loadRecentSpotifyTrack();
+  try {
+    _authenticationToken = await SpotifySdk.getAuthenticationToken(
+        clientId: clientId,
+        redirectUrl: redirectUrl,
+        scope:
+            "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
+    print("Auth token retrieved: $_authenticationToken");
+    await loadSpotifyTrack();
+  } catch (error) {
+    print("Spotify access denied by user; auth token: $_authenticationToken");
+  }
+}
+
+fetchSpotifyToken() {
+  print("just fetched track: ${_currentTrack.artist}");
+  return _authenticationToken;
 }
 
 class CurrentTrack {
