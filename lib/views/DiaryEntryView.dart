@@ -86,6 +86,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String lastWords = "";
+  List<String> tempWords = [];
   String lastError = "";
   String lastStatus = "";
   String _currentLocaleId = "";
@@ -141,7 +142,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         onSoundLevelChange: soundLevelListener,
         cancelOnError: true,
         listenMode: ListenMode.confirmation);
-    setState(() {});
+    setState(() {
+      // tempWords.add("\n" + "lastWords");
+      // _textEditingController =
+      //     TextEditingController(text: entryText + tempWords.join(""));
+    });
   }
 
   void stopListening() {
@@ -151,38 +156,37 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
-  void cancelListening() {
-    speech.cancel();
-    setState(() {
-      level = 0.0;
-    });
-  }
+  // void cancelListening() {
+  //   speech.cancel();
+  //   setState(() {
+  //     level = 0.0;
+  //   });
+  // }
 
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
-      lastWords = "${result.recognizedWords} - ${result.finalResult}";
+      lastWords = result.recognizedWords;
+      tempWords.add("\n" + lastWords);
+      _textEditingController =
+          TextEditingController(text: entryText + tempWords.join(""));
     });
   }
 
   void soundLevelListener(double level) {
     minSoundLevel = min(minSoundLevel, level);
     maxSoundLevel = max(maxSoundLevel, level);
-    // print("sound level $level: $minSoundLevel - $maxSoundLevel ");
     setState(() {
       this.level = level;
     });
   }
 
   void errorListener(SpeechRecognitionError error) {
-    // print("Received error status: $error, listening: ${speech.isListening}");
     setState(() {
       lastError = "${error.errorMsg} - ${error.permanent}";
     });
   }
 
   void statusListener(String status) {
-    // print(
-    // "Received listener status: $status, listening: ${speech.isListening}");
     setState(() {
       lastStatus = "$status";
     });
@@ -249,15 +253,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   BoxShadow(
                       blurRadius: .26,
                       spreadRadius: level * 1.5,
-                      color: Colors.black.withOpacity(.05))
+                      color: Colors.blue.withOpacity(.3))
                 ],
-                color: Colors.white,
+                color: Colors.blue,
                 borderRadius: BorderRadius.all(Radius.circular(50)),
               ),
               child: IconButton(
-                icon: Icon(Icons.mic),
-                onPressed:
-                    !_hasSpeech || speech.isListening ? null : startListening,
+                icon: Icon(
+                  Icons.mic,
+                  color: Colors.white,
+                ),
+                onPressed: !_hasSpeech || speech.isListening
+                    ? stopListening
+                    : startListening,
               ),
             ),
           ),
@@ -274,7 +282,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             maxLines: null,
             decoration: InputDecoration(hintText: 'Dear diary...'),
             onChanged: (text) {
-              entryText = "$text \n $lastWords";
+              entryText = text;
             },
             autofocus: false,
             controller: _textEditingController,
@@ -574,6 +582,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         setState(() {
                           buttonText = "Edit";
                           _isEditingText = false;
+                          tempWords = [];
                         });
                       } else {
                         // toggle edit mode
