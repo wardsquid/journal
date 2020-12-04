@@ -1,4 +1,6 @@
 // Spotify
+import 'dart:ffi';
+
 import 'package:async/async.dart';
 import 'package:spotify_sdk/models/connection_status.dart';
 import 'package:spotify_sdk/models/crossfade_state.dart';
@@ -28,7 +30,7 @@ Future<void> getSpotifyAuth() async {
         scope:
             "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
     print("Auth token retrieved: $_authenticationToken");
-    await loadSpotifyTrack();
+    //await loadSpotifyTrack();
   } catch (error) {
     print("Spotify access denied by user; auth token: $_authenticationToken");
   }
@@ -74,7 +76,7 @@ class RecentTrack {
         href: json['items'][0]['track']['href']);
   }
 
-  void getImage() async {
+  Future<void> getImage() async {
     Map<String, dynamic> json;
 
     final response = await http.get(this.href,
@@ -105,7 +107,7 @@ Future<void> loadSpotifyTrack() async {
     print("imageUrl: ${_currentTrack.imageUrl}");
   } else {
     print('No current track playing');
-    loadRecentSpotifyTrack();
+    await loadRecentSpotifyTrack();
   }
 }
 
@@ -130,7 +132,6 @@ Future<void> loadRecentSpotifyTrack() async {
 }
 
 fetchSpotifyTrack() {
-  print("just fetched track: ${_currentTrack.artist}");
   return _currentTrack;
 }
 

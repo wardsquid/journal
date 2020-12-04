@@ -42,6 +42,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   // Spotify
   var _spotifyToken;
   var _currentTrack;
+  bool _chosenTrack;
 
   // Controllers
   TextEditingController _textEditingController;
@@ -75,15 +76,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
-    }
-
-    // Spotify
-    _spotifyToken = fetchSpotifyToken();
-    if (_spotifyToken != null) {
-      setState(() {
-        _currentTrack = fetchSpotifyTrack();
-      });
-      _updateCurrentSpotifyTrack();
     }
   }
 
@@ -257,7 +249,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       visible: true, //_dialVisible,
       // If true user is forced to close dial manually
       // by tapping main button and overlay is not rendered.
-      closeManually: true,
+      closeManually: false,
       curve: Curves.bounceIn,
       overlayColor: Colors.black,
       overlayOpacity: 0.5,
@@ -265,7 +257,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onClose: () => print('DIAL CLOSED'),
       tooltip: 'Speed Dial',
       heroTag: 'speed-dial-hero-tag',
-      backgroundColor: Colors.purpleAccent,
+      backgroundColor: Colors.pink,
       foregroundColor: Colors.white,
       elevation: 8.0,
       shape: CircleBorder(),
@@ -285,7 +277,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         ),
         SpeedDialChild(
           child: Icon(Icons.keyboard_voice),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.purple,
           label: 'Record a voice entry',
           // labelStyle: TextStyle(fontSize: 18.0),
           onTap: () => print('THIRD CHILD'),
@@ -313,6 +305,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
           onTap: () => {setState(() => toogleML = !toogleML)},
         ),
+        _spotifySpeedDial()
       ],
     );
   }
@@ -427,29 +420,81 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
-  /////////////////// Spotify ///////////////////
-  _updateCurrentSpotifyTrack() async {
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
+  SpeedDialChild _spotifySpeedDial() {
+    return SpeedDialChild(
+      child: Icon(Icons.music_note),
+      backgroundColor: Colors.green,
+      label: 'Add Spotify track',
+      onTap: () async {
+        await _initializeSpotify();
+        if (_spotifyToken != null) {
+          print("updating for token $_spotifyToken");
+          await _updateLatestSpotifyTrack();
+          _selectTrackPopup(context);
+        } else {
+          _linkSpotifyPopup(context);
+        }
+      },
+    );
+  }
+
+  Future<void> _initializeSpotify() async {
+    if (_spotifyToken == null) {
+      print("no token found");
+      await getSpotifyAuth();
+      var token = fetchSpotifyToken();
+      setState(() {
+        _spotifyToken = token;
+      });
+    }
+  }
+
+  _updateLatestSpotifyTrack() async {
     await loadSpotifyTrack();
     setState(() {
       _currentTrack = fetchSpotifyTrack();
     });
   }
 
-  // _spotifyButton(context) {
-  //   return Alert(
-  //       context: context,
-  //       title: "Set a daily reminder",
-  //       content: Text("hi"),
-  //       buttons: [
-  //         DialogButton(
-  //             child: Text("Enter"),
-  //             onPressed: () {
-  //               print("pressed");
-  //             })
-  //       ]).show();
-  // }
+  _selectTrackPopup(context) {
+    if (_currentTrack != null) {
+      return Alert(
+          context: context,
+          title: "Recently played:",
+          content: _currentSpotifyTrack(),
+          buttons: [
+            DialogButton(
+                child: Text("Add song"),
+                onPressed: () {
+                  setState(() {
+                    _chosenTrack = true;
+                  });
+                  Navigator.pop(context);
+                })
+          ]).show();
+    }
+  }
 
-  Widget _displaySpotifyTrack() {
+  _linkSpotifyPopup(context) {
+    return Alert(
+        context: context,
+        title: "No worries!",
+        content: Text(
+            "Click this button again anytime if you'd like to give Spotify access to use this feature."),
+        buttons: [
+          DialogButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.pop(context);
+              })
+        ]).show();
+  }
+
+  Widget _currentSpotifyTrack() {
     return ListTile(
       leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
       title: Text('${_currentTrack.track}'),
@@ -462,7 +507,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       isThreeLine: true,
     );
   }
-  /////////////////// Spotify ///////////////////
+
+  Widget _chosenSpotifyTrack() {
+    return ListTile(
+      leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_currentTrack.track}'),
+      subtitle: Text('${_currentTrack.artist}'),
+      trailing: Icon(
+        Icons.audiotrack,
+        color: Colors.green,
+        size: 50.0,
+      ),
+      isThreeLine: true,
+    );
+  }
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////
   /// MAIN VIEW
@@ -565,7 +626,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   height: 40.0,
                 ),
                 // Spotify
-                if (_spotifyToken != null) _displaySpotifyTrack(),
+                if (_chosenTrack == true) _chosenSpotifyTrack(),
                 Align(
                     alignment: FractionalOffset.bottomRight,
                     child: TextButton(

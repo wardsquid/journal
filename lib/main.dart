@@ -10,8 +10,7 @@ import 'package:flutter/material.dart';
 import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
 
-// Spotify
-import 'managers/Spotify.dart';
+// For Spotify client key
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -20,7 +19,6 @@ void main() async {
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await DotEnv().load('.env');
-  await getSpotifyAuth();
   runApp(MyApp());
 }
 
@@ -30,7 +28,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class MyApp extends StatelessWidget {
   final User _user = checkUserLoginStatus();
-  
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
