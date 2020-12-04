@@ -28,10 +28,12 @@ Future<void> getReminder() async {
       .doc(currentUser.uid)
       .snapshots()
       .listen((DocumentSnapshot documentSnapshot) {
-    var data = documentSnapshot.get("reminder");
-    reminderTime = DateTime.parse(data.toDate().toString());
-    print("data from snapshot: $reminderTime");
-    notificationPlugin.showDailyAtTime(reminderTime);
+    Timestamp data = documentSnapshot.data()["reminder"];
+    if (data != null) {
+      reminderTime = DateTime.parse(data.toDate().toString());
+      print("data from snapshot: $reminderTime");
+      notificationPlugin.showDailyAtTime(reminderTime);
+    }
   }).onError((error) => {print("Error getting reminder: $error")});
 }
 
@@ -120,8 +122,7 @@ Future<bool> checkUserExists() async {
 dynamic checkFriendEmail(String email) async {
   final HttpsCallable httpsCallable =
       FirebaseFunctions.instance.httpsCallable("checkFriendEmail");
-  final results =
-      await httpsCallable.call({"email": email});
+  final results = await httpsCallable.call({"email": email});
   return results.data;
 }
 
