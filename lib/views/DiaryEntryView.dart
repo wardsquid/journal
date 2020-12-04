@@ -351,12 +351,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
-  // Spotify
+  /////////////////// Spotify ///////////////////
   _updateCurrentSpotifyTrack() async {
     await loadSpotifyTrack();
     setState(() {
       _currentTrack = fetchSpotifyTrack();
     });
+  }
+
+  Widget _spotifyButton() {
+    return PopupMenuButton(
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
+              const PopupMenuItem<String>(
+                value: "hello",
+                child: Text('Working a lot harder'),
+              )
+            ],
+        child: Icon(Icons.audiotrack));
   }
 
   Widget _displaySpotifyTrack() {
@@ -372,7 +383,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       isThreeLine: true,
     );
   }
-  // Spotify
+  /////////////////// Spotify ///////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -466,7 +477,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 height: 40.0,
               ),
               // Spotify
-              if (_spotifyToken != null) _displaySpotifyTrack(),
+              if (_isEditingText) _spotifyButton(),
+              //if (_spotifyToken != null) _displaySpotifyTrack(),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
