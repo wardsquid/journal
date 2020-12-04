@@ -360,14 +360,19 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
-  Widget _spotifyButton() {
-    // return Alert(
-    //     context: context,
-    //     title: "Set a daily reminder",
-    //     content: Text("hi"),
-    //     buttons: DialogButton();
-    //   );
-  }
+  // _spotifyButton(context) {
+  //   return Alert(
+  //       context: context,
+  //       title: "Set a daily reminder",
+  //       content: Text("hi"),
+  //       buttons: [
+  //         DialogButton(
+  //             child: Text("Enter"),
+  //             onPressed: () {
+  //               print("pressed");
+  //             })
+  //       ]).show();
+  // }
 
   Widget _displaySpotifyTrack() {
     return ListTile(
@@ -476,8 +481,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 height: 40.0,
               ),
               // Spotify
-              if (_isEditingText) _spotifyButton(),
-              //if (_spotifyToken != null) _displaySpotifyTrack(),
+              // if (_isEditingText) _spotifyButton(context),
+              if (_spotifyToken != null) _displaySpotifyTrack(),
               Align(
                   alignment: FractionalOffset.bottomRight,
                   child: TextButton(
