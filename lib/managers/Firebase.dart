@@ -87,14 +87,17 @@ Future<void> addUser() async {
   users
       .doc(currentUser.uid)
       .set({
+        'journals_list': ["Personal"],
+        'ML_preference': true,
+        'ML_preference_updated': false,
         'reminder': null,
         'friends': [
           {'name': 'Vic', 'email': 'wow@email.com'},
           {'name': 'Dustin', 'email': 'cool@email.com'}
         ],
-        'journals': [
-          {'uid': 'uid1', 'name': "CC15's super secret diary"},
-        ],
+        // 'journals': [
+        //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
+        // ],
         'entries': ['uid1', 'uid2', 'uid3', 'uid4']
       })
       .then((value) => {print("Successfully added user $currentUser")})
@@ -126,6 +129,12 @@ dynamic checkFriendEmail(String email) async {
   return results.data;
 }
 
+getUserProfile() async {
+  User currentUser = checkUserLoginStatus();
+  CollectionReference users = getFireStoreUsersDB();
+  DocumentSnapshot userProfile = await users.doc(currentUser.uid).get();
+  return userProfile;
+}
 /*
   How to use checkFriendEmail
   bool your_variable_name = await checkFriendEmail("insert email string here");

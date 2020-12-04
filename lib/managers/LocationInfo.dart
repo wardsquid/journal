@@ -11,10 +11,6 @@ Future<List<double>> getExifFromFile(File selectedPhoto) async {
   }
   Uint8List bytes = await selectedPhoto.readAsBytes();
   Map<String, IfdTag> exifTags = await readExifFromBytes(bytes);
-  // print(exifTags.keys.toString());
-  // exifTags.forEach((k, v) {
-  //   print("$k: $v \n");
-  // });
   if (exifTags.containsKey('GPS GPSLongitude') &&
       exifTags.containsKey('GPS GPSLongitudeRef') &&
       exifTags.containsKey('GPS GPSLatitude') &&

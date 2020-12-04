@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
@@ -20,33 +22,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
-String DateDisplay(DateTime date) {
-  const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const List months = [
-    null,
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
-  String toBeDisplayed = weekday[date.weekday] +
-      ', ' +
-      date.day.toString() +
-      ' ' +
-      months[date.month] +
-      ' ' +
-      date.year.toString();
-  return toBeDisplayed;
-}
-
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
@@ -56,6 +31,7 @@ class DiaryEntryView extends StatefulWidget {
 }
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
+  bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
@@ -90,7 +66,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
-      _isEditingText = true;
+      // _isEditingText = true;
     }
   }
 
@@ -163,7 +139,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             },
             autofocus: false,
             controller: _textEditingController,
-          )
+          ),
         ],
       );
     }
@@ -246,6 +222,80 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       label: _isEditingText ? Text("Cancel") : Text("New"),
       backgroundColor: Colors.pink,
       icon: _isEditingText ? Icon(Icons.cancel) : Icon(Icons.add),
+    );
+  }
+
+////////////////////////////////////////////////////////////////
+  /// SPEED DIAL
+////////////////////////////////////////////////////////////////
+  Widget speedDial() {
+    return SpeedDial(
+      // both default to 16
+      marginRight: 18,
+      marginBottom: 20,
+      animatedIcon: AnimatedIcons.menu_close,
+      animatedIconTheme: IconThemeData(size: 22.0),
+      // this is ignored if animatedIcon is non null
+      // child: Icon(Icons.add),
+      visible: true, //_dialVisible,
+      // If true user is forced to close dial manually
+      // by tapping main button and overlay is not rendered.
+      closeManually: true,
+      curve: Curves.bounceIn,
+      overlayColor: Colors.black,
+      overlayOpacity: 0.5,
+      onOpen: () => print('OPENING DIAL'),
+      onClose: () => print('DIAL CLOSED'),
+      tooltip: 'Speed Dial',
+      heroTag: 'speed-dial-hero-tag',
+      backgroundColor: Colors.purpleAccent,
+      foregroundColor: Colors.white,
+      elevation: 8.0,
+      shape: CircleBorder(),
+      children: [
+        SpeedDialChild(
+            child: Icon(Icons.add_photo_alternate),
+            backgroundColor: Colors.red,
+            label: 'Add a photo from your Gallery',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('FIRST CHILD')),
+        SpeedDialChild(
+          child: Icon(Icons.add_a_photo),
+          backgroundColor: Colors.blue,
+          label: 'Add from Camera',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('SECOND CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.keyboard_voice),
+          backgroundColor: Colors.green,
+          label: 'Record a voice entry',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('THIRD CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.share),
+          backgroundColor: Colors.orange,
+          label: 'Share with a friend',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => print('THIRD CHILD'),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.menu_book),
+          backgroundColor: Colors.brown,
+          label: 'Current Journal: Personal',
+          // labelStyle: TextStyle(fontSize: 18.0),
+          onTap: () => {
+            getUserProfile().then((profile) => print(profile.data().toString())),
+          },
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.plumbing),
+          backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+          label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+          onTap: () => {setState(() => toogleML = !toogleML)},
+        ),
+      ],
     );
   }
 
@@ -358,36 +408,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       });
     }
   }
-///////////////////////////////////////////////////////////////////////
-  /// NAVBAR BEHAVIOUR
-///////////////////////////////////////////////////////////////////////
-Widget bottomNavBar (BuildContext context) {
-return new BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.business),
-            label: 'Business',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'School',
-          ),
-        ],
-        // currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        // onTap: _onItemTapped,
-      );
-}
+
 ///////////////////////////////////////////////////////////////////////
   /// MAIN VIEW
 ///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // resizeToAvoidBottomInset: false,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Container(
@@ -535,52 +563,55 @@ return new BottomNavigationBar(
                         ),
                       ),
                     )),
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        launch(_emailLaunchUri.toString());
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 20.0),
-                        child: Container(
-                            height: 50.0,
-                            width: 130.0,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10.0),
-                                color: Colors
-                                    .transparent, // background button color
-                                border: Border.all(
-                                    color: Colors.grey) // all border colors
-                                ),
-                            child: Row(children: <Widget>[
-                              Text(
-                                "Report",
-                                style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 17.0,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: "Poppins",
-                                    letterSpacing: 1.5),
-                              ),
-                              Icon(
-                                Icons.mail,
-                                color: Colors.grey,
-                                size: 30.0,
-                              ),
-                            ], mainAxisAlignment: MainAxisAlignment.center)),
-                      ),
-                    ))
+                // Align(
+                //     alignment: Alignment.centerRight,
+                //     child: TextButton(
+                //       onPressed: () {
+                //         launch(_emailLaunchUri.toString());
+                //       },
+                //       child: Padding(
+                //         padding: const EdgeInsets.only(bottom: 20.0),
+                //         child: Container(
+                //             height: 50.0,
+                //             width: 130.0,
+                //             decoration: BoxDecoration(
+                //                 borderRadius: BorderRadius.circular(10.0),
+                //                 color: Colors
+                //                     .transparent, // background button color
+                //                 border: Border.all(
+                //                     color: Colors.grey) // all border colors
+                //                 ),
+                //             // child: Row(children: <Widget>[
+                //             //   Text(
+                //             //     "Report",
+                //             //     style: TextStyle(
+                //             //         color: Colors.grey,
+                //             //         fontSize: 17.0,
+                //             //         fontWeight: FontWeight.w400,
+                //             //         fontFamily: "Poppins",
+                //             //         letterSpacing: 1.5),
+                //             //   ),
+                //             //   Icon(
+                //             //     Icons.mail,
+                //             //     color: Colors.grey,
+                //             //     size: 30.0,
+                //             //   ),
+                //             // ], mainAxisAlignment: MainAxisAlignment.center)),
+                //       ),
+                //     ),
+                //     ),
+                // Transform.translate(
+                //     offset: Offset(
+                //         0.0, -1 * MediaQuery.of(context).viewInsets.bottom),
+                //     child: bottomNavBar(context)),
+                // bottomNavBar(context),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButton: _getFloatingButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
-      bottomNavigationBar: bottomNavBar(context),
+      floatingActionButton: speedDial(), //_getFloatingButton(),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }
-
-
