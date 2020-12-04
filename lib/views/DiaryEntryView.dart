@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
@@ -360,14 +361,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _spotifyButton() {
-    return PopupMenuButton(
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<dynamic>>[
-              const PopupMenuItem<String>(
-                value: "hello",
-                child: Text('Working a lot harder'),
-              )
-            ],
-        child: Icon(Icons.audiotrack));
+    // return Alert(
+    //     context: context,
+    //     title: "Set a daily reminder",
+    //     content: Text("hi"),
+    //     buttons: DialogButton();
+    //   );
   }
 
   Widget _displaySpotifyTrack() {
