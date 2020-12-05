@@ -108,15 +108,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     _titleEditingController = TextEditingController(text: titleText);
     if (widget.documentId != "") {
       readEntry(widget.documentId); //as DocumentSnapshot;
-      entryFocusNode = FocusNode();
-      titleFocusNode = FocusNode();
-      // titleFocusNode.addListener(() {
-      //   print("Has tilefocus: ${titleFocusNode.hasFocus}");
-      // });
-      // entryFocusNode.addListener(() {
-      //   print("Has entryfocus: ${entryFocusNode.hasFocus}");
-      // });
     }
+    entryFocusNode = FocusNode();
+    titleFocusNode = FocusNode();
   }
 
   @override
@@ -180,10 +174,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         if (entryFocusNode.hasFocus) {
           entryText += " " + lastWords;
           _entryEditingController = TextEditingController(text: entryText);
+          lastWords = "";
         }
         if (titleFocusNode.hasFocus) {
           titleText += " " + lastWords;
           _titleEditingController = TextEditingController(text: titleText);
+          lastWords = "";
         }
       }
     });
