@@ -5,10 +5,12 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'dart:math';
 // import dependencies
+import 'package:async/async.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:speech_to_text/speech_recognition_event.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
@@ -64,7 +66,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   String buttonText = "Edit";
   List<double> _coordinates;
   // Controllers
-  TextEditingController _textEditingController;
+  TextEditingController _entryEditingController;
   TextEditingController _titleEditingController;
 
   String entryText = "";
@@ -78,7 +80,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   final CollectionReference entries = getFireStoreEntriesDB();
   final FirebaseStorage _storage = getStorage();
   final FirebaseFunctions _functions = getFunction();
-  // Future<DocumentSnapshot> _currentDoc;
 
   //speach_to_text Related initializations
   bool _hasSpeech = false;
@@ -86,12 +87,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String lastWords = "";
-  // List<String> tempWords = [];
   String lastError = "";
   String lastStatus = "";
   String _currentLocaleId = "";
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
+  FocusNode entryFocusNode;
+  FocusNode titleFocusNode;
+  final bool finalResult = true;
 
   final Uri _emailLaunchUri = Uri(
       scheme: 'mailto',
@@ -101,17 +104,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   @override
   void initState() {
     super.initState();
-    _textEditingController = TextEditingController(text: entryText);
+    _entryEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
     if (widget.documentId != "") {
-      // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
+      entryFocusNode = FocusNode();
+      titleFocusNode = FocusNode();
+      // titleFocusNode.addListener(() {
+      //   print("Has tilefocus: ${titleFocusNode.hasFocus}");
+      // });
+      // entryFocusNode.addListener(() {
+      //   print("Has entryfocus: ${entryFocusNode.hasFocus}");
+      // });
     }
   }
 
   @override
   void dispose() {
-    _textEditingController.dispose();
+    _entryEditingController.dispose();
+    _titleEditingController.dispose();
+    entryFocusNode.dispose();
+    titleFocusNode.dispose();
     super.dispose();
   }
 
@@ -133,18 +146,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   void startListening() {
-    if (lastWords != "") {
-      entryText += " " + lastWords;
-    }
     lastWords = "";
     lastError = "";
     speech.listen(
-        onResult: resultListener,
-        listenFor: Duration(seconds: 60),
-        localeId: _currentLocaleId,
-        onSoundLevelChange: soundLevelListener,
-        cancelOnError: true,
-        listenMode: ListenMode.confirmation);
+      onResult: resultListener,
+      listenFor: Duration(seconds: 60),
+      localeId: _currentLocaleId,
+      onSoundLevelChange: soundLevelListener,
+      cancelOnError: true,
+      listenMode: ListenMode.confirmation,
+    );
     setState(() {});
   }
 
@@ -165,8 +176,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = result.recognizedWords;
-      _textEditingController =
-          TextEditingController(text: entryText + " " + lastWords);
+      if (result.finalResult) {
+        if (entryFocusNode.hasFocus) {
+          entryText += " " + lastWords;
+          _entryEditingController = TextEditingController(text: entryText);
+        }
+        if (titleFocusNode.hasFocus) {
+          titleText += " " + lastWords;
+          _titleEditingController = TextEditingController(text: titleText);
+        }
+      }
     });
   }
 
@@ -225,7 +244,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
         _isEditingText = false;
-        _textEditingController = TextEditingController(text: entryText);
+        _entryEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
     });
@@ -235,11 +254,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_isEditingText) {
       return Column(
         children: <Widget>[
-          // FlatButton(
-          //   child: Text('Start'),
-          //   onPressed:
-          //       !_hasSpeech || speech.isListening ? null : startListening,
-          // ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -271,21 +285,24 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ),
           Text(lastWords),
           TextField(
+            maxLines: null,
             controller: _titleEditingController,
             decoration: InputDecoration(hintText: 'Title is...'),
             onChanged: (text) {
               titleText = text;
             },
             autofocus: true,
+            focusNode: titleFocusNode,
           ),
           TextField(
             maxLines: null,
+            controller: _entryEditingController,
             decoration: InputDecoration(hintText: 'Dear diary...'),
             onChanged: (text) {
               entryText = text;
             },
             autofocus: false,
-            controller: _textEditingController,
+            focusNode: entryFocusNode,
           )
         ],
       );
@@ -331,8 +348,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               buttonText = "Edit";
               titleText = tempTitleText;
               entryText = tempEntryText;
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
+              lastWords = "";
             })
           }
         else if (_isEditingText && widget.documentId == "")
@@ -340,12 +358,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             setState(() {
               titleText = '';
               entryText = '';
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
               _bucketUrl = "";
               buttonText = "Edit";
               _isEditingText = false;
+              lastWords = "";
             })
           }
         else
@@ -355,7 +374,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             setState(() {
               titleText = '';
               entryText = '';
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
               buttonText = "Save";
@@ -450,7 +469,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         } else {
           entryText = generatedText;
         }
-        _textEditingController = TextEditingController(text: entryText);
+        _entryEditingController = TextEditingController(text: entryText);
       });
     }
   }
@@ -570,6 +589,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         tempEntryText = entryText;
                       });
                       if (_isEditingText) {
+                        // toggle view mode
+                        setState(() {
+                          buttonText = "Edit";
+                          _isEditingText = false;
+                          lastWords = "";
+                        });
                         if (_image == null &&
                             titleText == "" &&
                             entryText == "") {
@@ -578,12 +603,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         } else {
                           _overwriteEntry();
                         }
-                        // toggle view mode
-                        setState(() {
-                          buttonText = "Edit";
-                          _isEditingText = false;
-                          // tempWords = [];
-                        });
                       } else {
                         // toggle edit mode
                         setState(() {
