@@ -88,17 +88,18 @@ Future<void> addUser() async {
       .doc(currentUser.uid)
       .set({
         'journals_list': ["Personal"],
-        'ML_preference': true,
-        'ML_preference_updated': false,
+        // 'ML_preference': true,
+        // 'ML_preference_updated': false,
         'reminder': null,
-        'friends': [
-          {'name': 'Vic', 'email': 'wow@email.com'},
-          {'name': 'Dustin', 'email': 'cool@email.com'}
-        ],
+        'friends': [],
+        'sharing_info': {}
+        //   {'name': 'Vic', 'email': 'wow@email.com'},
+        //   {'name': 'Dustin', 'email': 'cool@email.com'}
+        // ],
         // 'journals': [
         //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
         // ],
-        'entries': ['uid1', 'uid2', 'uid3', 'uid4']
+        // 'entries': ['uid1', 'uid2', 'uid3', 'uid4']
       })
       .then((value) => {print("Successfully added user $currentUser")})
       .catchError((error) => {print("Failed to add user: $error")});
@@ -151,6 +152,21 @@ Future<bool> addNewJournal(String title) async {
     users.doc(currentUser.uid).update({
       'journals_list': FieldValue.arrayUnion([title])
     });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/////////////////////////////////////////////
+/// UPDATE JOURNAL SHARING
+/////////////////////////////////////////////
+Future<bool> updateJournalSharing(
+    Map<String, dynamic> updatedSharingInfo) async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  try {
+    users.doc(currentUser.uid).update({'sharing_info': updatedSharingInfo});
     return true;
   } catch (error) {
     return false;

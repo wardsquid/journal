@@ -8,6 +8,7 @@ import 'Firebase.dart';
 Map<String, dynamic> userProfile;
 Map<String, dynamic> activeEntry;
 String currentJournal;
+Map<String, dynamic> currentlySharingWith;
 
 Future<void> initializeUserCaching() async {
   currentJournal = null;
@@ -18,6 +19,7 @@ Future<void> initializeUserCaching() async {
     CollectionReference userDB = getFireStoreUsersDB();
     DocumentSnapshot userInfo = await userDB.doc(current.uid).get();
     userProfile = userInfo.data();
+    currentlySharingWith = userProfile['sharing_info'];
     updateJournal();
   }
 }
