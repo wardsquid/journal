@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
@@ -27,25 +28,23 @@ class _TimeLineView extends State<TimeLineView> {
         "spotify": null,
         "artist": null,
         "track": null,
-        "albumImage": null
+        "albumImage": null,
+        "url": null // to open in spotify
       },
     }
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
     if (entry["content"]["spotify"] != null) {
-      print("url in pushtolist: ${entry['content']['spotify']}");
-      var hi = entry["content"]["spotify"];
-      print("hi $hi");
-      await getTrackByUrl(hi);
+      var _url = entry["content"]["spotify"];
+      await getTrackByUrl(_url);
       setState(() {
         _storedTrack = fetchStoredTrack();
       });
-      print("Stored track ${_storedTrack.track}");
       entry["content"]["track"] = _storedTrack.track;
       entry["content"]["artist"] = _storedTrack.artist;
       entry["content"]["albumImage"] = _storedTrack.imageUrl;
-      print("ENTRY TRACK = ${entry["content"]["albumImage"]}");
+      entry["content"]["url"] = _storedTrack.url;
     }
     print("pushing ${entry.toString()}");
     setState(() {
@@ -53,22 +52,6 @@ class _TimeLineView extends State<TimeLineView> {
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
     });
   }
-
-  Future<void> _getTrackByUrl() async {
-    print("url in get: $_spotifyUrl");
-    await getTrackByUrl(_spotifyUrl);
-  }
-
-  //no:
-  // Future<void> _getSpotifyTrack() async {
-  //   print("url in get: $_spotifyUrl");
-  //   print(_spotifyUrl.runtimeType);
-  //   getTrackByUrl(_spotifyUrl);
-  //   setState(() {
-  //     _storedTrack = fetchStoredTrack();
-  //   });
-  //   print("Stored track ${_storedTrack.toString()}");
-  // }
 
   void parseQuery(DateTime date) {
     if (date == null) date = today;
@@ -184,11 +167,13 @@ class _TimeLineView extends State<TimeLineView> {
                     width: 70, height: 70),
                 title: Text('${entry["content"]["track"]}'),
                 subtitle: Text('${entry["content"]["artist"]}'),
-                trailing: Icon(
-                  Icons.audiotrack,
-                  color: Colors.green,
-                  size: 50.0,
-                ),
+                trailing: IconButton(
+                    icon:
+                        Icon(Icons.audiotrack, color: Colors.green, size: 50.0),
+                    onPressed: () {
+                      // open in spotify
+                      return launch(entry["content"]["url"]);
+                    }),
                 isThreeLine: true,
               ),
             // Spotify
