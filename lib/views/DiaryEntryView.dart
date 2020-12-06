@@ -42,7 +42,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   // Spotify
   var _spotifyToken;
   var _currentTrack;
-  bool _chosenTrack;
+  var _storedTrack;
+  bool _trackReady = false;
+  String _spotifyUrl = "";
 
   // Controllers
   TextEditingController _textEditingController;
@@ -74,6 +76,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (widget.documentId != "") {
       // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
+      print("Read entry. Spotify url: $_spotifyUrl");
     } else {
       // _isEditingText = true;
     }
@@ -118,11 +121,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
+        _spotifyUrl = documentSnapshot.data()["content"]["spotify"];
         _isEditingText = false;
         _textEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
     });
+    _getTrackByUrl();
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -299,12 +304,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 .then((profile) => print(profile.data().toString())),
           },
         ),
-        SpeedDialChild(
-          child: Icon(Icons.plumbing),
-          backgroundColor: toogleML ? Colors.cyan : Colors.grey,
-          label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
-          onTap: () => {setState(() => toogleML = !toogleML)},
-        ),
+        // Commenting this out because buttons don't all fit anymore
+        // SpeedDialChild(
+        //   child: Icon(Icons.plumbing),
+        //   backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+        //   label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+        //   onTap: () => {setState(() => toogleML = !toogleML)},
+        // ),
         _spotifySpeedDial()
       ],
     );
@@ -314,6 +320,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() {
+    print("Adding track: ${_storedTrack.track}");
     return entries
         .add({
           'user_id': _user.uid,
@@ -321,7 +328,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'timestamp': DateTime.now(),
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -349,7 +357,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'title': titleText,
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -443,14 +452,15 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Future<void> _initializeSpotify() async {
-    if (_spotifyToken == null) {
-      print("no token found");
-      await getSpotifyAuth();
-      var token = fetchSpotifyToken();
-      setState(() {
-        _spotifyToken = token;
-      });
-    }
+    // Use below code if we want to authenticate from this button, and not on app start
+    // if (_spotifyToken == null) {
+    //   print("no token found");
+    //   await getSpotifyAuth();
+    var token = fetchSpotifyToken();
+    setState(() {
+      _spotifyToken = token;
+    });
+    //}
   }
 
   _updateLatestSpotifyTrack() async {
@@ -471,8 +481,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 child: Text("Add song"),
                 onPressed: () {
                   setState(() {
-                    _chosenTrack = true;
+                    _spotifyUrl = _currentTrack.href;
                   });
+                  _getTrackByUrl();
                   Navigator.pop(context);
                 })
           ]).show();
@@ -508,11 +519,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
-  Widget _chosenSpotifyTrack() {
+  Widget _storedSpotifyTrack() {
     return ListTile(
-      leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
-      title: Text('${_currentTrack.track}'),
-      subtitle: Text('${_currentTrack.artist}'),
+      leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_storedTrack.track}'),
+      subtitle: Text('${_storedTrack.artist}'),
       trailing: Icon(
         Icons.audiotrack,
         color: Colors.green,
@@ -520,6 +531,41 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       ),
       isThreeLine: true,
     );
+  }
+
+  _getTrackByUrl() async {
+    await getTrackByUrl(_spotifyUrl);
+    setState(() {
+      _storedTrack = fetchStoredTrack();
+      _trackReady = true;
+    });
+  }
+
+  Widget _displaySpotifyTrack() {
+    print("Got track: ${_storedTrack.track}");
+
+    return ListTile(
+      leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_storedTrack.track}'),
+      subtitle: Text('${_storedTrack.artist}'),
+      trailing: Icon(
+        Icons.audiotrack,
+        color: Colors.green,
+        size: 50.0,
+      ),
+      isThreeLine: true,
+    );
+    // return ListTile(
+    //   leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+    //   title: Text('${_currentTrack.track}'),
+    //   subtitle: Text('${_currentTrack.artist}'),
+    //   trailing: Icon(
+    //     Icons.audiotrack,
+    //     color: Colors.green,
+    //     size: 50.0,
+    //   ),
+    //   isThreeLine: true,
+    // );
   }
 ///////////////////////////////////////////////////////////////////////
   /// SPOTIFY
@@ -626,7 +672,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   height: 40.0,
                 ),
                 // Spotify
-                if (_chosenTrack == true) _chosenSpotifyTrack(),
+                if (_trackReady) _storedSpotifyTrack(),
                 Align(
                     alignment: FractionalOffset.bottomRight,
                     child: TextButton(
