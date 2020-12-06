@@ -76,7 +76,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (widget.documentId != "") {
       // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
-      print("Read entry. Spotify url: $_spotifyUrl");
     } else {
       // _isEditingText = true;
     }
@@ -267,43 +266,48 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       elevation: 8.0,
       shape: CircleBorder(),
       children: [
-        SpeedDialChild(
-            child: Icon(Icons.add_photo_alternate),
-            backgroundColor: Colors.red,
-            label: 'Add a photo from your Gallery',
+        if (_isEditingText == true)
+          SpeedDialChild(
+              child: Icon(Icons.add_photo_alternate),
+              backgroundColor: Colors.red,
+              label: 'Add a photo from your Gallery',
+              // labelStyle: TextStyle(fontSize: 18.0),
+              onTap: () => print('FIRST CHILD')),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.add_a_photo),
+            backgroundColor: Colors.blue,
+            label: 'Add from Camera',
             // labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => print('FIRST CHILD')),
-        SpeedDialChild(
-          child: Icon(Icons.add_a_photo),
-          backgroundColor: Colors.blue,
-          label: 'Add from Camera',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('SECOND CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.keyboard_voice),
-          backgroundColor: Colors.purple,
-          label: 'Record a voice entry',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.share),
-          backgroundColor: Colors.orange,
-          label: 'Share with a friend',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.menu_book),
-          backgroundColor: Colors.brown,
-          label: 'Current Journal: Personal',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => {
-            getUserProfile()
-                .then((profile) => print(profile.data().toString())),
-          },
-        ),
+            onTap: () => print('SECOND CHILD'),
+          ),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.keyboard_voice),
+            backgroundColor: Colors.purple,
+            label: 'Record a voice entry',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.share),
+            backgroundColor: Colors.orange,
+            label: 'Share with a friend',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.menu_book),
+            backgroundColor: Colors.brown,
+            label: 'Current Journal: Personal',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => {
+              getUserProfile()
+                  .then((profile) => print(profile.data().toString())),
+            },
+          ),
         // Commenting this out because buttons don't all fit anymore
         // SpeedDialChild(
         //   child: Icon(Icons.plumbing),
@@ -311,7 +315,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         //   label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
         //   onTap: () => {setState(() => toogleML = !toogleML)},
         // ),
-        _spotifySpeedDial()
+        if (_isEditingText == true) _spotifySpeedDial()
       ],
     );
   }
@@ -520,11 +524,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
       title: Text('${_currentTrack.track}'),
       subtitle: Text('${_currentTrack.artist}'),
-      trailing: Icon(
-        Icons.audiotrack,
-        color: Colors.green,
-        size: 50.0,
-      ),
       isThreeLine: true,
     );
   }
@@ -534,11 +533,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
       title: Text('${_storedTrack.track}'),
       subtitle: Text('${_storedTrack.artist}'),
-      trailing: Icon(
-        Icons.audiotrack,
-        color: Colors.green,
-        size: 50.0,
-      ),
+      trailing: IconButton(
+          icon: Icon(Icons.audiotrack, color: Colors.green, size: 50.0),
+          onPressed: () {
+            // open in spotify
+            return launch(_storedTrack.url);
+          }),
       isThreeLine: true,
     );
   }
@@ -551,32 +551,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
-  Widget _displaySpotifyTrack() {
-    print("Got track: ${_storedTrack.track}");
-
-    return ListTile(
-      leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
-      title: Text('${_storedTrack.track}'),
-      subtitle: Text('${_storedTrack.artist}'),
-      trailing: Icon(
-        Icons.audiotrack,
-        color: Colors.green,
-        size: 50.0,
-      ),
-      isThreeLine: true,
-    );
-    // return ListTile(
-    //   leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
-    //   title: Text('${_currentTrack.track}'),
-    //   subtitle: Text('${_currentTrack.artist}'),
-    //   trailing: Icon(
-    //     Icons.audiotrack,
-    //     color: Colors.green,
-    //     size: 50.0,
-    //   ),
-    //   isThreeLine: true,
-    // );
-  }
 ///////////////////////////////////////////////////////////////////////
   /// SPOTIFY
 ///////////////////////////////////////////////////////////////////////
