@@ -1,6 +1,4 @@
 // Spotify
-import 'dart:ffi';
-
 import 'package:async/async.dart';
 import 'package:spotify_sdk/models/connection_status.dart';
 import 'package:spotify_sdk/models/crossfade_state.dart';
@@ -17,6 +15,7 @@ import 'dart:convert';
 
 var _authenticationToken;
 var _currentTrack;
+var _storedTrack;
 
 Future<void> getSpotifyAuth() async {
   String clientId = DotEnv().env['CLIENT_ID'];
@@ -30,7 +29,6 @@ Future<void> getSpotifyAuth() async {
         scope:
             "app-remote-control,user-modify-playback-state, user-read-recently-played, user-top-read, user-read-currently-playing, user-read-playback-state");
     print("Auth token retrieved: $_authenticationToken");
-    //await loadSpotifyTrack();
   } catch (error) {
     print("Spotify access denied by user; auth token: $_authenticationToken");
   }
@@ -38,6 +36,25 @@ Future<void> getSpotifyAuth() async {
 
 fetchSpotifyToken() {
   return _authenticationToken;
+}
+
+class StoredTrack {
+  final String artist;
+  final String track;
+  final String url;
+  final String href;
+  final String imageUrl;
+
+  StoredTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
+
+  factory StoredTrack.fromJson(Map<String, dynamic> json) {
+    return StoredTrack(
+        artist: json['album']['artists'][0]['name'],
+        track: json['name'],
+        url: json['external_urls']['spotify'],
+        href: json['href'],
+        imageUrl: json['album']['images'][0]['url']);
+  }
 }
 
 class CurrentTrack {
@@ -133,6 +150,29 @@ Future<void> loadRecentSpotifyTrack() async {
 
 fetchSpotifyTrack() {
   return _currentTrack;
+}
+
+fetchStoredTrack() {
+  return _storedTrack;
+}
+
+Future<void> getTrackByUrl(String _url) async {
+  print("Getting track by url: $_url auth token $_authenticationToken");
+  final response = await http
+      .get(_url, headers: {'Authorization': 'Bearer ' + _authenticationToken});
+
+  if (response.statusCode == 200) {
+    print("Track ID found");
+    _storedTrack = StoredTrack.fromJson(jsonDecode(response.body));
+
+    print("artist: ${_storedTrack.artist}");
+    print("track: ${_storedTrack.track}");
+    print("url: ${_storedTrack.url}");
+    print("href: ${_storedTrack.href}");
+    print("imageUrl: ${_storedTrack.imageUrl}");
+  } else {
+    print('Stored track ID not found');
+  }
 }
 
 // Future<void> getPlayerState() async {
