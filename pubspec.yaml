@@ -50,7 +50,7 @@ dependencies:
   firebase_ml_vision: ^0.9.9
   async: ^2.4.2
   flutter_speed_dial: ^1.2.5
-
+  share: ^0.6.5+4
 
 dev_dependencies:
   flutter_test:

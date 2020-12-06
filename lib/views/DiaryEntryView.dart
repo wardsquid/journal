@@ -1,5 +1,5 @@
 import 'package:inkling/managers/DateToHuman.dart';
-
+import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
 
 // dart imports
@@ -417,7 +417,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         backgroundColor: Colors.orange,
                         label: 'Share with a friend',
                         // labelStyle: TextStyle(fontSize: 18.0),
-                        onTap: () => print('THIRD CHILD'),
+                        onTap: () => {
+                          Share.share(entryText, subject: titleText),
+                          print('THIRD CHILD')},
                       )
                     ]
                   : []) +
