@@ -6,13 +6,25 @@ import 'Firebase.dart';
 
 // bool isLoggedIn = false;
 Map<String, dynamic> userProfile;
+Map<String, dynamic> activeEntry;
+String currentJournal;
 
-void initializeUserCaching() {
+Future<void> initializeUserCaching() async {
+  currentJournal = null;
   User current = checkUserLoginStatus();
-  CollectionReference userDB = getFireStoreUsersDB();
-  userDB.doc(current.uid).get().then((value) => userProfile = value.data());
+  if (current == null)
+    return null;
+  else {
+    CollectionReference userDB = getFireStoreUsersDB();
+    DocumentSnapshot userInfo = await userDB.doc(current.uid).get();
+    userProfile = userInfo.data();
+    updateJournal();
+  }
 }
 
+void updateJournal() {
+  currentJournal = userProfile['journals_list'][0].toString();
+}
 ///////////////////////////////////////////////
 /// import 'userInfo.dart' as inkling;
 /// inkling.userProfile

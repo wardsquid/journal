@@ -12,12 +12,14 @@ import 'package:flutter/material.dart';
 // Pages
 import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
+import 'managers/userInfo.dart' as inkling;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await inkling.initializeUserCaching();
   runApp(MyApp());
 }
 
@@ -27,9 +29,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class MyApp extends StatelessWidget {
   final User _user = checkUserLoginStatus();
-  
+
   @override
   Widget build(BuildContext context) {
+    // if(_user != null) inkling.initializeUserCaching();
+
     return MaterialApp(
       title: 'Inkling',
       theme: ThemeData(

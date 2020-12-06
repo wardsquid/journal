@@ -34,7 +34,6 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    inkling.initializeUserCaching();
     return PageView(
         controller: _pageController,
         onPageChanged: (index) {

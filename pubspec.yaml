@@ -74,7 +74,6 @@ flutter:
     - assets/
     - assets/select_image.png
     - assets/onBoarding1.jpeg
-    - assets/Template1/
     - assets/model.tflite
     - assets/labels.txt
   # An image asset can refer to one or more resolution-specific "variants", see

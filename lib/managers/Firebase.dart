@@ -140,3 +140,19 @@ getUserProfile() async {
   bool your_variable_name = await checkFriendEmail("insert email string here");
   print("friends exist = ${your_variable_name}");
 */
+
+/////////////////////////////////////////////
+/// ADD NEW JOURNAL
+/////////////////////////////////////////////
+Future<bool> addNewJournal(String title) async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  try {
+    users.doc(currentUser.uid).update({
+      'journals_list': FieldValue.arrayUnion([title])
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

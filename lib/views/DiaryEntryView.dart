@@ -1,3 +1,5 @@
+import '../managers/userInfo.dart' as inkling;
+
 // dart imports
 import 'dart:io';
 import 'dart:convert';
@@ -21,6 +23,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+// import views
+import './alerts/DiaryEntryAlerts.dart';
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
@@ -31,6 +35,8 @@ class DiaryEntryView extends StatefulWidget {
 }
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
+  GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Edit";
@@ -39,6 +45,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   TextEditingController _textEditingController;
   TextEditingController _titleEditingController;
 
+  // Entry related variables
+  String ownerId = "";
   String entryText = "";
   String titleText = "";
   String tempTitleText = "";
@@ -59,6 +67,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   @override
   void initState() {
+    // print('init diaryview');
+    // print(inkling.userProfile.toString());
+
     super.initState();
     _textEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
@@ -74,6 +85,41 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void dispose() {
     _textEditingController.dispose();
     super.dispose();
+  }
+
+//////////////////////////////////////////////////////////////////////////////////
+  /// CREATES A NEW JOURNAL AND SETS IT AS ACTIVE
+/////////////////////////////////////////////////////////////////////////////////////
+  void updateJournal(text) async {
+    bool writeResult = await addNewJournal(text);
+    if (writeResult) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Journal created successfully.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        inkling.userProfile['journals_list'].add(text);
+        inkling.currentJournal = text;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Something went wrong, please try again.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+//////////////////////////////////////////////////////////////////////////////////
+  /// CHANGES ACTIVE JOURNAL (TAP ON DRAWER ENTRY)
+/////////////////////////////////////////////////////////////////////////////////////
+  void changeActiveJournal(String text) {
+    setState(() {
+      inkling.currentJournal = text;
+    });
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -107,8 +153,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _bucketUrl = '';
       }
       setState(() {
-        titleText = documentSnapshot.data()["title"];
-        entryText = documentSnapshot.data()["content"]["text"];
+        inkling.activeEntry = documentSnapshot.data();
+        titleText = inkling.activeEntry["title"];
+        entryText = inkling.activeEntry["content"]["text"];
+        ownerId = inkling.activeEntry['user_id'];
         _isEditingText = false;
         _textEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
@@ -229,8 +277,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// SPEED DIAL
 ////////////////////////////////////////////////////////////////
   Widget speedDial() {
+    print('speedDial');
+    print(inkling.userProfile.toString());
     return SpeedDial(
       // both default to 16
+
       marginRight: 18,
       marginBottom: 20,
       animatedIcon: AnimatedIcons.menu_close,
@@ -244,7 +295,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       curve: Curves.bounceIn,
       overlayColor: Colors.black,
       overlayOpacity: 0.5,
-      onOpen: () => print('OPENING DIAL'),
+      onOpen: () => {
+        print('OPENING DIAL'),
+        // setState(() => {
+        //       inkling.updateJournal(),
+        //     })
+      },
       onClose: () => print('DIAL CLOSED'),
       tooltip: 'Speed Dial',
       heroTag: 'speed-dial-hero-tag',
@@ -252,50 +308,81 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       foregroundColor: Colors.white,
       elevation: 8.0,
       shape: CircleBorder(),
-      children: [
-        SpeedDialChild(
-            child: Icon(Icons.add_photo_alternate),
-            backgroundColor: Colors.red,
-            label: 'Add a photo from your Gallery',
-            // labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => print('FIRST CHILD')),
-        SpeedDialChild(
-          child: Icon(Icons.add_a_photo),
-          backgroundColor: Colors.blue,
-          label: 'Add from Camera',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('SECOND CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.keyboard_voice),
-          backgroundColor: Colors.green,
-          label: 'Record a voice entry',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.share),
-          backgroundColor: Colors.orange,
-          label: 'Share with a friend',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.menu_book),
-          backgroundColor: Colors.brown,
-          label: 'Current Journal: Personal',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => {
-            getUserProfile().then((profile) => print(profile.data().toString())),
-          },
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.plumbing),
-          backgroundColor: toogleML ? Colors.cyan : Colors.grey,
-          label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
-          onTap: () => {setState(() => toogleML = !toogleML)},
-        ),
-      ],
+      children: (_isEditingText == true
+          ? [
+              SpeedDialChild(
+                child: Icon(Icons.add_photo_alternate),
+                backgroundColor: Colors.red,
+                label: 'Add a photo from your Gallery',
+                // labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () => print('FIRST CHILD'),
+              ),
+              SpeedDialChild(
+                child: Icon(Icons.add_a_photo),
+                backgroundColor: Colors.blue,
+                label: 'Add from Camera',
+                // labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () => print('SECOND CHILD'),
+              ),
+              SpeedDialChild(
+                child: Icon(Icons.keyboard_voice),
+                backgroundColor: Colors.green,
+                label: 'Record a voice entry',
+                // labelStyle: TextStyle(fontSize: 18.0),
+                onTap: () => print('THIRD CHILD'),
+              ),
+              SpeedDialChild(
+                child: Icon(Icons.plumbing),
+                backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+                label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+                onTap: () => {setState(() => toogleML = !toogleML)},
+              ), //:
+            ]
+          : ///////////////////////////////////////////////////////
+          /// IF IN VIEW MODE
+          ///////////////////////////////////////////////////////
+          // ):
+          [
+                SpeedDialChild(
+                  child: Icon(Icons.menu_book),
+                  backgroundColor: Colors.brown,
+                  label: 'Current Journal: ${inkling.currentJournal}',
+                  // labelStyle: TextStyle(fontSize: 18.0),
+                  onTap: () => {
+                    print("called"),
+                    print(inkling.userProfile.keys.toString()),
+                    _scaffoldKey.currentState.openDrawer(),
+                  },
+                ),
+
+                // if
+              ] +
+              (widget.documentId != '' && ownerId == _user.uid
+                  ? [
+                      SpeedDialChild(
+                        child: Icon(Icons.share),
+                        backgroundColor: Colors.orange,
+                        label: 'Share with a friend',
+                        // labelStyle: TextStyle(fontSize: 18.0),
+                        onTap: () => print('THIRD CHILD'),
+                      )
+                    ]
+                  : []) +
+              // Renders the report button only if it is not a blank document
+              // and the owner id is not the user
+              (widget.documentId != '' && ownerId != _user.uid
+                  ? [
+                      SpeedDialChild(
+                          child: Icon(Icons.mail),
+                          backgroundColor: Colors.black,
+                          label: 'Report Entry',
+                          // labelStyle: TextStyle(fontSize: 18.0),
+                          onTap: () => {
+                                launch(_emailLaunchUri.toString()),
+                                print('Report Functionality'),
+                              })
+                    ]
+                  : [])),
     );
   }
 
@@ -415,7 +502,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       // resizeToAvoidBottomInset: false,
+      drawer: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: journalDrawer(context, inkling.userProfile, updateJournal,
+              changeActiveJournal)),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Container(
