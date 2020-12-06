@@ -493,13 +493,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   _linkSpotifyPopup(context) {
     return Alert(
         context: context,
-        title: "No worries!",
+        title: "Oops!",
         content: Text(
-            "Click this button again anytime if you'd like to give Spotify access to use this feature."),
+            "This feature requires Spotify access. Would you like to link your Spotify now?"),
         buttons: [
           DialogButton(
-              child: Text("OK"),
-              onPressed: () {
+              child: Text("Yes"),
+              onPressed: () async {
+                await getSpotifyAuth();
+                var token = fetchSpotifyToken();
+                setState(() {
+                  _spotifyToken = token;
+                });
+                Navigator.pop(context);
+              }),
+          DialogButton(
+              child: Text("No"),
+              onPressed: () async {
                 Navigator.pop(context);
               })
         ]).show();
