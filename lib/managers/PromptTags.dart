@@ -24,8 +24,7 @@ Future<String> createTagAlert(BuildContext context, List localList) {
             itemCount: localList.length,
             columns: 6,
             itemBuilder: (index) {
-              final Item currentItem = localList[index];
-
+              Item currentItem = localList[index];
               return ItemTags(
                 index: index,
                 title: currentItem.title,
@@ -34,12 +33,10 @@ Future<String> createTagAlert(BuildContext context, List localList) {
                 textStyle: TextStyle(fontSize: 14),
                 combine: ItemTagsCombine.withTextBefore,
                 onPressed: (i) => {
-                  if (currentItem.active != true){
-                    print(currentItem.active),
+                  if (!selectedTagsList.contains(currentItem.title)){
                     selectedTagsList.add(currentItem.title),
-
                   }
-                  else
+                  else if (selectedTagsList.contains(currentItem.title))
                     {selectedTagsList.removeAt(index)}
                 },
               );
