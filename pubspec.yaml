@@ -48,9 +48,9 @@ dependencies:
   url_launcher: ^5.4.10
   exif: ^1.0.3
   firebase_ml_vision: ^0.9.9
+  flutter_tags: ^0.4.9+1
   async: ^2.4.2
   flutter_speed_dial: ^1.2.5
-
 
 dev_dependencies:
   flutter_test:
