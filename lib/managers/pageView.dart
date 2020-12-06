@@ -1,7 +1,10 @@
+// import 'dart:developer';
+import 'userInfo.dart' as inkling;
 import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
+import '../views/timeline/TimeLineView.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -22,7 +25,7 @@ class _MainViewState extends State<MainView> {
 
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: 2);
   }
 
   @override
@@ -33,23 +36,28 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
+    inkling.initializeUserCaching();
     return PageView(
         controller: _pageController,
         onPageChanged: (index) {
+          if (index != 2) {
+            FocusScope.of(context).unfocus();
+          }
+          print(inkling.userProfile.toString());
           print(activeDate);
           print(documentId);
         },
         children: [
-          // NOT ACTUAL ERRORS
+          TimeLineView(),
           Calendar(
               title: "Diary Calendar",
               tabController: _pageController,
               activeDate: activeDate,
               documentId: documentId), //index 0
-          // NOT ACTUAL ERRORS
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
           Container(color: Colors.red), //index 2
+          //TFLite() TF ML functions may not need
         ]);
   }
 }
