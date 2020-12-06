@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 // Pages
 import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
+import 'managers/Spotify.dart';
 
 // For Spotify client key
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,6 +20,7 @@ void main() async {
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await DotEnv().load('.env');
+  await getSpotifyAuth();
   runApp(MyApp());
 }
 
