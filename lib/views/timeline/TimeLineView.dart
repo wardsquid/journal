@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
+import '../../managers/Spotify.dart';
 
 class TimeLineView extends StatefulWidget {
   TimeLineView({Key key}) : super(key: key);
@@ -11,18 +13,39 @@ class TimeLineView extends StatefulWidget {
 
 class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
+  var _storedTrack;
+  var _spotifyToken;
 
   DateTime today = DateTime.now();
   List<Map<String, dynamic>> display = [
     {
       "title": "### Load More ###",
       "timestamp": Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
-      "content": {"image": false, 'text': "filler"}
+      "content": {
+        "image": false,
+        'text': "filler",
+        "spotify": null,
+        "artist": null,
+        "track": null,
+        "albumImage": null,
+        "url": null // to open in spotify
+      },
     }
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
-    // print("pushing ${entry.toString()}");
+    if (entry["content"]["spotify"] != null && _spotifyToken != null) {
+      var _url = entry["content"]["spotify"];
+      await getTrackByUrl(_url);
+      setState(() {
+        _storedTrack = fetchStoredTrack();
+      });
+      entry["content"]["track"] = _storedTrack.track;
+      entry["content"]["artist"] = _storedTrack.artist;
+      entry["content"]["albumImage"] = _storedTrack.imageUrl;
+      entry["content"]["url"] = _storedTrack.url;
+    }
+    print("pushing ${entry.toString()}");
     setState(() {
       display.add(entry);
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
@@ -48,12 +71,14 @@ class _TimeLineView extends State<TimeLineView> {
 
   void initState() {
     super.initState();
+    _spotifyToken = fetchSpotifyToken();
     parseQuery(today);
   }
 
   @override
   void dispose() {
     super.dispose();
+    //_spotifyToken = fetchSpotifyToken();
   }
 
   @override
@@ -131,6 +156,23 @@ class _TimeLineView extends State<TimeLineView> {
                   ? dateToHumanReadable((entry['timestamp'].toDate()))
                   : dateToHumanReadable(entry['timestamp'])),
             ),
+            // Spotify
+            if (entry["content"]["spotify"] != null && _spotifyToken != null)
+              ListTile(
+                leading: Image.network(entry["content"]["albumImage"],
+                    width: 70, height: 70),
+                title: Text('${entry["content"]["track"]}'),
+                subtitle: Text('${entry["content"]["artist"]}'),
+                trailing: IconButton(
+                    icon: Icon(Icons.play_circle_fill,
+                        color: Colors.green, size: 50.0),
+                    onPressed: () {
+                      // open in spotify
+                      return launch(entry["content"]["url"]);
+                    }),
+                isThreeLine: true,
+              ),
+            // Spotify
             Divider(),
             Padding(
               padding: const EdgeInsets.only(left: 25.0, right: 25.0),
