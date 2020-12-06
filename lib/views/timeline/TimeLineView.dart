@@ -14,8 +14,7 @@ class TimeLineView extends StatefulWidget {
 class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
   var _storedTrack;
-  //var _spotifyToken;
-  String _spotifyUrl = "";
+  var _spotifyToken;
 
   DateTime today = DateTime.now();
   List<Map<String, dynamic>> display = [
@@ -35,7 +34,7 @@ class _TimeLineView extends State<TimeLineView> {
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
-    if (entry["content"]["spotify"] != null) {
+    if (entry["content"]["spotify"] != null && _spotifyToken != null) {
       var _url = entry["content"]["spotify"];
       await getTrackByUrl(_url);
       setState(() {
@@ -58,10 +57,6 @@ class _TimeLineView extends State<TimeLineView> {
     fireStoreQuery(date).then((value) => {
           value.docs.forEach((element) {
             Map<String, dynamic> entry = element.data();
-            if (entry["content"]["spotify"] != null) {
-              _spotifyUrl = entry['content']['spotify'];
-              print("URL TO GET: $_spotifyUrl");
-            }
             if (entry["content"]["image"] == true) {
               downloadURLImage(element.id).then((value) => {
                     entry["imageUrl"] = value,
@@ -76,6 +71,7 @@ class _TimeLineView extends State<TimeLineView> {
 
   void initState() {
     super.initState();
+    _spotifyToken = fetchSpotifyToken();
     parseQuery(today);
   }
 
@@ -161,7 +157,7 @@ class _TimeLineView extends State<TimeLineView> {
                   : dateToHumanReadable(entry['timestamp'])),
             ),
             // Spotify
-            if (entry["content"]["spotify"] != null)
+            if (entry["content"]["spotify"] != null && _spotifyToken != null)
               ListTile(
                 leading: Image.network(entry["content"]["albumImage"],
                     width: 70, height: 70),
