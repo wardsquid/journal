@@ -14,7 +14,7 @@ import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
 import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
-import '../views/alertTest.dart';
+import '../managers/PromptTags.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -305,20 +305,21 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         });
         location = results.data;
       }
+      
+      //pulls labels from image
       Map<String, double> labelMap = await readLabel(File(pickedFile.path));
+      //using the labels pulled, creates a list of related prompt strings
       List<String> generatedText = generateText(labelMap);
+      //converts the array of related prompt strings into the prompt tags to be displayed in the alert box
       List tags = mlTagConverter(generatedText);
-      String selectedTagsString = null;
-      createTagAlert(context, tags).then((onValue) {
-        selectedTagsString = onValue;
-      });
-      print('afterCreateAlert: ${selectedTagsString}');
+      //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns 
+      String selectedTagsString = await createTagAlert(context, tags);
       setState(() {
         _image = File(pickedFile.path);
         if (location != null) {
-          entryText = "I went to $location ... \n";
+          entryText = "I went to $location ...  \n" + selectedTagsString;
         } else {
-          entryText = entryText;
+          entryText = selectedTagsString;
         }
         _textEditingController = TextEditingController(text: entryText);
       });

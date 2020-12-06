@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
 import '../views/UserProfile.dart';
-import '../views/TFLite.dart';
-import '../views/FlutterTags.dart';
 
 class MainView extends StatefulWidget {
   @override
@@ -15,7 +13,7 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   static PageController _pageController;
-  
+
   //set variable
   DateTime activeDate = DateTime.now();
   String documentId = "";
@@ -51,9 +49,7 @@ class _MainViewState extends State<MainView> {
           // NOT ACTUAL ERRORS
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
-          FlutterTagPage()//pass variables to rhe view
-          //Container(color: Colors.red), //index 2
-          //TFLite() TF ML functions may not need
+          Container(color: Colors.red), //index 2
         ]);
   }
 }
