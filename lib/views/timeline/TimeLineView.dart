@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
+import '../../managers/Spotify.dart';
 
 class TimeLineView extends StatefulWidget {
   TimeLineView({Key key}) : super(key: key);
@@ -11,29 +12,73 @@ class TimeLineView extends StatefulWidget {
 
 class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
+  var _storedTrack;
+  //var _spotifyToken;
+  String _spotifyUrl = "";
 
   DateTime today = DateTime.now();
   List<Map<String, dynamic>> display = [
     {
       "title": "### Load More ###",
       "timestamp": Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
-      "content": {"image": false, 'text': "filler"}
+      "content": {
+        "image": false,
+        'text': "filler",
+        "spotify": null,
+        "artist": null,
+        "track": null,
+        "albumImage": null
+      },
     }
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
-    // print("pushing ${entry.toString()}");
+    if (entry["content"]["spotify"] != null) {
+      print("url in pushtolist: ${entry['content']['spotify']}");
+      var hi = entry["content"]["spotify"];
+      print("hi $hi");
+      await getTrackByUrl(hi);
+      setState(() {
+        _storedTrack = fetchStoredTrack();
+      });
+      print("Stored track ${_storedTrack.track}");
+      entry["content"]["track"] = _storedTrack.track;
+      entry["content"]["artist"] = _storedTrack.artist;
+      entry["content"]["albumImage"] = _storedTrack.imageUrl;
+      print("ENTRY TRACK = ${entry["content"]["albumImage"]}");
+    }
+    print("pushing ${entry.toString()}");
     setState(() {
       display.add(entry);
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
     });
   }
 
+  Future<void> _getTrackByUrl() async {
+    print("url in get: $_spotifyUrl");
+    await getTrackByUrl(_spotifyUrl);
+  }
+
+  //no:
+  // Future<void> _getSpotifyTrack() async {
+  //   print("url in get: $_spotifyUrl");
+  //   print(_spotifyUrl.runtimeType);
+  //   getTrackByUrl(_spotifyUrl);
+  //   setState(() {
+  //     _storedTrack = fetchStoredTrack();
+  //   });
+  //   print("Stored track ${_storedTrack.toString()}");
+  // }
+
   void parseQuery(DateTime date) {
     if (date == null) date = today;
     fireStoreQuery(date).then((value) => {
           value.docs.forEach((element) {
             Map<String, dynamic> entry = element.data();
+            if (entry["content"]["spotify"] != null) {
+              _spotifyUrl = entry['content']['spotify'];
+              print("URL TO GET: $_spotifyUrl");
+            }
             if (entry["content"]["image"] == true) {
               downloadURLImage(element.id).then((value) => {
                     entry["imageUrl"] = value,
@@ -54,6 +99,7 @@ class _TimeLineView extends State<TimeLineView> {
   @override
   void dispose() {
     super.dispose();
+    //_spotifyToken = fetchSpotifyToken();
   }
 
   @override
@@ -131,6 +177,21 @@ class _TimeLineView extends State<TimeLineView> {
                   ? dateToHumanReadable((entry['timestamp'].toDate()))
                   : dateToHumanReadable(entry['timestamp'])),
             ),
+            // Spotify
+            if (entry["content"]["spotify"] != null)
+              ListTile(
+                leading: Image.network(entry["content"]["albumImage"],
+                    width: 70, height: 70),
+                title: Text('${entry["content"]["track"]}'),
+                subtitle: Text('${entry["content"]["artist"]}'),
+                trailing: Icon(
+                  Icons.audiotrack,
+                  color: Colors.green,
+                  size: 50.0,
+                ),
+                isThreeLine: true,
+              ),
+            // Spotify
             Divider(),
             Padding(
               padding: const EdgeInsets.only(left: 25.0, right: 25.0),
