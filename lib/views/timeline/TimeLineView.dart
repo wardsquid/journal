@@ -164,8 +164,8 @@ class _TimeLineView extends State<TimeLineView> {
                 title: Text('${entry["content"]["track"]}'),
                 subtitle: Text('${entry["content"]["artist"]}'),
                 trailing: IconButton(
-                    icon:
-                        Icon(Icons.audiotrack, color: Colors.green, size: 50.0),
+                    icon: Icon(Icons.play_circle_fill,
+                        color: Colors.green, size: 50.0),
                     onPressed: () {
                       // open in spotify
                       return launch(entry["content"]["url"]);

@@ -535,17 +535,24 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   Widget _storedSpotifyTrack() {
     return ListTile(
-      leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
-      title: Text('${_storedTrack.track}'),
-      subtitle: Text('${_storedTrack.artist}'),
-      trailing: IconButton(
-          icon: Icon(Icons.audiotrack, color: Colors.green, size: 50.0),
-          onPressed: () {
-            // open in spotify
-            return launch(_storedTrack.url);
-          }),
-      isThreeLine: true,
-    );
+        leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+        title: Text('${_storedTrack.track}'),
+        subtitle: Text('${_storedTrack.artist}'),
+        isThreeLine: true,
+        trailing: _isEditingText
+            ? IconButton(
+                icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
+                onPressed: () {
+                  // remove widget
+                  _trackReady = false;
+                })
+            : IconButton(
+                icon: Icon(Icons.play_circle_fill,
+                    color: Colors.green, size: 50.0),
+                onPressed: () {
+                  // open in spotify
+                  return launch(_storedTrack.url);
+                }));
   }
 
   _getTrackByUrl() async {
