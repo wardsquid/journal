@@ -127,7 +127,12 @@ class _CalendarState extends State<Calendar> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {},
+        onPressed: () => {
+          MainView.of(context).date = _selectedDay,
+          MainView.of(context).documentIdReference = "",
+          widget.tabController.animateToPage(2,
+              duration: Duration(milliseconds: 300), curve: Curves.easeIn),
+        },
         // _makeEntry,
         tooltip: 'New Entry',
         child: Icon(Icons.add),
