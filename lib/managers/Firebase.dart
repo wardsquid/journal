@@ -84,24 +84,28 @@ CollectionReference getFireStoreUsersDB() {
 Future<void> addUser() async {
   CollectionReference users = getFireStoreUsersDB();
   User currentUser = checkUserLoginStatus();
-  users
-      .doc(currentUser.uid)
-      .set({
-        'journals_list': ["Personal"],
-        'ML_preference': true,
-        'ML_preference_updated': false,
-        'reminder': null,
-        'friends': [
-          {'name': 'Vic', 'email': 'wow@email.com'},
-          {'name': 'Dustin', 'email': 'cool@email.com'}
-        ],
-        // 'journals': [
-        //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
-        // ],
-        'entries': ['uid1', 'uid2', 'uid3', 'uid4']
-      })
-      .then((value) => {print("Successfully added user $currentUser")})
-      .catchError((error) => {print("Failed to add user: $error")});
+  final bool doesUserExist = await checkUserExists();
+  if (doesUserExist) {
+    users
+        .doc(currentUser.uid)
+        .set({
+          'journals_list': ["Personal"],
+          // 'ML_preference': true,
+          // 'ML_preference_updated': false,
+          'reminder': null,
+          'sharing_info': {},
+          'friends': [
+            // {'name': 'Vic', 'email': 'wow@email.com'},
+            // {'name': 'Dustin', 'email': 'cool@email.com'}
+          ],
+          // 'journals': [
+          //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
+          // ],
+          // 'entries': ['uid1', 'uid2', 'uid3', 'uid4']
+        })
+        .then((value) => {print("Successfully added user $currentUser")})
+        .catchError((error) => {print("Failed to add user: $error")});
+  }
 }
 
 Future<bool> checkUserExists() async {
@@ -140,3 +144,48 @@ getUserProfile() async {
   bool your_variable_name = await checkFriendEmail("insert email string here");
   print("friends exist = ${your_variable_name}");
 */
+
+/////////////////////////////////////////////
+/// ADD NEW JOURNAL
+/////////////////////////////////////////////
+// Future<bool> addNewJournal(String title) async {
+//   CollectionReference users = getFireStoreUsersDB();
+//   User currentUser = checkUserLoginStatus();
+//   try {
+//     users.doc(currentUser.uid).update({
+//       'journals_list': FieldValue.arrayUnion([title])
+//     });
+//     return true;
+//   } catch (error) {
+//     return false;
+//   }
+// }
+
+/////////////////////////////////////////////
+/// ADD NEW JOURNAL
+/////////////////////////////////////////////
+Future<bool> addJournalToDB(List<dynamic> journalList) async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  try {
+    users.doc(currentUser.uid).update({'journals_list': journalList});
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+/////////////////////////////////////////////
+/// UPDATE JOURNAL SHARING
+/////////////////////////////////////////////
+Future<bool> updateJournalSharing(
+    Map<String, dynamic> updatedSharingInfo) async {
+  CollectionReference users = getFireStoreUsersDB();
+  User currentUser = checkUserLoginStatus();
+  try {
+    users.doc(currentUser.uid).update({'sharing_info': updatedSharingInfo});
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

@@ -127,7 +127,8 @@ class _CalendarState extends State<Calendar> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _makeEntry,
+        onPressed: () => {},
+        // _makeEntry,
         tooltip: 'New Entry',
         child: Icon(Icons.add),
       ),
@@ -206,15 +207,22 @@ class _CalendarState extends State<Calendar> {
                     child: Column(
                       children: <Widget>[
                         ListTile(
-                          // leading: Icon(Icons.menu_book_rounded),
-                          title: Text(event['title'].toString()),
-                          subtitle: Text((event['timestamp'].runtimeType ==
-                                      Timestamp
-                                  ? dateToHumanReadable(
-                                      (event['timestamp'].toDate()))
-                                  : dateToHumanReadable(event['timestamp'])) +
-                              " - shared entry"),
-                        ),
+                            // leading: Icon(Icons.menu_book_rounded),
+                            title: Text(event['title'].toString()),
+                            subtitle: Text((event['timestamp'].runtimeType ==
+                                        Timestamp
+                                    ? dateToHumanReadable(
+                                        (event['timestamp'].toDate()))
+                                    : dateToHumanReadable(event['timestamp'])) +
+                                " - shared entry"),
+                            onTap: () => {
+                                  MainView.of(context).date = _selectedDay,
+                                  MainView.of(context).documentIdReference =
+                                      event['doc_id'],
+                                  widget.tabController.animateToPage(2,
+                                      duration: Duration(milliseconds: 300),
+                                      curve: Curves.easeIn),
+                                }),
                       ],
                     ),
                   ),
