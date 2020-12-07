@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 // Pages
 import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
+import 'managers/userInfo.dart' as inkling;
 import 'managers/Spotify.dart';
 
 // For Spotify client key
@@ -19,6 +20,7 @@ void main() async {
   await initializeFirebase();
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await inkling.initializeUserCaching();
   await DotEnv().load('.env');
   await getSpotifyAuth();
   runApp(MyApp());
@@ -33,6 +35,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // if(_user != null) inkling.initializeUserCaching();
+
     return MaterialApp(
       title: 'Inkling',
       theme: ThemeData(

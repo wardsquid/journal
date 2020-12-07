@@ -9,6 +9,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:linkable/linkable.dart';
+import '../managers/userInfo.dart' as inkling;
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -50,6 +51,7 @@ class _UserProfile extends State<UserProfile> {
                 for (var i = 0; i < friends.length; i++) {
                   friendsChecked.add(false);
                 }
+                inkling.userProfile["friends"] = friends;
               })
             });
   }

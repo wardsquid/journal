@@ -54,6 +54,7 @@ dependencies:
   async: ^2.4.2
   speech_to_text: ^3.0.1
   flutter_speed_dial: ^1.2.5
+  share: ^0.6.5+4
 
 dev_dependencies:
   flutter_test:
@@ -77,7 +78,6 @@ flutter:
     - assets/
     - assets/select_image.png
     - assets/onBoarding1.jpeg
-    - assets/Template1/
     - assets/model.tflite
     - assets/labels.txt
     - .env
