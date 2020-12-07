@@ -407,6 +407,7 @@ Widget changeDiaryName(
             updateJournalsListName(journalsList);
             Navigator.of(context).pop();
             Navigator.of(context).pop();
+            FocusScope.of(context).unfocus();
 
             // if (_formKey.currentState.validate()) {
             //   updateJournal(_diaryController.text);
@@ -418,6 +419,7 @@ Widget changeDiaryName(
           child: Text('Cancel'),
           onPressed: () {
             Navigator.of(context).pop();
+            FocusScope.of(context).unfocus();
           })
     ],
   );
