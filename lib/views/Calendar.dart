@@ -38,6 +38,9 @@ class _CalendarState extends State<Calendar> {
     Map<DateTime, List> entryParser = {};
     _entryInfos = [];
     _entries = {};
+    /////////////////////////////////////////////////////////////////////////////////////
+    /// RETRIEVE USER POSTS
+    /////////////////////////////////////////////////////////////////////////////////////
     await entries
         .where('user_id', isEqualTo: _user.uid)
         .where('timestamp',
@@ -50,6 +53,7 @@ class _CalendarState extends State<Calendar> {
                   "doc_id": doc.id,
                   "title": doc["title"],
                   "timestamp": doc["timestamp"],
+                  "shared": false,
                 };
                 _entryInfos.add(entryInfo);
                 DateTime date = entryInfo["timestamp"].toDate();
@@ -60,6 +64,33 @@ class _CalendarState extends State<Calendar> {
                   entryParser[formatDate] = [entryInfo["title"]];
                 }
                 //print(_entries);
+              })
+            });
+    /////////////////////////////////////////////////////////////////////////////////////
+    /// RETRIEVE POSTS SHARED WITH USER
+    /////////////////////////////////////////////////////////////////////////////////////
+    await entries
+        .where('shared_with', arrayContains: _user.email)
+        .where('timestamp',
+            isGreaterThanOrEqualTo:
+                DateTime(dateWithMonth.year, dateWithMonth.month))
+        .get()
+        .then((QuerySnapshot querySnapshot) => {
+              querySnapshot.docs.forEach((doc) {
+                Map<String, dynamic> entryInfo = {
+                  "doc_id": doc.id,
+                  "title": doc["title"],
+                  "timestamp": doc["timestamp"],
+                  "shared": true,
+                };
+                _entryInfos.add(entryInfo);
+                DateTime date = entryInfo["timestamp"].toDate();
+                DateTime formatDate = DateTime(date.year, date.month, date.day);
+                if (entryParser.containsKey(formatDate)) {
+                  entryParser[formatDate].add(entryInfo["title"]);
+                } else {
+                  entryParser[formatDate] = [entryInfo["title"]];
+                }
               })
             });
     setState(() {
@@ -219,7 +250,7 @@ class _CalendarState extends State<Calendar> {
                                     ? dateToHumanReadable(
                                         (event['timestamp'].toDate()))
                                     : dateToHumanReadable(event['timestamp'])) +
-                                " - shared entry"),
+                                (event['shared'] ? " - shared entry" : '')),
                             onTap: () => {
                                   MainView.of(context).date = _selectedDay,
                                   MainView.of(context).documentIdReference =
