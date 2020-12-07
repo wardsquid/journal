@@ -647,12 +647,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
-    print("Adding track: ${_storedTrack.track}");
+    // print("Adding track: ${_storedTrack.track}");
     dynamic newEntry = await entries
         .add({
           'user_id': _user.uid,
           'title': titleText,
-          'timestamp': DateTime.now(),
+          'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
+                      widget.activeDate.day) !=
+                  DateTime(DateTime.now().year, DateTime.now().month,
+                      DateTime.now().day)
+              ? widget.activeDate
+              : DateTime.now(),
           'content': {
             'image': (_image != null) ? true : false,
             'text': entryText
@@ -952,7 +957,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     ),
               SizedBox(height: MediaQuery.of(context).size.height / 20),
               Center(
-                child: Text(dateToHumanReadable(DateTime.now())),
+                child: Text(dateToHumanReadable(widget.activeDate)),
               ),
               SizedBox(height: MediaQuery.of(context).size.height / 20),
               Center(
