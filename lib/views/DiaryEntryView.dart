@@ -91,6 +91,33 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 //////////////////////////////////////////////////////////////////////////////////
   /// STATE MANAGEMENT CALLBACKS
 /////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+  /// UPDATE JOURNALS NAME LIST
+/////////////////////////////////////////////////////////////////////////////////////
+  void updateJournalsListName(List<dynamic> journalsList) async {
+    bool writeResult = await addJournalToDB(journalsList);
+
+    if (writeResult) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Journals list updated successfully.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        inkling.userProfile['journals_list'] = journalsList;
+        // addJournalToDB(inkling.userProfile['journal_list']);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Something went wrong, please try again.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
 //////////////////////////////////////////////////////////////////////////////////
   /// CREATES A NEW JOURNAL AND SETS IT AS ACTIVE
 /////////////////////////////////////////////////////////////////////////////////////
@@ -586,7 +613,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               updateJournal,
               changeActiveJournal,
               updateSharingList,
-              updateJournalSharingInDB)),
+              updateJournalSharingInDB,
+              updateJournalsListName)),
       // body: AnnotatedRegion<SystemUiOverlayStyle>(
       // value: SystemUiOverlayStyle.light,
       body: Container(
