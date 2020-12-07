@@ -127,7 +127,8 @@ class _CalendarState extends State<Calendar> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _makeEntry,
+        onPressed: () => {},
+        // _makeEntry,
         tooltip: 'New Entry',
         child: Icon(Icons.add),
       ),

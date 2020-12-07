@@ -3,9 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'managers/Firebase.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-// Local Notifications
-import 'managers/LocalNotificationManager.dart';
-
 // Flutter Material
 import 'package:flutter/material.dart';
 
@@ -13,6 +10,10 @@ import 'package:flutter/material.dart';
 import 'views/LoginPage.dart';
 import 'managers/pageView.dart';
 import 'managers/userInfo.dart' as inkling;
+import 'managers/Spotify.dart';
+
+// For Spotify client key
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,8 @@ void main() async {
   await setUpNotifications();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await inkling.initializeUserCaching();
+  await DotEnv().load('.env');
+  await getSpotifyAuth();
   runApp(MyApp());
 }
 

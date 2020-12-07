@@ -48,7 +48,11 @@ dependencies:
   url_launcher: ^5.4.10
   exif: ^1.0.3
   firebase_ml_vision: ^0.9.9
+  spotify_sdk: ^1.0.0
+  flutter_dotenv: ^2.1.0
+  flutter_tags: ^0.4.9+1
   async: ^2.4.2
+  speech_to_text: ^3.0.1
   flutter_speed_dial: ^1.2.5
   share: ^0.6.5+4
 
@@ -76,6 +80,7 @@ flutter:
     - assets/onBoarding1.jpeg
     - assets/model.tflite
     - assets/labels.txt
+    - .env
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 
