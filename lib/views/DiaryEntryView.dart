@@ -3,12 +3,19 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:typed_data';
+import 'dart:math';
 // import dependencies
+import 'package:async/async.dart';
 import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:speech_to_text/speech_recognition_event.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text/speech_recognition_error.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 // import managers
@@ -16,6 +23,7 @@ import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
 import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
+import '../managers/Spotify.dart';
 import '../managers/PromptTags.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,8 +44,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
+
+  // Spotify
+  var _spotifyToken;
+  var _currentTrack;
+  var _storedTrack;
+  bool _trackReady = false;
+  String _spotifyUrl = "";
+
   // Controllers
-  TextEditingController _textEditingController;
+  TextEditingController _entryEditingController;
   TextEditingController _titleEditingController;
 
   String entryText = "";
@@ -51,7 +67,21 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   final CollectionReference entries = getFireStoreEntriesDB();
   final FirebaseStorage _storage = getStorage();
   final FirebaseFunctions _functions = getFunction();
-  // Future<DocumentSnapshot> _currentDoc;
+
+  //speach_to_text Related initializations
+  bool _hasSpeech = false;
+  double level = 0.0;
+  double minSoundLevel = 50000;
+  double maxSoundLevel = -50000;
+  String lastWords = "";
+  String lastError = "";
+  String lastStatus = "";
+  String _currentLocaleId = "";
+  List<LocaleName> _localeNames = [];
+  final SpeechToText speech = SpeechToText();
+  FocusNode entryFocusNode;
+  FocusNode titleFocusNode;
+  final bool finalResult = true;
 
   final Uri _emailLaunchUri = Uri(
       scheme: 'mailto',
@@ -61,20 +91,107 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   @override
   void initState() {
     super.initState();
-    _textEditingController = TextEditingController(text: entryText);
+    _entryEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
     if (widget.documentId != "") {
-      // _currentDoc =
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
     }
+    entryFocusNode = FocusNode();
+    titleFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
-    _textEditingController.dispose();
+    _entryEditingController.dispose();
+    _titleEditingController.dispose();
+    entryFocusNode.dispose();
+    titleFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> initSpeechState() async {
+    bool hasSpeech = await speech.initialize(
+        onError: errorListener, onStatus: statusListener);
+    if (hasSpeech) {
+      _localeNames = await speech.locales();
+
+      var systemLocale = await speech.systemLocale();
+      _currentLocaleId = systemLocale.localeId;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _hasSpeech = hasSpeech;
+    });
+  }
+
+  void startListening() {
+    lastWords = "";
+    lastError = "";
+    speech.listen(
+      onResult: resultListener,
+      listenFor: Duration(seconds: 60),
+      localeId: _currentLocaleId,
+      onSoundLevelChange: soundLevelListener,
+      cancelOnError: true,
+      listenMode: ListenMode.confirmation,
+    );
+    setState(() {});
+  }
+
+  void stopListening() {
+    speech.stop();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void resultListener(SpeechRecognitionResult result) {
+    setState(() {
+      lastWords = result.recognizedWords;
+      if (result.finalResult) {
+        if (entryFocusNode.hasFocus) {
+          entryText += " " + lastWords;
+          _entryEditingController = TextEditingController(text: entryText);
+          lastWords = "";
+        }
+        if (titleFocusNode.hasFocus) {
+          titleText += " " + lastWords;
+          _titleEditingController = TextEditingController(text: titleText);
+          lastWords = "";
+        }
+      }
+    });
+  }
+
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    setState(() {
+      this.level = level;
+    });
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    setState(() {
+      lastError = "${error.errorMsg} - ${error.permanent}";
+    });
+  }
+
+  void statusListener(String status) {
+    setState(() {
+      lastStatus = "$status";
+    });
+  }
+
+  _switchLang(selectedVal) {
+    setState(() {
+      _currentLocaleId = selectedVal;
+    });
+    print(selectedVal);
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -110,11 +227,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
+        _spotifyUrl = documentSnapshot.data()["content"]["spotify"];
         _isEditingText = false;
-        _textEditingController = TextEditingController(text: entryText);
+        _entryEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
     });
+    _getTrackByUrl();
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -124,22 +243,55 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_isEditingText) {
       return Column(
         children: <Widget>[
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      blurRadius: .26,
+                      spreadRadius: level * 1.5,
+                      color: Colors.blue.withOpacity(.3))
+                ],
+                color: !_hasSpeech || speech.isListening
+                    ? Colors.blue
+                    : Colors.grey,
+                borderRadius: BorderRadius.all(Radius.circular(50)),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.mic,
+                  color: Colors.white,
+                ),
+                onPressed: !_hasSpeech || speech.isListening
+                    ? stopListening
+                    : startListening,
+              ),
+            ),
+          ),
+          Text(lastWords),
           TextField(
+            maxLines: null,
             controller: _titleEditingController,
             decoration: InputDecoration(hintText: 'Title is...'),
             onChanged: (text) {
               titleText = text;
             },
             autofocus: true,
+            focusNode: titleFocusNode,
           ),
           TextField(
             maxLines: null,
+            controller: _entryEditingController,
             decoration: InputDecoration(hintText: 'Dear diary...'),
             onChanged: (text) {
               entryText = text;
             },
             autofocus: false,
-            controller: _textEditingController,
+            focusNode: entryFocusNode,
           ),
         ],
       );
@@ -188,8 +340,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               buttonText = "Edit";
               titleText = tempTitleText;
               entryText = tempEntryText;
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
+              lastWords = "";
             })
           }
         else if (_isEditingText && widget.documentId == "")
@@ -197,12 +350,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             setState(() {
               titleText = '';
               entryText = '';
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
               _bucketUrl = "";
               buttonText = "Edit";
               _isEditingText = false;
+              lastWords = "";
             })
           }
         else
@@ -212,7 +366,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             setState(() {
               titleText = '';
               entryText = '';
-              _textEditingController = TextEditingController(text: entryText);
+              _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
               buttonText = "Save";
@@ -241,7 +395,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       visible: true, //_dialVisible,
       // If true user is forced to close dial manually
       // by tapping main button and overlay is not rendered.
-      closeManually: true,
+      closeManually: false,
       curve: Curves.bounceIn,
       overlayColor: Colors.black,
       overlayOpacity: 0.5,
@@ -249,54 +403,61 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onClose: () => print('DIAL CLOSED'),
       tooltip: 'Speed Dial',
       heroTag: 'speed-dial-hero-tag',
-      backgroundColor: Colors.purpleAccent,
+      backgroundColor: Colors.pink,
       foregroundColor: Colors.white,
       elevation: 8.0,
       shape: CircleBorder(),
       children: [
-        SpeedDialChild(
-            child: Icon(Icons.add_photo_alternate),
-            backgroundColor: Colors.red,
-            label: 'Add a photo from your Gallery',
+        if (_isEditingText == true)
+          SpeedDialChild(
+              child: Icon(Icons.add_photo_alternate),
+              backgroundColor: Colors.red,
+              label: 'Add a photo from your Gallery',
+              // labelStyle: TextStyle(fontSize: 18.0),
+              onTap: () => print('FIRST CHILD')),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.add_a_photo),
+            backgroundColor: Colors.blue,
+            label: 'Add from Camera',
             // labelStyle: TextStyle(fontSize: 18.0),
-            onTap: () => print('FIRST CHILD')),
-        SpeedDialChild(
-          child: Icon(Icons.add_a_photo),
-          backgroundColor: Colors.blue,
-          label: 'Add from Camera',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('SECOND CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.keyboard_voice),
-          backgroundColor: Colors.green,
-          label: 'Record a voice entry',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.share),
-          backgroundColor: Colors.orange,
-          label: 'Share with a friend',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => print('THIRD CHILD'),
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.menu_book),
-          backgroundColor: Colors.brown,
-          label: 'Current Journal: Personal',
-          // labelStyle: TextStyle(fontSize: 18.0),
-          onTap: () => {
-            getUserProfile()
-                .then((profile) => print(profile.data().toString())),
-          },
-        ),
-        SpeedDialChild(
-          child: Icon(Icons.plumbing),
-          backgroundColor: toogleML ? Colors.cyan : Colors.grey,
-          label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
-          onTap: () => {setState(() => toogleML = !toogleML)},
-        ),
+            onTap: () => print('SECOND CHILD'),
+          ),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.keyboard_voice),
+            backgroundColor: Colors.purple,
+            label: 'Record a voice entry',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.share),
+            backgroundColor: Colors.orange,
+            label: 'Share with a friend',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.menu_book),
+            backgroundColor: Colors.brown,
+            label: 'Current Journal: Personal',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => {
+              getUserProfile()
+                  .then((profile) => print(profile.data().toString())),
+            },
+          ),
+        // Commenting this out because buttons don't all fit anymore
+        // SpeedDialChild(
+        //   child: Icon(Icons.plumbing),
+        //   backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+        //   label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+        //   onTap: () => {setState(() => toogleML = !toogleML)},
+        // ),
+        if (_isEditingText == true) _spotifySpeedDial()
       ],
     );
   }
@@ -305,6 +466,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() {
+    print("Adding track: ${_storedTrack.track}");
     return entries
         .add({
           'user_id': _user.uid,
@@ -312,7 +474,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'timestamp': DateTime.now(),
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -340,7 +503,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'title': titleText,
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -394,7 +558,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         } else {
           entryText = selectedTagsString;
         }
-        _textEditingController = TextEditingController(text: entryText);
+        _entryEditingController = TextEditingController(text: entryText);
       });
     }
   }
@@ -414,6 +578,135 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       });
     }
   }
+
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
+  SpeedDialChild _spotifySpeedDial() {
+    return SpeedDialChild(
+      child: Icon(Icons.music_note),
+      backgroundColor: Colors.green,
+      label: 'Add Spotify track',
+      onTap: () async {
+        await _initializeSpotify();
+        if (_spotifyToken != null) {
+          print("updating for token $_spotifyToken");
+          await _updateLatestSpotifyTrack();
+          _selectTrackPopup(context);
+        } else {
+          _linkSpotifyPopup(context);
+        }
+      },
+    );
+  }
+
+  Future<void> _initializeSpotify() async {
+    // Use below code if we want to authenticate from this button, and not on app start
+    // if (_spotifyToken == null) {
+    //   print("no token found");
+    //   await getSpotifyAuth();
+    var token = fetchSpotifyToken();
+    setState(() {
+      _spotifyToken = token;
+    });
+    //}
+  }
+
+  _updateLatestSpotifyTrack() async {
+    await loadSpotifyTrack();
+    setState(() {
+      _currentTrack = fetchSpotifyTrack();
+    });
+  }
+
+  _selectTrackPopup(context) {
+    if (_currentTrack != null) {
+      return Alert(
+          context: context,
+          title: "Recently played:",
+          content: _currentSpotifyTrack(),
+          buttons: [
+            DialogButton(
+                child: Text("Add song"),
+                onPressed: () {
+                  setState(() {
+                    _spotifyUrl = _currentTrack.href;
+                  });
+                  _getTrackByUrl();
+                  Navigator.pop(context);
+                })
+          ]).show();
+    }
+  }
+
+  _linkSpotifyPopup(context) {
+    return Alert(
+        context: context,
+        title: "Oops!",
+        content: Text(
+            "This feature requires Spotify access. Would you like to link your Spotify now?"),
+        buttons: [
+          DialogButton(
+              child: Text("Yes"),
+              onPressed: () async {
+                await getSpotifyAuth();
+                var token = fetchSpotifyToken();
+                setState(() {
+                  _spotifyToken = token;
+                });
+                Navigator.pop(context);
+              }),
+          DialogButton(
+              child: Text("No"),
+              onPressed: () async {
+                Navigator.pop(context);
+              })
+        ]).show();
+  }
+
+  Widget _currentSpotifyTrack() {
+    return ListTile(
+      leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_currentTrack.track}'),
+      subtitle: Text('${_currentTrack.artist}'),
+      isThreeLine: true,
+    );
+  }
+
+  Widget _storedSpotifyTrack() {
+    return ListTile(
+        leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+        title: Text('${_storedTrack.track}'),
+        subtitle: Text('${_storedTrack.artist}'),
+        isThreeLine: true,
+        trailing: _isEditingText
+            ? IconButton(
+                icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
+                onPressed: () {
+                  // remove widget
+                  _trackReady = false;
+                })
+            : IconButton(
+                icon: Icon(Icons.play_circle_fill,
+                    color: Colors.green, size: 50.0),
+                onPressed: () {
+                  // open in spotify
+                  return launch(_storedTrack.url);
+                }));
+  }
+
+  _getTrackByUrl() async {
+    await getTrackByUrl(_spotifyUrl);
+    setState(() {
+      _storedTrack = fetchStoredTrack();
+      _trackReady = true;
+    });
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////
   /// MAIN VIEW
@@ -515,6 +808,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 Container(
                   height: 40.0,
                 ),
+                // Spotify
+                if (_trackReady) _storedSpotifyTrack(),
                 Align(
                     alignment: FractionalOffset.bottomRight,
                     child: TextButton(

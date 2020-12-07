@@ -46,7 +46,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.wardsquid.inkling"
         minSdkVersion 21
         compileSdkVersion 30
@@ -85,6 +84,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-vision-image-labeling-internal:16.0.5'
     api 'com.google.firebase:firebase-ml-vision:24.1.0'
     api 'com.google.firebase:firebase-ml-vision-image-label-model:20.0.2'
+    implementation project(':spotify-app-remote')
+    implementation project(':spotify-auth')
+    implementation "com.google.code.gson:gson:2.8.5"
 }
   
 
