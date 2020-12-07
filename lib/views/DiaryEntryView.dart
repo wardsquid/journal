@@ -1065,6 +1065,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(40)),
                   onPressed: () {
+                    initSpeechState();
                     setState(() {
                       tempTitleText = titleText;
                       tempEntryText = entryText;
