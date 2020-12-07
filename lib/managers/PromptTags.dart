@@ -18,7 +18,7 @@ Future<String> createTagAlert(BuildContext context, List localList) {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('I found these tags for you!'),
+          title: Text('I found these prompts to get you started!'),
           content: Tags(
             key: _globalKey,
             itemCount: localList.length,
@@ -33,9 +33,10 @@ Future<String> createTagAlert(BuildContext context, List localList) {
                 textStyle: TextStyle(fontSize: 14),
                 combine: ItemTagsCombine.withTextBefore,
                 onPressed: (i) => {
-                  if (!selectedTagsList.contains(currentItem.title)){
-                    selectedTagsList.add(currentItem.title),
-                  }
+                  if (!selectedTagsList.contains(currentItem.title))
+                    {
+                      selectedTagsList.add(currentItem.title),
+                    }
                   else if (selectedTagsList.contains(currentItem.title))
                     {selectedTagsList.removeAt(index)}
                 },
@@ -59,4 +60,3 @@ Future<String> createTagAlert(BuildContext context, List localList) {
         );
       });
 }
-
