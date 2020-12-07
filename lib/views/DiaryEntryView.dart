@@ -106,6 +106,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         inkling.userProfile['journals_list'].add(text);
         inkling.currentJournal = text;
+        addJournalToDB(inkling.userProfile['journal_list']);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -129,7 +130,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 //////////////////////////////////////////////////////////////////////////////////
   /// CREATES A NEW JOURNAL AND SETS IT AS ACTIVE
 /////////////////////////////////////////////////////////////////////////////////////
-  void updateSharingList(String title, List<String> sharingWith) {
+  void updateSharingList(String title, List<dynamic> sharingWith) {
     // print(title);
     print(sharingWith);
     setState(() {
@@ -419,7 +420,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         // labelStyle: TextStyle(fontSize: 18.0),
                         onTap: () => {
                           Share.share(entryText, subject: titleText),
-                          print('THIRD CHILD')},
+                          print('THIRD CHILD')
+                        },
                       )
                     ]
                   : []) +
@@ -444,8 +446,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
-  Future<void> _addNewEntry() {
-    return entries
+  Future<void> _addNewEntry() async {
+    dynamic newEntry = await entries
         .add({
           'user_id': _user.uid,
           'title': titleText,
@@ -470,9 +472,15 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       .catchError(
                           (error) => print("Failed to upload photo: $error"))
                 },
-              print(value.id),
+              // print(value.id),
             })
         .catchError((error) => print("Failed to add entry: $error"));
+    setState(() {
+      MainView.of(context).documentIdReference = newEntry.toString();
+      ownerId = _user.uid;
+      print(ownerId);
+      print(widget.documentId);
+    });
   }
 
 ///////////////////////////////////////////////////////////////////////
