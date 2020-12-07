@@ -322,12 +322,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Future<void> downloadURLImage() async {
     String setUrl = await _storage
-        .ref("${_user.uid}/${widget.documentId}")
+        .ref("${inkling.activeEntry["user_id"]}/${widget.documentId}")
         .getDownloadURL();
     setState(() {
       _bucketUrl = setUrl;
     });
-    print(_bucketUrl);
+    // print(_bucketUrl);
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -727,7 +727,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
-    
+
     if (pickedFile != null) {
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
@@ -976,7 +976,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       // if an image is being loaded from the DB
                       : FadeInImage(
                           image: NetworkImage(_bucketUrl),
-                          placeholder: AssetImage("assets/placeholder.png"),
+                          placeholder:
+                              AssetImage("assets/placeholder_transparent.gif"),
                           fit: BoxFit.cover))
                   // if image is has been selected
                   : Image.file(
