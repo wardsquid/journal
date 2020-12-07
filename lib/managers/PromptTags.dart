@@ -13,7 +13,7 @@ final GlobalKey<TagsState> _globalKey = GlobalKey<TagsState>();
 
 Future<String> createTagAlert(BuildContext context, List localList) {
   List selectedTagsList = [];
-  String selectedTagsString = '';
+  String selectedTagsString = '';i
   return showDialog(
       context: context,
       builder: (context) {
