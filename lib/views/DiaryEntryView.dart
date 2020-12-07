@@ -95,7 +95,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// CREATES A NEW JOURNAL AND SETS IT AS ACTIVE
 /////////////////////////////////////////////////////////////////////////////////////
   void updateJournal(text) async {
-    bool writeResult = await addNewJournal(text);
+    // inkling.userProfile['journals_list'].add(text);
+    List<dynamic> journalList = inkling.userProfile['journals_list'];
+    journalList.add(text);
+
+    bool writeResult = await addJournalToDB(journalList);
+
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -104,9 +109,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         ),
       );
       setState(() {
-        inkling.userProfile['journals_list'].add(text);
+        inkling.userProfile['journals_list'] = journalList;
         inkling.currentJournal = text;
-        addJournalToDB(inkling.userProfile['journal_list']);
+        // addJournalToDB(inkling.userProfile['journal_list']);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

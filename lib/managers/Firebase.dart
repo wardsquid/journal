@@ -148,18 +148,18 @@ getUserProfile() async {
 /////////////////////////////////////////////
 /// ADD NEW JOURNAL
 /////////////////////////////////////////////
-Future<bool> addNewJournal(String title) async {
-  CollectionReference users = getFireStoreUsersDB();
-  User currentUser = checkUserLoginStatus();
-  try {
-    users.doc(currentUser.uid).update({
-      'journals_list': FieldValue.arrayUnion([title])
-    });
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
+// Future<bool> addNewJournal(String title) async {
+//   CollectionReference users = getFireStoreUsersDB();
+//   User currentUser = checkUserLoginStatus();
+//   try {
+//     users.doc(currentUser.uid).update({
+//       'journals_list': FieldValue.arrayUnion([title])
+//     });
+//     return true;
+//   } catch (error) {
+//     return false;
+//   }
+// }
 
 /////////////////////////////////////////////
 /// ADD NEW JOURNAL
