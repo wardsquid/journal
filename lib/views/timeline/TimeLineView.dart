@@ -45,7 +45,7 @@ class _TimeLineView extends State<TimeLineView> {
       entry["content"]["albumImage"] = _storedTrack.imageUrl;
       entry["content"]["url"] = _storedTrack.url;
     }
-    print("pushing ${entry.toString()}");
+    // print("pushing ${entry.toString()}");
     setState(() {
       display.add(entry);
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
