@@ -30,9 +30,11 @@ class _UserProfile extends State<UserProfile> {
   String _email = "";
   String _name = "";
   List<dynamic> friends = [];
-  List<bool> friendsChecked = [];
-  List<int> _selectedFriends = List<int>();
-  bool _checked = false;
+  List<bool> _friendsChecked = [];
+  int _selectedFriendIndex = 0;
+  String _selectedFriendEmail = "";
+  String _selectedFriendName = "";
+  bool _isDeleteButtonDisabled = true;
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _UserProfile extends State<UserProfile> {
               setState(() {
                 friends = documentSnapshot.data()["friends"];
                 for (var i = 0; i < friends.length; i++) {
-                  friendsChecked.add(false);
+                  _friendsChecked.add(false);
                 }
                 inkling.userProfile["friends"] = friends;
               })
@@ -149,6 +151,39 @@ class _UserProfile extends State<UserProfile> {
         },
       );
     }
+  }
+
+  Future<void> _deleteFriend() async {
+    return users.doc(_user.uid).update({
+      'friends': FieldValue.arrayRemove([
+        {'email': _selectedFriendEmail, "name": _selectedFriendName}
+      ])
+    }).then((value) => {
+          _getNewFriends(),
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Successfully Deleted!'),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('Close'),
+                    onPressed: () {
+                      _friendsChecked[_selectedFriendIndex] = false;
+                      _selectedFriendName = "";
+                      _selectedFriendEmail = "";
+                      _isDeleteButtonDisabled = true;
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          )
+        });
   }
 
   @override
@@ -284,8 +319,6 @@ class _UserProfile extends State<UserProfile> {
   Widget _buildFriendsList() {
     return StatefulBuilder(builder: (context, setState) {
       return AlertDialog(
-        // contentPadding: EdgeInsets.all(0.0),
-        // actionsPadding: c,
         clipBehavior: Clip.antiAliasWithSaveLayer,
         title: Text("Your Friends:"),
         content: SingleChildScrollView(
@@ -294,66 +327,38 @@ class _UserProfile extends State<UserProfile> {
             children: <Widget>[
               Divider(),
               Container(
-                // margin: MediaQuery.of(context).viewInsets,
                 height: MediaQuery.of(context).size.height / 2,
                 width: MediaQuery.of(context).size.width,
                 child: ListView.builder(
                   itemCount: friends.length,
                   itemBuilder: (BuildContext buildContext, int index) =>
-                      //   Container(
-                      // color: (_selectedFriends.contains(index))
-                      //     ? Colors.blue.withOpacity(0.5)
-                      //     : Colors.transparent,
-                      // child:
                       CheckboxListTile(
                           title: Text("${friends[index]["name"]}"),
                           subtitle: Text("${friends[index]["email"]}"),
-                          value: friendsChecked[index],
+                          value: _friendsChecked[index],
+                          controlAffinity: ListTileControlAffinity.leading,
+                          activeColor: Colors.red,
+                          checkColor: Colors.white,
                           onChanged: (bool value) {
                             setState(() {
-                              friendsChecked[index] = value;
+                              _friendsChecked[_selectedFriendIndex] = false;
+                              _friendsChecked[index] = value;
+                              _selectedFriendEmail = friends[index]["email"];
+                              _selectedFriendName = friends[index]["name"];
+                              _selectedFriendIndex = index;
+                              if (_friendsChecked.contains(true)) {
+                                _isDeleteButtonDisabled = false;
+                              } else {
+                                _isDeleteButtonDisabled = true;
+                              }
                             });
-                          }
-                          // onLongPress: () {
-                          //   print("onLongPress, $_selectedFriends");
-                          //   if (!_selectedFriends.contains(index)) {
-                          //     setState(() {
-                          //       _selectedFriends.add(index);
-                          //     });
-                          //   }
-                          // },
-                          // onTap: () {
-                          //   print("onTap, $_selectedFriends");
-                          //   if (_selectedFriends.contains(index)) {
-                          //     setState(() {
-                          //       _selectedFriends.removeWhere((val) => val == index);
-                          //     });
-                          //   }
-                          // },
-                          ),
-                  // ),
+                          }),
                   shrinkWrap: true,
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: RaisedButton(
-              //     child: Text("Add"),
-              //     onPressed: () {
-              //       showDialog(
-              //         context: context,
-              //         builder: (BuildContext context) {
-              //           return _buildAddFriendForm();
-              //         },
-              //         barrierDismissible: false,
-              //       );
-              //     },
-              //   ),
-              // ),
               Divider(),
             ],
           ),
-          // ],
         ),
         actions: <Widget>[
           FlatButton(
@@ -368,22 +373,31 @@ class _UserProfile extends State<UserProfile> {
                 );
               }),
           FlatButton(
-              child: Text("Remove"),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return _buildAddFriendForm();
-                  },
-                  barrierDismissible: false,
-                );
-              }),
+              child: Text("Delete",
+                  style: TextStyle(
+                    color: _isDeleteButtonDisabled ? Colors.grey : Colors.red,
+                  )),
+              onPressed: _isDeleteButtonDisabled
+                  ? null
+                  : () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return _buildDeleteFriendForm();
+                        },
+                        barrierDismissible: false,
+                      );
+                    }),
           FlatButton(
             child: Text(
               'Close',
               style: TextStyle(fontSize: 15),
             ),
             onPressed: () {
+              _friendsChecked[_selectedFriendIndex] = false;
+              _selectedFriendName = "";
+              _selectedFriendEmail = "";
+              _isDeleteButtonDisabled = true;
               Navigator.of(context).pop();
             },
           )
@@ -479,7 +493,38 @@ class _UserProfile extends State<UserProfile> {
             style: TextStyle(fontSize: 15),
           ),
           onPressed: () {
+            _friendsChecked[_selectedFriendIndex] = false;
+            _selectedFriendName = "";
+            _selectedFriendEmail = "";
+            _isDeleteButtonDisabled = true;
             Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
+  }
+
+  Widget _buildDeleteFriendForm() {
+    return AlertDialog(
+      title: Text("Are you sure to delete $_selectedFriendName ?"),
+      contentPadding: EdgeInsets.all(0.0),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Delete',
+            style: TextStyle(color: Colors.red),
+          ),
+          onPressed: () {
+            _deleteFriend();
+          },
+        ),
+        FlatButton(
+          child: Text(
+            'Cancel',
+            style: TextStyle(fontSize: 15),
+          ),
+          onPressed: () {
             Navigator.of(context).pop();
           },
         )
