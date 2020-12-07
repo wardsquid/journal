@@ -1,6 +1,7 @@
 import 'package:inkling/managers/DateToHuman.dart';
 import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 // dart imports
 import 'dart:io';
@@ -58,6 +59,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   var _storedTrack;
   bool _trackReady = false;
   String _spotifyUrl; // = "";
+  List suggestionList = ["hi", "what", "fine"];
+  var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers
   TextEditingController _entryEditingController;
@@ -727,7 +730,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
-    
+
     if (pickedFile != null) {
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
@@ -851,7 +854,30 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       return Alert(
           context: context,
           title: "Recently played:",
-          content: _currentSpotifyTrack(),
+          content: //_currentSpotifyTrack(),
+              AutoCompleteTextField(
+            controller: _suggestionTextFieldController,
+            clearOnSubmit: false,
+            suggestions: suggestionList,
+            itemFilter: (item, query) {
+              return item.toLowerCase().startsWith(query.toLowerCase());
+            },
+            itemSorter: (a, b) {
+              return a.compareTo(b);
+            },
+            itemSubmitted: (item) {
+              _suggestionTextFieldController.text = item;
+            },
+            itemBuilder: (context, item) {
+              return Container(
+                  padding: EdgeInsets.all(20.0),
+                  child: Row(children: <Widget>[
+                    Text(
+                      item,
+                    )
+                  ]));
+            },
+          ),
           buttons: [
             DialogButton(
                 child: Text("Add song"),
@@ -1082,7 +1108,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               //   height: 40.0,
               // ),
               if (_trackReady) _storedSpotifyTrack(),
-
               Center(
                 // alignment: FractionalOffset.bottomRight,
                 child: RaisedButton(
