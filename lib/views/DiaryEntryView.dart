@@ -59,7 +59,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   var _storedTrack;
   bool _trackReady = false;
   String _spotifyUrl; // = "";
-  List suggestionList = ["hi", "what", "fine"];
+  List suggestionList = ["hi", "what", "fine", "fiona", "fall"];
   var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers

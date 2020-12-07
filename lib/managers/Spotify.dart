@@ -1,21 +1,21 @@
 // Spotify
-import 'package:async/async.dart';
-import 'package:spotify_sdk/models/connection_status.dart';
-import 'package:spotify_sdk/models/crossfade_state.dart';
-import 'package:spotify_sdk/models/image_uri.dart';
-import 'package:spotify_sdk/models/player_context.dart';
-import 'package:spotify_sdk/models/player_state.dart';
+// import 'package:async/async.dart';
+// import 'package:spotify_sdk/models/connection_status.dart';
+// import 'package:spotify_sdk/models/crossfade_state.dart';
+// import 'package:spotify_sdk/models/image_uri.dart';
+// import 'package:spotify_sdk/models/player_context.dart';
+// import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
+//import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 
 var _authenticationToken;
 var _currentTrack;
 var _storedTrack;
+List _todaysTracks;
 
 Future<void> getSpotifyAuth() async {
   String clientId = DotEnv().env['CLIENT_ID'];
@@ -175,6 +175,60 @@ Future<void> getTrackByUrl(String _url) async {
   }
 }
 
+class TodayTrack {
+  final String artist;
+  final String track;
+  final String url;
+  final String href;
+  String imageUrl;
+
+  TodayTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
+
+  factory TodayTrack.fromJson(Map<String, dynamic> json, num n) {
+    return TodayTrack(
+        artist: json['items'][n]['track']['artists'][0]['name'],
+        track: json['items'][n]['track']['name'],
+        url: json['items'][n]['track']['external_urls']['spotify'],
+        href: json['items'][n]['track']['href']);
+  }
+
+  Future<void> getImage() async {
+    Map<String, dynamic> json;
+
+    final response = await http.get(this.href,
+        headers: {'Authorization': 'Bearer ' + _authenticationToken});
+
+    if (response.statusCode == 200) {
+      print("Track ID found");
+      json = jsonDecode(response.body);
+      this.imageUrl = json['album']['images'][0]['url'];
+    } else {
+      print('Track ID not found');
+    }
+  }
+}
+
+Future<void> getTodaysTracks() async {
+  print("Getting today's tracks for $_authenticationToken");
+  final response = await http.get(
+      "https://api.spotify.com/v1/me/player/recently-played",
+      headers: {'Authorization': 'Bearer ' + _authenticationToken});
+
+  if (response.statusCode == 200) {
+    print("Recently played tracks found");
+
+    for (var i = 0; i < 50; i++) {}
+    _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), 0));
+
+    print("artist: ${_storedTrack.artist}");
+    print("track: ${_storedTrack.track}");
+    print("url: ${_storedTrack.url}");
+    print("href: ${_storedTrack.href}");
+    print("imageUrl: ${_storedTrack.imageUrl}");
+  } else {
+    print('Stored track ID not found');
+  }
+}
 // Future<void> getPlayerState() async {
 //   print("getting current track...");
 //   var playerConnection = await SpotifySdk.subscribeConnectionStatus();
