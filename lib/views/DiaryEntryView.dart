@@ -814,6 +814,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     alignment: FractionalOffset.bottomRight,
                     child: TextButton(
                       onPressed: () {
+                        initSpeechState();
                         setState(() {
                           tempTitleText = titleText;
                           tempEntryText = entryText;
