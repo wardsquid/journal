@@ -1,5 +1,5 @@
 // import 'dart:developer';
-
+import 'userInfo.dart' as inkling;
 import 'package:flutter/material.dart';
 import '../views/Calendar.dart';
 import '../views/DiaryEntryView.dart';
@@ -16,6 +16,8 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   static PageController _pageController;
+
+  //set variable
   DateTime activeDate = DateTime.now();
   String documentId = "";
   set date(DateTime value) => setState(() => activeDate = value);
@@ -34,9 +36,14 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
+    inkling.initializeUserCaching();
     return PageView(
         controller: _pageController,
         onPageChanged: (index) {
+          if (index != 2) {
+            FocusScope.of(context).unfocus();
+          }
+          print(inkling.userProfile.toString());
           print(activeDate);
           print(documentId);
         },
@@ -49,6 +56,7 @@ class _MainViewState extends State<MainView> {
               documentId: documentId), //index 0
           DiaryEntryView(activeDate: activeDate, documentId: documentId),
           UserProfile(),
+          Container(color: Colors.red), //index 2
           //TFLite() TF ML functions may not need
         ]);
   }
@@ -56,3 +64,4 @@ class _MainViewState extends State<MainView> {
 
 typedef void DateTimeCallback(DateTime val);
 typedef void StringCallback(String val);
+//declare here as well

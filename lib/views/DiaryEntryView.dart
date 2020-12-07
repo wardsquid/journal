@@ -15,43 +15,21 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+
 // import managers
 import '../managers/Firebase.dart';
 import '../managers/pageView.dart';
 import '../managers/LocationInfo.dart';
 import '../managers/GoogleMLKit.dart';
+import '../managers/Spotify.dart';
+import '../managers/PromptTags.dart';
 // import Firebase for Class definitions
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-
-String DateDisplay(DateTime date) {
-  const List weekday = [null, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const List months = [
-    null,
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
-  String toBeDisplayed = weekday[date.weekday] +
-      ', ' +
-      date.day.toString() +
-      ' ' +
-      months[date.month] +
-      ' ' +
-      date.year.toString();
-  return toBeDisplayed;
-}
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
@@ -62,9 +40,18 @@ class DiaryEntryView extends StatefulWidget {
 }
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
+  bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Edit";
   List<double> _coordinates;
+
+  // Spotify
+  var _spotifyToken;
+  var _currentTrack;
+  var _storedTrack;
+  bool _trackReady = false;
+  String _spotifyUrl = "";
+
   // Controllers
   TextEditingController _entryEditingController;
   TextEditingController _titleEditingController;
@@ -108,6 +95,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     _titleEditingController = TextEditingController(text: titleText);
     if (widget.documentId != "") {
       readEntry(widget.documentId); //as DocumentSnapshot;
+    } else {
+      // _isEditingText = true;
     }
     entryFocusNode = FocusNode();
     titleFocusNode = FocusNode();
@@ -205,6 +194,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     print(selectedVal);
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// GET IMAGE URL
+///////////////////////////////////////////////////////////////////////
   Future<void> downloadURLImage() async {
     String setUrl = await _storage
         .ref("${_user.uid}/${widget.documentId}")
@@ -215,6 +207,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     print(_bucketUrl);
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// RETRIEVE ENTRY FROM DB
+///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
     print('called');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
@@ -232,13 +227,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       setState(() {
         titleText = documentSnapshot.data()["title"];
         entryText = documentSnapshot.data()["content"]["text"];
+        _spotifyUrl = documentSnapshot.data()["content"]["spotify"];
         _isEditingText = false;
         _entryEditingController = TextEditingController(text: entryText);
         _titleEditingController = TextEditingController(text: titleText);
       });
     });
+    _getTrackByUrl();
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// ENTRY TEXT FIELDS
+///////////////////////////////////////////////////////////////////////
   Widget _entryText() {
     if (_isEditingText) {
       return Column(
@@ -292,7 +292,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             },
             autofocus: false,
             focusNode: entryFocusNode,
-          )
+          ),
         ],
       );
     }
@@ -327,6 +327,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// FLOATING BUTTON BEHAVIOUR
+///////////////////////////////////////////////////////////////////////
   Widget _getFloatingButton() {
     return FloatingActionButton.extended(
       onPressed: () => {
@@ -377,7 +380,93 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 
+////////////////////////////////////////////////////////////////
+  /// SPEED DIAL
+////////////////////////////////////////////////////////////////
+  Widget speedDial() {
+    return SpeedDial(
+      // both default to 16
+      marginRight: 18,
+      marginBottom: 20,
+      animatedIcon: AnimatedIcons.menu_close,
+      animatedIconTheme: IconThemeData(size: 22.0),
+      // this is ignored if animatedIcon is non null
+      // child: Icon(Icons.add),
+      visible: true, //_dialVisible,
+      // If true user is forced to close dial manually
+      // by tapping main button and overlay is not rendered.
+      closeManually: false,
+      curve: Curves.bounceIn,
+      overlayColor: Colors.black,
+      overlayOpacity: 0.5,
+      onOpen: () => print('OPENING DIAL'),
+      onClose: () => print('DIAL CLOSED'),
+      tooltip: 'Speed Dial',
+      heroTag: 'speed-dial-hero-tag',
+      backgroundColor: Colors.pink,
+      foregroundColor: Colors.white,
+      elevation: 8.0,
+      shape: CircleBorder(),
+      children: [
+        if (_isEditingText == true)
+          SpeedDialChild(
+              child: Icon(Icons.add_photo_alternate),
+              backgroundColor: Colors.red,
+              label: 'Add a photo from your Gallery',
+              // labelStyle: TextStyle(fontSize: 18.0),
+              onTap: () => print('FIRST CHILD')),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.add_a_photo),
+            backgroundColor: Colors.blue,
+            label: 'Add from Camera',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('SECOND CHILD'),
+          ),
+        if (_isEditingText == true)
+          SpeedDialChild(
+            child: Icon(Icons.keyboard_voice),
+            backgroundColor: Colors.purple,
+            label: 'Record a voice entry',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.share),
+            backgroundColor: Colors.orange,
+            label: 'Share with a friend',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => print('THIRD CHILD'),
+          ),
+        if (_isEditingText == false)
+          SpeedDialChild(
+            child: Icon(Icons.menu_book),
+            backgroundColor: Colors.brown,
+            label: 'Current Journal: Personal',
+            // labelStyle: TextStyle(fontSize: 18.0),
+            onTap: () => {
+              getUserProfile()
+                  .then((profile) => print(profile.data().toString())),
+            },
+          ),
+        // Commenting this out because buttons don't all fit anymore
+        // SpeedDialChild(
+        //   child: Icon(Icons.plumbing),
+        //   backgroundColor: toogleML ? Colors.cyan : Colors.grey,
+        //   label: 'Toogle ML: current ${(toogleML ? "ON" : "OFF")}',
+        //   onTap: () => {setState(() => toogleML = !toogleML)},
+        // ),
+        if (_isEditingText == true) _spotifySpeedDial()
+      ],
+    );
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// ADDS A NEW ENTRY
+///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() {
+    print("Adding track: ${_storedTrack.track}");
     return entries
         .add({
           'user_id': _user.uid,
@@ -385,7 +474,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'timestamp': DateTime.now(),
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -403,6 +493,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// UPDATE DIARY ENTRY
+///////////////////////////////////////////////////////////////////////
   Future<void> _overwriteEntry() {
     return entries
         .doc(widget.documentId)
@@ -410,7 +503,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           'title': titleText,
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : ""
           }
         })
         .then((value) => {
@@ -427,7 +521,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .catchError((error) => print("Failed to add entry: $error"));
   }
 
-  /// Get from gallery
+  ///////////////////////////////////////////////////////////////////////
+  /// When an image is selected from the Gallery
+  ///////////////////////////////////////////////////////////////////////
   _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
@@ -437,7 +533,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (pickedFile != null) {
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
-      if (_coordinates.toString() != '[]') {
+      if (_coordinates.length == 2) {
         final HttpsCallable httpsCallable =
             _functions.httpsCallable("getLocation");
         final results = await httpsCallable.call({
@@ -446,24 +542,30 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         });
         location = results.data;
       }
+
+      //pulls labels from image
       Map<String, double> labelMap = await readLabel(File(pickedFile.path));
-      String generatedText = generateText(labelMap);
-
-      // print(generatedText);
-
+      //using the labels pulled, creates a list of related prompt strings
+      List<String> generatedText = generateText(labelMap);
+      //converts the array of related prompt strings into the prompt tags to be displayed in the alert box
+      List tags = mlTagConverter(generatedText);
+      //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns
+      String selectedTagsString = await createTagAlert(context, tags);
       setState(() {
         _image = File(pickedFile.path);
         if (location != null) {
-          entryText = "I went to $location ... \n" + generatedText;
+          entryText = "I went to $location ...  \n" + selectedTagsString;
         } else {
-          entryText = generatedText;
+          entryText = selectedTagsString;
         }
         _entryEditingController = TextEditingController(text: entryText);
       });
     }
   }
 
-  /// Get from Camera
+///////////////////////////////////////////////////////////////////////
+  /// When an Image is selected from Camera
+///////////////////////////////////////////////////////////////////////
   _getFromCamera() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
@@ -477,195 +579,340 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
+  SpeedDialChild _spotifySpeedDial() {
+    return SpeedDialChild(
+      child: Icon(Icons.music_note),
+      backgroundColor: Colors.green,
+      label: 'Add Spotify track',
+      onTap: () async {
+        await _initializeSpotify();
+        if (_spotifyToken != null) {
+          print("updating for token $_spotifyToken");
+          await _updateLatestSpotifyTrack();
+          _selectTrackPopup(context);
+        } else {
+          _linkSpotifyPopup(context);
+        }
+      },
+    );
+  }
+
+  Future<void> _initializeSpotify() async {
+    // Use below code if we want to authenticate from this button, and not on app start
+    // if (_spotifyToken == null) {
+    //   print("no token found");
+    //   await getSpotifyAuth();
+    var token = fetchSpotifyToken();
+    setState(() {
+      _spotifyToken = token;
+    });
+    //}
+  }
+
+  _updateLatestSpotifyTrack() async {
+    await loadSpotifyTrack();
+    setState(() {
+      _currentTrack = fetchSpotifyTrack();
+    });
+  }
+
+  _selectTrackPopup(context) {
+    if (_currentTrack != null) {
+      return Alert(
+          context: context,
+          title: "Recently played:",
+          content: _currentSpotifyTrack(),
+          buttons: [
+            DialogButton(
+                child: Text("Add song"),
+                onPressed: () {
+                  setState(() {
+                    _spotifyUrl = _currentTrack.href;
+                  });
+                  _getTrackByUrl();
+                  Navigator.pop(context);
+                })
+          ]).show();
+    }
+  }
+
+  _linkSpotifyPopup(context) {
+    return Alert(
+        context: context,
+        title: "Oops!",
+        content: Text(
+            "This feature requires Spotify access. Would you like to link your Spotify now?"),
+        buttons: [
+          DialogButton(
+              child: Text("Yes"),
+              onPressed: () async {
+                await getSpotifyAuth();
+                var token = fetchSpotifyToken();
+                setState(() {
+                  _spotifyToken = token;
+                });
+                Navigator.pop(context);
+              }),
+          DialogButton(
+              child: Text("No"),
+              onPressed: () async {
+                Navigator.pop(context);
+              })
+        ]).show();
+  }
+
+  Widget _currentSpotifyTrack() {
+    return ListTile(
+      leading: Image.network(_currentTrack.imageUrl, width: 70, height: 70),
+      title: Text('${_currentTrack.track}'),
+      subtitle: Text('${_currentTrack.artist}'),
+      isThreeLine: true,
+    );
+  }
+
+  Widget _storedSpotifyTrack() {
+    return ListTile(
+        leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+        title: Text('${_storedTrack.track}'),
+        subtitle: Text('${_storedTrack.artist}'),
+        isThreeLine: true,
+        trailing: _isEditingText
+            ? IconButton(
+                icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
+                onPressed: () {
+                  // remove widget
+                  _trackReady = false;
+                })
+            : IconButton(
+                icon: Icon(Icons.play_circle_fill,
+                    color: Colors.green, size: 50.0),
+                onPressed: () {
+                  // open in spotify
+                  return launch(_storedTrack.url);
+                }));
+  }
+
+  _getTrackByUrl() async {
+    await getTrackByUrl(_spotifyUrl);
+    setState(() {
+      _storedTrack = fetchStoredTrack();
+      _trackReady = true;
+    });
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+  /// MAIN VIEW
+///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // resizeToAvoidBottomInset: false,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white, // background color
           ),
-          child: ListView(
-            children: <Widget>[
-              _isEditingText == true
-                  ? Container(
-                      color: Colors.blueGrey,
-                      height: 300,
-                      child: _image == null
-                          ? Container(
-                              // alignment: Alignment.center,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  RaisedButton(
-                                    color: Colors.greenAccent,
-                                    onPressed: () {
-                                      _getFromGallery();
-                                    },
-                                    child: Text("PICK FROM GALLERY"),
-                                  ),
-                                  Container(
-                                    height: 40.0,
-                                  ),
-                                  RaisedButton(
-                                    color: Colors.lightGreenAccent,
-                                    onPressed: () {
-                                      _getFromCamera();
-                                    },
-                                    child: Text("PICK FROM CAMERA"),
-                                  )
-                                ],
-                              ),
-                            )
-                          : Container(
-                              alignment: Alignment.center,
-                              child: Image.file(
-                                _image,
-                                fit: BoxFit.cover,
-                              )),
-                    )
-                  : Container(
-                      color: Colors.blueGrey,
-                      height: 300,
-                      width: double.infinity,
-                      child: _image == null
-                          ? Container(
-                              alignment: Alignment.center,
-                              child: FadeInImage(
-                                  image: NetworkImage(_bucketUrl),
-                                  placeholder:
-                                      AssetImage("assets/placeholder.png"),
-                                  fit: BoxFit.cover),
-                            )
-                          : Container(
-                              alignment: Alignment.center,
-                              child: //_image != null ?
-                                  Image.file(
-                                _image,
-                                fit: BoxFit.cover,
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0)),
+            child: ListView(
+              children: <Widget>[
+                _isEditingText == true
+                    ? Container(
+                        color: Colors.blueGrey,
+                        height: 300,
+                        child: _image == null
+                            ? Container(
+                                // alignment: Alignment.center,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    RaisedButton(
+                                      color: Colors.greenAccent,
+                                      onPressed: () {
+                                        _getFromGallery();
+                                      },
+                                      child: Text("PICK FROM GALLERY"),
+                                    ),
+                                    Container(
+                                      height: 40.0,
+                                    ),
+                                    RaisedButton(
+                                      color: Colors.lightGreenAccent,
+                                      onPressed: () {
+                                        _getFromCamera();
+                                      },
+                                      child: Text("PICK FROM CAMERA"),
+                                    )
+                                  ],
+                                ),
                               )
-                              // : Image.memory(_downloadImage),
-                              ),
-                    ),
-              Align(
-                alignment: FractionalOffset.center,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 25.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      SizedBox(height: 25.0),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                        child: _entryText(),
+                            : Container(
+                                alignment: Alignment.center,
+                                child: Image.file(
+                                  _image,
+                                  fit: BoxFit.cover,
+                                )),
+                      )
+                    : Container(
+                        color: Colors.blueGrey,
+                        height: 300,
+                        width: double.infinity,
+                        child: _image == null
+                            ? Container(
+                                alignment: Alignment.center,
+                                child: FadeInImage(
+                                    image: NetworkImage(_bucketUrl),
+                                    placeholder:
+                                        AssetImage("assets/placeholder.png"),
+                                    fit: BoxFit.cover),
+                              )
+                            : Container(
+                                alignment: Alignment.center,
+                                child: //_image != null ?
+                                    Image.file(
+                                  _image,
+                                  fit: BoxFit.cover,
+                                )
+                                // : Image.memory(_downloadImage),
+                                ),
                       ),
-                    ],
+                Align(
+                  alignment: FractionalOffset.center,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 25.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(height: 25.0),
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(left: 15.0, right: 15.0),
+                          child: _entryText(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                height: 40.0,
-              ),
-              Align(
-                  alignment: FractionalOffset.bottomRight,
-                  child: TextButton(
-                    onPressed: () {
-                      initSpeechState();
-                      setState(() {
-                        tempTitleText = titleText;
-                        tempEntryText = entryText;
-                      });
-                      if (_isEditingText) {
-                        // toggle view mode
+                Container(
+                  height: 40.0,
+                ),
+                // Spotify
+                if (_trackReady) _storedSpotifyTrack(),
+                Align(
+                    alignment: FractionalOffset.bottomRight,
+                    child: TextButton(
+                      onPressed: () {
                         setState(() {
-                          buttonText = "Edit";
-                          _isEditingText = false;
-                          lastWords = "";
+                          tempTitleText = titleText;
+                          tempEntryText = entryText;
                         });
-                        if (_image == null &&
-                            titleText == "" &&
-                            entryText == "") {
-                        } else if (widget.documentId == "") {
-                          _addNewEntry();
+                        if (_isEditingText) {
+                          if (_image == null &&
+                              titleText == "" &&
+                              entryText == "") {
+                          } else if (widget.documentId == "") {
+                            _addNewEntry();
+                          } else {
+                            _overwriteEntry();
+                          }
+                          // toggle view mode
+                          setState(() {
+                            buttonText = "Edit";
+                            _isEditingText = false;
+                          });
                         } else {
-                          _overwriteEntry();
+                          // toggle edit mode
+                          setState(() {
+                            buttonText = "Save";
+                            _isEditingText = true;
+                          });
                         }
-                      } else {
-                        // toggle edit mode
-                        setState(() {
-                          buttonText = "Save";
-                          _isEditingText = true;
-                        });
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Container(
-                        height: 50.0,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30.0),
-                            color:
-                                Colors.transparent, // background button color
-                            border: Border.all(
-                                color: Color(0xFFFB8986)) // all border colors
-                            ),
-                        child: Center(
-                            child: Text(
-                          buttonText,
-                          style: TextStyle(
-                              color: Color(0xFFFB8986),
-                              fontSize: 17.0,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: "Poppins",
-                              letterSpacing: 1.5),
-                        )),
-                      ),
-                    ),
-                  )),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      launch(_emailLaunchUri.toString());
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Container(
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Container(
                           height: 50.0,
-                          width: 130.0,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.0),
+                              borderRadius: BorderRadius.circular(30.0),
                               color:
                                   Colors.transparent, // background button color
                               border: Border.all(
-                                  color: Colors.grey) // all border colors
+                                  color: Color(0xFFFB8986)) // all border colors
                               ),
-                          child: Row(children: <Widget>[
-                            Text(
-                              "Report",
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 17.0,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: "Poppins",
-                                  letterSpacing: 1.5),
-                            ),
-                            Icon(
-                              Icons.mail,
-                              color: Colors.grey,
-                              size: 30.0,
-                            ),
-                          ], mainAxisAlignment: MainAxisAlignment.center)),
-                    ),
-                  ))
-            ],
+                          child: Center(
+                              child: Text(
+                            buttonText,
+                            style: TextStyle(
+                                color: Color(0xFFFB8986),
+                                fontSize: 17.0,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: "Poppins",
+                                letterSpacing: 1.5),
+                          )),
+                        ),
+                      ),
+                    )),
+                // Align(
+                //     alignment: Alignment.centerRight,
+                //     child: TextButton(
+                //       onPressed: () {
+                //         launch(_emailLaunchUri.toString());
+                //       },
+                //       child: Padding(
+                //         padding: const EdgeInsets.only(bottom: 20.0),
+                //         child: Container(
+                //             height: 50.0,
+                //             width: 130.0,
+                //             decoration: BoxDecoration(
+                //                 borderRadius: BorderRadius.circular(10.0),
+                //                 color: Colors
+                //                     .transparent, // background button color
+                //                 border: Border.all(
+                //                     color: Colors.grey) // all border colors
+                //                 ),
+                //             // child: Row(children: <Widget>[
+                //             //   Text(
+                //             //     "Report",
+                //             //     style: TextStyle(
+                //             //         color: Colors.grey,
+                //             //         fontSize: 17.0,
+                //             //         fontWeight: FontWeight.w400,
+                //             //         fontFamily: "Poppins",
+                //             //         letterSpacing: 1.5),
+                //             //   ),
+                //             //   Icon(
+                //             //     Icons.mail,
+                //             //     color: Colors.grey,
+                //             //     size: 30.0,
+                //             //   ),
+                //             // ], mainAxisAlignment: MainAxisAlignment.center)),
+                //       ),
+                //     ),
+                //     ),
+                // Transform.translate(
+                //     offset: Offset(
+                //         0.0, -1 * MediaQuery.of(context).viewInsets.bottom),
+                //     child: bottomNavBar(context)),
+                // bottomNavBar(context),
+              ],
+            ),
           ),
         ),
       ),
-      floatingActionButton: _getFloatingButton(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
+      floatingActionButton: speedDial(), //_getFloatingButton(),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
     );
   }
 }
