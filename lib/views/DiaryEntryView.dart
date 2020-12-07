@@ -708,7 +708,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               if (_image != null)
                 {
                   _storage
-                      .ref("${_user.uid}/${widget.documentId}")
+                      .ref(
+                          "${inkling.activeEntry['user_id']}/${widget.documentId}")
                       .putFile(_image)
                       .then((value) => print("Photo Uploaded Successfully"))
                       .catchError(
@@ -1119,11 +1120,39 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         _isEditingText = false;
                       });
                     } else {
-                      // toggle edit mode
-                      setState(() {
-                        buttonText = "Save";
-                        _isEditingText = true;
-                      });
+                      if (ownerId == _user.uid) {
+                        setState(() {
+                          buttonText = "Save";
+                          _isEditingText = true;
+                        });
+                      } else {
+                        setState(() {
+                          _entryEditingController =
+                              TextEditingController(text: entryText);
+                          _titleEditingController =
+                              TextEditingController(text: titleText);
+                          inkling.activeEntry = null;
+                          ownerId = "";
+                          entryText = "";
+                          titleText = "";
+                          tempTitleText = "";
+                          tempEntryText = "";
+                          _image = null;
+                          _bucketUrl = '';
+                           lastWords = "";
+                           lastError = "";
+                           lastStatus = "";
+                          MainView.of(context).documentIdReference = '';
+
+                          // if (widget.documentId != "") {
+                          //   readEntry(widget.documentId); //as DocumentSnapshot;
+                          // } else {
+                          //   // _isEditingText = true;
+                          // }
+                          // entryFocusNode = FocusNode();
+                          // titleFocusNode = FocusNode();
+                        });
+                      }
                     }
                   },
                 ),
