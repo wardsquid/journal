@@ -9,6 +9,7 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:linkable/linkable.dart';
+import '../managers/userInfo.dart' as inkling;
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
@@ -44,6 +45,7 @@ class _UserProfile extends State<UserProfile> {
         .then((DocumentSnapshot documentSnapshot) => {
               setState(() {
                 friends = documentSnapshot.data()["friends"];
+                inkling.userProfile["friends"] = friends;
               })
             });
   }
@@ -280,46 +282,44 @@ class _UserProfile extends State<UserProfile> {
       clipBehavior: Clip.antiAliasWithSaveLayer,
       title: Text("Your Friends:"),
       content: SingleChildScrollView(
-         child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Divider(),
-              Container(
-                // margin: MediaQuery.of(context).viewInsets,
-                height: MediaQuery.of(context).size.height / 2,
-                width: MediaQuery.of(context).size.width,
-                child: ListView.builder(
-                  itemCount: friends.length,
-                  itemBuilder: (BuildContext buildContext, int index) =>
-                      ListTile(
-                    title: Text("${friends[index]["name"]}"),
-                    subtitle: Text("${friends[index]["email"]}"),
-                  ),
-                  shrinkWrap: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Divider(),
+            Container(
+              // margin: MediaQuery.of(context).viewInsets,
+              height: MediaQuery.of(context).size.height / 2,
+              width: MediaQuery.of(context).size.width,
+              child: ListView.builder(
+                itemCount: friends.length,
+                itemBuilder: (BuildContext buildContext, int index) => ListTile(
+                  title: Text("${friends[index]["name"]}"),
+                  subtitle: Text("${friends[index]["email"]}"),
                 ),
+                shrinkWrap: true,
               ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: RaisedButton(
-              //     child: Text("Add"),
-              //     onPressed: () {
-              //       showDialog(
-              //         context: context,
-              //         builder: (BuildContext context) {
-              //           return _buildAddFriendForm();
-              //         },
-              //         barrierDismissible: false,
-              //       );
-              //     },
-              //   ),
-              // ),
-              Divider(),
-            ],
-          ),
+            ),
+            // Padding(
+            //   padding: const EdgeInsets.all(8.0),
+            //   child: RaisedButton(
+            //     child: Text("Add"),
+            //     onPressed: () {
+            //       showDialog(
+            //         context: context,
+            //         builder: (BuildContext context) {
+            //           return _buildAddFriendForm();
+            //         },
+            //         barrierDismissible: false,
+            //       );
+            //     },
+            //   ),
+            // ),
+            Divider(),
+          ],
+        ),
         // ],
       ),
       actions: <Widget>[
-        
         FlatButton(
             child: Text("Add"),
             onPressed: () {
