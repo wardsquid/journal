@@ -29,6 +29,9 @@ class _UserProfile extends State<UserProfile> {
   String _email = "";
   String _name = "";
   List<dynamic> friends = [];
+  List<bool> friendsChecked = [];
+  List<int> _selectedFriends = List<int>();
+  bool _checked = false;
 
   @override
   void initState() {
@@ -44,6 +47,9 @@ class _UserProfile extends State<UserProfile> {
         .then((DocumentSnapshot documentSnapshot) => {
               setState(() {
                 friends = documentSnapshot.data()["friends"];
+                for (var i = 0; i < friends.length; i++) {
+                  friendsChecked.add(false);
+                }
               })
             });
   }
@@ -274,13 +280,14 @@ class _UserProfile extends State<UserProfile> {
   }
 
   Widget _buildFriendsList() {
-    return AlertDialog(
-      // contentPadding: EdgeInsets.all(0.0),
-      // actionsPadding: c,
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      title: Text("Your Friends:"),
-      content: SingleChildScrollView(
-         child: Column(
+    return StatefulBuilder(builder: (context, setState) {
+      return AlertDialog(
+        // contentPadding: EdgeInsets.all(0.0),
+        // actionsPadding: c,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        title: Text("Your Friends:"),
+        content: SingleChildScrollView(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Divider(),
@@ -291,10 +298,38 @@ class _UserProfile extends State<UserProfile> {
                 child: ListView.builder(
                   itemCount: friends.length,
                   itemBuilder: (BuildContext buildContext, int index) =>
-                      ListTile(
-                    title: Text("${friends[index]["name"]}"),
-                    subtitle: Text("${friends[index]["email"]}"),
-                  ),
+                      //   Container(
+                      // color: (_selectedFriends.contains(index))
+                      //     ? Colors.blue.withOpacity(0.5)
+                      //     : Colors.transparent,
+                      // child:
+                      CheckboxListTile(
+                          title: Text("${friends[index]["name"]}"),
+                          subtitle: Text("${friends[index]["email"]}"),
+                          value: friendsChecked[index],
+                          onChanged: (bool value) {
+                            setState(() {
+                              friendsChecked[index] = value;
+                            });
+                          }
+                          // onLongPress: () {
+                          //   print("onLongPress, $_selectedFriends");
+                          //   if (!_selectedFriends.contains(index)) {
+                          //     setState(() {
+                          //       _selectedFriends.add(index);
+                          //     });
+                          //   }
+                          // },
+                          // onTap: () {
+                          //   print("onTap, $_selectedFriends");
+                          //   if (_selectedFriends.contains(index)) {
+                          //     setState(() {
+                          //       _selectedFriends.removeWhere((val) => val == index);
+                          //     });
+                          //   }
+                          // },
+                          ),
+                  // ),
                   shrinkWrap: true,
                 ),
               ),
@@ -316,32 +351,43 @@ class _UserProfile extends State<UserProfile> {
               Divider(),
             ],
           ),
-        // ],
-      ),
-      actions: <Widget>[
-        
-        FlatButton(
-            child: Text("Add"),
+          // ],
+        ),
+        actions: <Widget>[
+          FlatButton(
+              child: Text("Add"),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return _buildAddFriendForm();
+                  },
+                  barrierDismissible: false,
+                );
+              }),
+          FlatButton(
+              child: Text("Remove"),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return _buildAddFriendForm();
+                  },
+                  barrierDismissible: false,
+                );
+              }),
+          FlatButton(
+            child: Text(
+              'Close',
+              style: TextStyle(fontSize: 15),
+            ),
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return _buildAddFriendForm();
-                },
-                barrierDismissible: false,
-              );
-            }),
-        FlatButton(
-          child: Text(
-            'Close',
-            style: TextStyle(fontSize: 15),
-          ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        )
-      ],
-    );
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    });
   }
 
   Widget _buildAddFriendForm() {
