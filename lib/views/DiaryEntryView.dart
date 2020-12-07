@@ -727,6 +727,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
+    
     if (pickedFile != null) {
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
@@ -771,8 +772,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       maxHeight: 1800,
     );
     if (pickedFile != null) {
+      List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
+      String location;
+      if (_coordinates.length == 2) {
+        final HttpsCallable httpsCallable =
+            _functions.httpsCallable("getLocation");
+        final results = await httpsCallable.call({
+          "lat": _coordinates[0].toString(),
+          "lon": _coordinates[1].toString()
+        });
+        location = results.data;
+      }
+
+      //pulls labels from image
+      Map<String, double> labelMap = await readLabel(File(pickedFile.path));
+      //using the labels pulled, creates a list of related prompt strings
+      List<String> generatedText = generateText(labelMap);
+      //converts the array of related prompt strings into the prompt tags to be displayed in the alert box
+      List tags = mlTagConverter(generatedText);
+      //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns
+      String selectedTagsString = await createTagAlert(context, tags);
+
       setState(() {
         _image = File(pickedFile.path);
+        if (location != null) {
+          entryText = "I went to $location ...  \n" + selectedTagsString;
+        } else {
+          entryText = selectedTagsString;
+        }
+        _entryEditingController = TextEditingController(text: entryText);
       });
     }
   }
