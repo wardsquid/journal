@@ -160,13 +160,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     });
   }
 
-  // void cancelListening() {
-  //   speech.cancel();
-  //   setState(() {
-  //     level = 0.0;
-  //   });
-  // }
-
   void resultListener(SpeechRecognitionResult result) {
     setState(() {
       lastWords = result.recognizedWords;
