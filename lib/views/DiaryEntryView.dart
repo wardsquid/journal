@@ -59,23 +59,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   var _storedTrack;
   bool _trackReady = false;
   String _spotifyUrl; // = "";
-  List suggestionList = [
-    "hi",
-    "what",
-    "fine",
-    "fiona",
-    "fall0",
-    "fall1",
-    "fall2",
-    "fall3",
-    "fall4",
-    "fall5",
-    "fall6",
-    "fall7",
-    "fall8",
-    "fall9",
-    "fall10"
-  ];
+  List<dynamic> _todaysTracks;
   var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers
@@ -868,53 +852,45 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   _updateLatestSpotifyTrack() async {
-    await loadTodaysTracks();
     await loadSpotifyTrack();
+    await loadTodaysTracks();
     setState(() {
-      _currentTrack = fetchSpotifyTrack();
+      _todaysTracks = fetchTodaysTracks();
     });
+    // await loadSpotifyTrack();
+    // setState(() {
+    //   _currentTrack = fetchSpotifyTrack();
+    // });
   }
 
   _selectTrackPopup(context) {
-    if (_currentTrack != null) {
+    //if (_currentTrack != null)
+    if (_todaysTracks != null) {
       return Alert(
           context: context,
           title: "Type a song you listened to today:",
+          //_todaysTracks[0].track,
           content: //_currentSpotifyTrack(),
               AutoCompleteTextField(
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
-            suggestions: suggestionList,
-            suggestionsAmount: 4,
+            suggestions: _todaysTracks,
+            suggestionsAmount: 50,
             itemFilter: (item, query) {
-              return item.toLowerCase().startsWith(query.toLowerCase());
+              return item.track.toLowerCase().startsWith(query.toLowerCase());
             },
             itemSorter: (a, b) {
-              return a.compareTo(b);
+              return a.track.compareTo(b.track);
             },
             itemSubmitted: (item) {
-              _suggestionTextFieldController.text = item;
+              _suggestionTextFieldController.text = item.track;
             },
             itemBuilder: (context, item) {
               return new ListTile(
-                title: new Text("Stars: $item"),
-                leading: Image.network(_currentTrack.imageUrl,
-                    width: 20, height: 20),
+                title: new Text("${item.track}"),
+                subtitle: new Text("${item.artist}"),
+                // leading: Image.network(item.imageUrl, width: 20, height: 20),
               );
-
-              // return Padding(
-              //   padding: EdgeInsets.all(1.0),
-              //   child: new ListTile(
-              //     title: new Text("Stars: $item"),
-              //     leading: Image.network(_currentTrack.imageUrl,
-              //         width: 20, height: 20),
-              //   ),
-              //trailing: ,
-              // child: Row(children: <Widget>[
-              //   Text(
-              //     item,
-              //   )
-              // ])
             },
           ),
           buttons: [
@@ -988,11 +964,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   _getTrackByUrl() async {
-    await getTrackByUrl(_spotifyUrl);
-    setState(() {
-      _storedTrack = fetchStoredTrack();
-      _trackReady = true;
-    });
+    if (_spotifyUrl != null) {
+      await getTrackByUrl(_spotifyUrl);
+      setState(() {
+        _storedTrack = fetchStoredTrack();
+        _trackReady = true;
+      });
+    }
   }
 
 ///////////////////////////////////////////////////////////////////////
