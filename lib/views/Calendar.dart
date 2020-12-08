@@ -108,10 +108,16 @@ class _CalendarState extends State<Calendar> {
       });
   }
 
+  Future<void> _deleteEntry(docId) {
+    return entries.doc(docId).delete().then((value) {
+      return {getCalendarEntries(_selectedDay), Navigator.of(context).pop()};
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
+    if (_selectedDay == null) _selectedDay = DateTime.now();
     _selectedEntries = [];
     getCalendarEntries(_selectedDay);
     // print(_entries);
@@ -160,7 +166,8 @@ class _CalendarState extends State<Calendar> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("New entry"),
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
@@ -169,7 +176,7 @@ class _CalendarState extends State<Calendar> {
         },
         // _makeEntry,
         tooltip: 'New Entry',
-        child: Icon(Icons.add),
+        icon: Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -233,41 +240,91 @@ class _CalendarState extends State<Calendar> {
   /// Builds bottom tiles if there are entries on the selected day
 ///////////////////////////////////////////////////////////////////////
   Widget _buildEntryList() {
-    return ListView(
-        children: _selectedEntries
-            .map(
-              (event) => Container(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0)),
-                    child: Column(
-                      children: <Widget>[
-                        ListTile(
-                            // leading: Icon(Icons.menu_book_rounded),
-                            title: Text(event['title'].toString()),
-                            subtitle: Text((event['timestamp'].runtimeType ==
-                                        Timestamp
+    List<Widget> entryList = _selectedEntries
+        .map(
+          (event) => Container(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+              child: Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                        trailing: event['shared']
+                            ? null
+                            : IconButton(
+                                icon: Icon(Icons.restore_from_trash),
+                                color: Colors.red,
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return _buildDeleteEntryForm(
+                                        event['doc_id'],
+                                        event['title'],
+                                      );
+                                    },
+                                    barrierDismissible: false,
+                                  );
+                                },
+                              ),
+                        title: Text(event['title'].toString()),
+                        subtitle: Text(
+                            (event['timestamp'].runtimeType == Timestamp
                                     ? dateToHumanReadable(
                                         (event['timestamp'].toDate()))
                                     : dateToHumanReadable(event['timestamp'])) +
                                 (event['shared'] ? " - shared entry" : '')),
-                            onTap: () => {
-                                  MainView.of(context).date = _selectedDay,
-                                  MainView.of(context).documentIdReference =
-                                      event['doc_id'],
-                                  widget.tabController.animateToPage(2,
-                                      duration: Duration(milliseconds: 300),
-                                      curve: Curves.easeIn),
-                                }),
-                      ],
-                    ),
-                  ),
+                        onTap: () => {
+                              MainView.of(context).date = _selectedDay,
+                              MainView.of(context).documentIdReference =
+                                  event['doc_id'],
+                              widget.tabController.animateToPage(2,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeIn),
+                            }),
+                  ],
                 ),
               ),
-            )
-            .toList());
+            ),
+          ),
+        )
+        .toList();
+    entryList.add(
+      Container(
+        child: SizedBox(
+          height: 50,
+        ),
+      ),
+    );
+    return ListView(children: entryList);
+  }
+
+  Widget _buildDeleteEntryForm(String docId, String entryTitle) {
+    return AlertDialog(
+      title: Text("Are you sure to delete $entryTitle ?"),
+      contentPadding: EdgeInsets.all(0.0),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Delete',
+            style: TextStyle(color: Colors.red),
+          ),
+          onPressed: () {
+            _deleteEntry(docId);
+          },
+        ),
+        FlatButton(
+          child: Text(
+            'Cancel',
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
   }
 }

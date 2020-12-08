@@ -1,6 +1,7 @@
 import 'package:inkling/managers/DateToHuman.dart';
 import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
+import 'package:autocomplete_textfield/autocomplete_textfield.dart';
 
 // dart imports
 import 'dart:io';
@@ -58,6 +59,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   var _storedTrack;
   bool _trackReady = false;
   String _spotifyUrl; // = "";
+  List suggestionList = ["hi", "what", "fine", "fiona", "fall"];
+  var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers
   TextEditingController _entryEditingController;
@@ -751,6 +754,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
 
     if (pickedFile != null) {
+      String currentText = _entryEditingController.text;
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
       if (_coordinates.length == 2) {
@@ -774,10 +778,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       String selectedTagsString = await createTagAlert(context, tags);
       setState(() {
         _image = File(pickedFile.path);
-        if (location != null) {
-          entryText = "I went to $location ...  \n" + selectedTagsString;
-        } else {
-          entryText = selectedTagsString;
+        if (currentText != null || currentText.trim() != '') {
+          if (location != null) {
+            entryText = currentText +
+                '\n' +
+                selectedTagsString +
+                '\n' +
+                "I went to $location ...  \n";
+          } else {
+            entryText = currentText + '\n' + selectedTagsString;
+          }
+        } else if (currentText == null || currentText.trim() == '') {
+          if (location != null) {
+            entryText =
+                selectedTagsString + "\n" + "I went to $location ...  \n";
+          } else {
+            entryText = selectedTagsString;
+          }
         }
 
         _entryEditingController = TextEditingController(text: entryText);
@@ -789,6 +806,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// When an Image is selected from Camera
 ///////////////////////////////////////////////////////////////////////
   _getFromCamera() async {
+    String currentText = _entryEditingController.text;
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 1800,
@@ -818,10 +836,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
       setState(() {
         _image = File(pickedFile.path);
-        if (location != null) {
-          entryText = "I went to $location ...  \n" + selectedTagsString;
-        } else {
-          entryText = selectedTagsString;
+        if (currentText != null || currentText.trim() != '') {
+          if (location != null) {
+            entryText = currentText +
+                '\n' +
+                selectedTagsString +
+                '\n' +
+                "I went to $location ...  \n";
+          } else {
+            entryText = currentText + '\n' + selectedTagsString;
+          }
+        } else if (currentText == null || currentText.trim() == '') {
+          if (location != null) {
+            entryText =
+                selectedTagsString + "\n" + "I went to $location ...  \n";
+          } else {
+            entryText = selectedTagsString;
+          }
         }
         _entryEditingController = TextEditingController(text: entryText);
       });
@@ -874,7 +905,30 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       return Alert(
           context: context,
           title: "Recently played:",
-          content: _currentSpotifyTrack(),
+          content: //_currentSpotifyTrack(),
+              AutoCompleteTextField(
+            controller: _suggestionTextFieldController,
+            clearOnSubmit: false,
+            suggestions: suggestionList,
+            itemFilter: (item, query) {
+              return item.toLowerCase().startsWith(query.toLowerCase());
+            },
+            itemSorter: (a, b) {
+              return a.compareTo(b);
+            },
+            itemSubmitted: (item) {
+              _suggestionTextFieldController.text = item;
+            },
+            itemBuilder: (context, item) {
+              return Container(
+                  padding: EdgeInsets.all(20.0),
+                  child: Row(children: <Widget>[
+                    Text(
+                      item,
+                    )
+                  ]));
+            },
+          ),
           buttons: [
             DialogButton(
                 child: Text("Add song"),
@@ -934,7 +988,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
                 onPressed: () {
                   // remove widget
-                  _trackReady = false;
+                  setState(() {
+                    _trackReady = false;
+                  });
                 })
             : IconButton(
                 icon: Icon(Icons.play_circle_fill,
