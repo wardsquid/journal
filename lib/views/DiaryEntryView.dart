@@ -738,6 +738,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
 
     if (pickedFile != null) {
+      String currentText = _entryEditingController.text;
       List<double> _coordinates = await getExifFromFile(File(pickedFile.path));
       String location;
       if (_coordinates.length == 2) {
@@ -761,10 +762,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       String selectedTagsString = await createTagAlert(context, tags);
       setState(() {
         _image = File(pickedFile.path);
-        if (location != null) {
-          entryText = "I went to $location ...  \n" + selectedTagsString;
-        } else {
-          entryText = selectedTagsString;
+        if (currentText != null || currentText.trim() != '') {
+          if (location != null) {
+            entryText = currentText +
+                '\n' +
+                selectedTagsString +
+                '\n' +
+                "I went to $location ...  \n";
+          } else {
+            entryText = currentText + '\n' + selectedTagsString;
+          }
+        } else if (currentText == null || currentText.trim() == '') {
+          if (location != null) {
+            entryText =
+                selectedTagsString + "\n" + "I went to $location ...  \n";
+          } else {
+            entryText = selectedTagsString;
+          }
         }
         _entryEditingController = TextEditingController(text: entryText);
       });
@@ -775,6 +789,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// When an Image is selected from Camera
 ///////////////////////////////////////////////////////////////////////
   _getFromCamera() async {
+    String currentText = _entryEditingController.text;
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 1800,
@@ -804,10 +819,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
       setState(() {
         _image = File(pickedFile.path);
-        if (location != null) {
-          entryText = "I went to $location ...  \n" + selectedTagsString;
-        } else {
-          entryText = selectedTagsString;
+        if (currentText != null || currentText.trim() != '') {
+          if (location != null) {
+            entryText = currentText +
+                '\n' +
+                selectedTagsString +
+                '\n' +
+                "I went to $location ...  \n";
+          } else {
+            entryText = currentText + '\n' + selectedTagsString;
+          }
+        } else if (currentText == null || currentText.trim() == '') {
+          if (location != null) {
+            entryText =
+                selectedTagsString + "\n" + "I went to $location ...  \n";
+          } else {
+            entryText = selectedTagsString;
+          }
         }
         _entryEditingController = TextEditingController(text: entryText);
       });
