@@ -105,6 +105,12 @@ class _CalendarState extends State<Calendar> {
     });
   }
 
+  Future<void> _deleteEntry(docId) {
+    return entries.doc(docId).delete().then((value) {
+      return {getCalendarEntries(_selectedDay), Navigator.of(context).pop()};
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -243,7 +249,20 @@ class _CalendarState extends State<Calendar> {
                     child: Column(
                       children: <Widget>[
                         ListTile(
-                            // leading: Icon(Icons.menu_book_rounded),
+                            trailing: IconButton(
+                              icon: Icon(Icons.restore_from_trash),
+                              color: Colors.red,
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return _buildDeleteEntryForm(
+                                        event['doc_id'], event['title']);
+                                  },
+                                  barrierDismissible: false,
+                                );
+                              },
+                            ),
                             title: Text(event['title'].toString()),
                             subtitle: Text((event['timestamp'].runtimeType ==
                                         Timestamp
@@ -266,5 +285,31 @@ class _CalendarState extends State<Calendar> {
               ),
             )
             .toList());
+  }
+
+  Widget _buildDeleteEntryForm(String docId, String entryTitle) {
+    return AlertDialog(
+      title: Text("Are you sure to delete $entryTitle ?"),
+      contentPadding: EdgeInsets.all(0.0),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Delete',
+            style: TextStyle(color: Colors.red),
+          ),
+          onPressed: () {
+            _deleteEntry(docId);
+          },
+        ),
+        FlatButton(
+          child: Text(
+            'Cancel',
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
   }
 }
