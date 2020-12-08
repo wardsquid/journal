@@ -59,7 +59,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   var _storedTrack;
   bool _trackReady = false;
   String _spotifyUrl; // = "";
-  List suggestionList = ["hi", "what", "fine", "fiona", "fall"];
+  List suggestionList = [
+    "hi",
+    "what",
+    "fine",
+    "fiona",
+    "fall0",
+    "fall1",
+    "fall2",
+    "fall3",
+    "fall4",
+    "fall5",
+    "fall6",
+    "fall7",
+    "fall8",
+    "fall9",
+    "fall10"
+  ];
   var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers
@@ -852,6 +868,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   _updateLatestSpotifyTrack() async {
+    await loadTodaysTracks();
     await loadSpotifyTrack();
     setState(() {
       _currentTrack = fetchSpotifyTrack();
@@ -862,12 +879,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     if (_currentTrack != null) {
       return Alert(
           context: context,
-          title: "Recently played:",
+          title: "Type a song you listened to today:",
           content: //_currentSpotifyTrack(),
               AutoCompleteTextField(
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
             suggestions: suggestionList,
+            suggestionsAmount: 4,
             itemFilter: (item, query) {
               return item.toLowerCase().startsWith(query.toLowerCase());
             },
@@ -878,13 +896,25 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               _suggestionTextFieldController.text = item;
             },
             itemBuilder: (context, item) {
-              return Container(
-                  padding: EdgeInsets.all(20.0),
-                  child: Row(children: <Widget>[
-                    Text(
-                      item,
-                    )
-                  ]));
+              return new ListTile(
+                title: new Text("Stars: $item"),
+                leading: Image.network(_currentTrack.imageUrl,
+                    width: 20, height: 20),
+              );
+
+              // return Padding(
+              //   padding: EdgeInsets.all(1.0),
+              //   child: new ListTile(
+              //     title: new Text("Stars: $item"),
+              //     leading: Image.network(_currentTrack.imageUrl,
+              //         width: 20, height: 20),
+              //   ),
+              //trailing: ,
+              // child: Row(children: <Widget>[
+              //   Text(
+              //     item,
+              //   )
+              // ])
             },
           ),
           buttons: [

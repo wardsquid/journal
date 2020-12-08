@@ -15,7 +15,7 @@ import 'dart:convert';
 var _authenticationToken;
 var _currentTrack;
 var _storedTrack;
-List _todaysTracks;
+List<TodayTrack> _todaysTracks = [];
 
 Future<void> getSpotifyAuth() async {
   String clientId = DotEnv().env['CLIENT_ID'];
@@ -156,6 +156,10 @@ fetchStoredTrack() {
   return _storedTrack;
 }
 
+fetchTrackHistory() {
+  return _todaysTracks;
+}
+
 Future<void> getTrackByUrl(String _url) async {
   print("Getting track by url: $_url auth token $_authenticationToken");
   final response = await http
@@ -185,11 +189,11 @@ class TodayTrack {
   TodayTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
 
   factory TodayTrack.fromJson(Map<String, dynamic> json, num n) {
-    return TodayTrack(
-        artist: json['items'][n]['track']['artists'][0]['name'],
-        track: json['items'][n]['track']['name'],
-        url: json['items'][n]['track']['external_urls']['spotify'],
-        href: json['items'][n]['track']['href']);
+    print(json['items'][n]['track']['href']);
+    return TodayTrack(artist: json['items'][n]['track']['artists'][0]['name']);
+    // track: json['items'][n]['track']['name'],
+    // url: json['items'][n]['track']['external_urls']['spotify'],
+    // href: json['items'][n]['track']['href']);
   }
 
   Future<void> getImage() async {
@@ -208,7 +212,7 @@ class TodayTrack {
   }
 }
 
-Future<void> getTodaysTracks() async {
+Future<void> loadTodaysTracks() async {
   print("Getting today's tracks for $_authenticationToken");
   final response = await http.get(
       "https://api.spotify.com/v1/me/player/recently-played",
@@ -217,16 +221,17 @@ Future<void> getTodaysTracks() async {
   if (response.statusCode == 200) {
     print("Recently played tracks found");
     num length = jsonDecode(response.body).length;
+    print("length: $length");
 
-    //  for(i = 0; i < length)
+    for (var i = 0; i < length; i++) {
+      _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), i));
+    }
 
-    _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), 0));
-
-    print("artist: ${_storedTrack.artist}");
-    print("track: ${_storedTrack.track}");
-    print("url: ${_storedTrack.url}");
-    print("href: ${_storedTrack.href}");
-    print("imageUrl: ${_storedTrack.imageUrl}");
+    // print("artist: ${_storedTrack.artist}");
+    // print("track: ${_storedTrack.track}");
+    // print("url: ${_storedTrack.url}");
+    // print("href: ${_storedTrack.href}");
+    // print("imageUrl: ${_storedTrack.imageUrl}");
   } else {
     print('Stored track ID not found');
   }
