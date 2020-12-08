@@ -920,7 +920,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
                 onPressed: () {
                   // remove widget
-                  _trackReady = false;
+                  setState(() {
+                    _trackReady = false;
+                  });
                 })
             : IconButton(
                 icon: Icon(Icons.play_circle_fill,
