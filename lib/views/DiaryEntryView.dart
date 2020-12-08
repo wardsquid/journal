@@ -323,14 +323,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   /// GET IMAGE URL
 ///////////////////////////////////////////////////////////////////////
-  Future<void> downloadURLImage() async {
-    String setUrl = await _storage
-        .ref("${_user.uid}/${widget.documentId}")
-        .getDownloadURL();
+  Future<void> downloadURLImage(String creatorID) async {
+    String setUrl =
+        await _storage.ref("$creatorID/${widget.documentId}").getDownloadURL();
     setState(() {
       _bucketUrl = setUrl;
     });
-    print(_bucketUrl);
+    // print(_bucketUrl);
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -346,7 +345,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         print('Document does not exist on the database');
       }
       if (documentSnapshot.data()["content"]["image"] == true) {
-        downloadURLImage();
+        downloadURLImage(documentSnapshot.data()["user_id"]);
       } else {
         _bucketUrl = '';
       }
@@ -355,7 +354,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         titleText = inkling.activeEntry["title"];
         entryText = inkling.activeEntry["content"]["text"];
         ownerId = inkling.activeEntry['user_id'];
-        print(inkling.activeEntry["content"].containsKey("spotify").toString());
+        if (ownerId == _user.uid)
+          print(
+              inkling.activeEntry["content"].containsKey("spotify").toString());
         if (inkling.activeEntry["content"].containsKey("spotify")) {
           _spotifyUrl = inkling.activeEntry["content"]["spotify"];
         } else {
@@ -663,10 +664,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               : DateTime.now(),
           'content': {
             'image': (_image != null) ? true : false,
-            'text': entryText
+            'text': entryText,
+            'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
           },
           'journal': inkling.currentJournal,
-          'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
+          // 'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
           'shared_with':
               inkling.currentlySharingWith.containsKey(inkling.currentJournal)
                   ? inkling.currentlySharingWith[inkling.currentJournal]
@@ -697,21 +699,28 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// UPDATE DIARY ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _overwriteEntry() {
+    bool checkPictureUpdate = false;
+    if (_image != null) checkPictureUpdate = true;
+    if (inkling.activeEntry['content']['image'] == true)
+      checkPictureUpdate = true;
+    Map<String, dynamic> updatedEntry = {
+      'title': titleText,
+      'content': {'text': entryText, 'image': checkPictureUpdate},
+      'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
+    };
+    // if (_image != null) {
+    //   updatedEntry['content']['image'] = true;
+    // }
+
     return entries
         .doc(widget.documentId)
-        .update({
-          'title': titleText,
-          'content': {
-            'image': (_image != null) ? true : false,
-            'text': entryText,
-            'spotify': (_spotifyUrl != null) ? _spotifyUrl : null
-          }
-        })
+        .update(updatedEntry)
         .then((value) => {
               if (_image != null)
                 {
                   _storage
-                      .ref("${_user.uid}/${widget.documentId}")
+                      .ref(
+                          "${inkling.activeEntry['user_id']}/${widget.documentId}")
                       .putFile(_image)
                       .then((value) => print("Photo Uploaded Successfully"))
                       .catchError(
@@ -1002,7 +1011,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       // if an image is being loaded from the DB
                       : FadeInImage(
                           image: NetworkImage(_bucketUrl),
-                          placeholder: AssetImage("assets/placeholder.png"),
+                          placeholder:
+                              AssetImage("assets/placeholder_transparent.gif"),
                           fit: BoxFit.cover))
                   // if image is has been selected
                   : Image.file(
@@ -1115,7 +1125,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      buttonText,
+                      (widget.documentId == '' || ownerId != _user.uid)
+                          ? buttonText
+                          : "Edit",
                       style: TextStyle(fontSize: 25, color: Colors.white),
                     ),
                   ),
@@ -1143,11 +1155,45 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         _isEditingText = false;
                       });
                     } else {
-                      // toggle edit mode
-                      setState(() {
-                        buttonText = "Save";
-                        _isEditingText = true;
-                      });
+                      if (ownerId == _user.uid || ownerId == "") {
+                        setState(() {
+                          buttonText = "Save";
+                          _isEditingText = true;
+                        });
+                      } else {
+                        setState(() {
+                          buttonText = "Save";
+                          _entryEditingController =
+                              TextEditingController(text: entryText);
+                          _titleEditingController =
+                              TextEditingController(text: titleText);
+                          inkling.activeEntry = null;
+                          ownerId = "";
+                          entryText = "";
+                          titleText = "";
+                          tempTitleText = "";
+                          tempEntryText = "";
+                          _image = null;
+                          _bucketUrl = '';
+                          lastWords = "";
+                          lastError = "";
+                          lastStatus = "";
+                          _currentTrack = null;
+                          _storedTrack = null;
+                          _trackReady = false;
+                          _spotifyUrl = null; // = "";
+                          MainView.of(context).documentIdReference = '';
+                          MainView.of(context).date = DateTime.now();
+
+                          // if (widget.documentId != "") {
+                          //   readEntry(widget.documentId); //as DocumentSnapshot;
+                          // } else {
+                          //   // _isEditingText = true;
+                          // }
+                          // entryFocusNode = FocusNode();
+                          // titleFocusNode = FocusNode();
+                        });
+                      }
                     }
                   },
                 ),

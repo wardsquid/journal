@@ -45,7 +45,7 @@ class _TimeLineView extends State<TimeLineView> {
       entry["content"]["albumImage"] = _storedTrack.imageUrl;
       entry["content"]["url"] = _storedTrack.url;
     }
-    print("pushing ${entry.toString()}");
+    // print("pushing ${entry.toString()}");
     setState(() {
       display.add(entry);
       display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
@@ -54,11 +54,24 @@ class _TimeLineView extends State<TimeLineView> {
 
   void parseQuery(DateTime date) {
     if (date == null) date = today;
-    fireStoreQuery(date).then((value) => {
+    fireStoreUserQuery(date).then((value) => {
           value.docs.forEach((element) {
             Map<String, dynamic> entry = element.data();
             if (entry["content"]["image"] == true) {
-              downloadURLImage(element.id).then((value) => {
+              downloadURLImage(entry["user_id"], element.id).then((value) => {
+                    entry["imageUrl"] = value,
+                    pushToList(entry),
+                  });
+            } else {
+              pushToList(entry);
+            }
+          })
+        });
+    fireStoreSharedQuery(date).then((value) => {
+          value.docs.forEach((element) {
+            Map<String, dynamic> entry = element.data();
+            if (entry["content"]["image"] == true) {
+              downloadURLImage(entry["user_id"], element.id).then((value) => {
                     entry["imageUrl"] = value,
                     pushToList(entry),
                   });
