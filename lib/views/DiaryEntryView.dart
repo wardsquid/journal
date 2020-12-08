@@ -333,6 +333,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// RETRIEVE ENTRY FROM DB
 ///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
+    if (!mounted) return;
+
     print('called');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
       if (documentSnapshot.exists) {
@@ -341,30 +343,31 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       } else {
         print('Document does not exist on the database');
       }
-      if (documentSnapshot.data()["content"]["image"] == true) {
+      if (documentSnapshot.data()["content"]["image"] == true && mounted) {
         downloadURLImage(documentSnapshot.data()["user_id"]);
       } else {
         _bucketUrl = '';
       }
-      setState(() {
-        inkling.activeEntry = documentSnapshot.data();
-        titleText = inkling.activeEntry["title"];
-        entryText = inkling.activeEntry["content"]["text"];
-        ownerId = inkling.activeEntry['user_id'];
-        // if (ownerId == _user.uid)
-        //   print(
-        //       inkling.activeEntry["content"].containsKey("spotify").toString());
-        if (inkling.activeEntry["content"].containsKey("spotify")) {
-          _spotifyUrl = inkling.activeEntry["content"]["spotify"];
-        } else {
-          _spotifyUrl = null;
-        }
-        // print(inkling.activeEntry);
-        _isEditingText = false;
-        _entryEditingController = TextEditingController(text: entryText);
-        _titleEditingController = TextEditingController(text: titleText);
-      });
-      if (_spotifyUrl != null) {
+      if (mounted)
+        setState(() {
+          inkling.activeEntry = documentSnapshot.data();
+          titleText = inkling.activeEntry["title"];
+          entryText = inkling.activeEntry["content"]["text"];
+          ownerId = inkling.activeEntry['user_id'];
+          // if (ownerId == _user.uid)
+          //   print(
+          //       inkling.activeEntry["content"].containsKey("spotify").toString());
+          if (inkling.activeEntry["content"].containsKey("spotify")) {
+            _spotifyUrl = inkling.activeEntry["content"]["spotify"];
+          } else {
+            _spotifyUrl = null;
+          }
+          // print(inkling.activeEntry);
+          _isEditingText = false;
+          _entryEditingController = TextEditingController(text: entryText);
+          _titleEditingController = TextEditingController(text: titleText);
+        });
+      if (_spotifyUrl != null && mounted) {
         _getTrackByUrl();
       }
     });
@@ -511,6 +514,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         else
           {
             setState(() {
+              _image = null;
+
               readEntry(widget.documentId);
               _isEditingText = false;
             })
@@ -531,6 +536,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onPressed: () => {
         tempTitleText = titleText,
         tempEntryText = entryText,
+        initSpeechState(),
         if (ownerId == _user.uid || ownerId == "")
           {
             setState(() {
@@ -958,12 +964,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   Widget build(BuildContext context) {
     print(_isEditingText);
     return Scaffold(
-      floatingActionButton:
-          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+      floatingActionButton: Row(children: [
         SizedBox(
-          width: 18,
+          width: 30,
         ),
         if (_isEditingText == true) _cancelFloatingButton(),
+        Spacer(
+          flex: 1,
+        ),
         if (_isEditingText == false &&
             widget.documentId != "" &&
             ownerId == _user.uid)
@@ -972,6 +980,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Scaffold(
+        backgroundColor: Colors.orange[400], // background color
         key: _scaffoldKey,
         // resizeToAvoidBottomInset: false,
         drawerEnableOpenDragGesture: false,
@@ -988,9 +997,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         // body: AnnotatedRegion<SystemUiOverlayStyle>(
         // value: SystemUiOverlayStyle.light,
         body: Container(
+          margin: const EdgeInsets.only(left: 10.0, right: 10.0),
           decoration: BoxDecoration(
-            color: Colors.white, // background color
-          ),
+              // color: Colors.white, // background color
+              ),
           child: Card(
             elevation: 5,
             shape: RoundedRectangleBorder(
@@ -1022,17 +1032,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   child: Text(dateToHumanReadable(widget.activeDate)),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height / 20),
-                Center(
-                  child: _entryText(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                  child: Center(
+                    child: _entryText(),
+                  ),
                 ),
                 SizedBox(height: MediaQuery.of(context).size.height / 20),
 
                 if (_trackReady) _storedSpotifyTrack(),
 
-                if (_isEditingText == false)
+                if (_isEditingText == false && ownerId != _user.uid)
                   Center(
                     // alignment: FractionalOffset.bottomRight,
-                    child: RaisedButton(
+                    child: FlatButton(
                       color: Colors.purpleAccent,
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -1041,41 +1054,38 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           style: TextStyle(fontSize: 25, color: Colors.white),
                         ),
                       ),
-                      elevation: 5,
+                      // elevation: 5,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40)),
                       onPressed: () {
                         initSpeechState();
                         setState(() {
-                          tempTitleText = titleText;
-                          tempEntryText = entryText;
-                        });
+                          // tempTitleText = titleText;
+                          // tempEntryText = entryText;
+                          _isEditingText = true;
 
-                        // setState(() {
-                        //   _isEditingText = true;
-                        //   buttonText = "Save";
-                        //   _entryEditingController =
-                        //       TextEditingController(text: entryText);
-                        //   _titleEditingController =
-                        //       TextEditingController(text: titleText);
-                        //   inkling.activeEntry = null;
-                        //   ownerId = "";
-                        //   entryText = "";
-                        //   titleText = "";
-                        //   tempTitleText = "";
-                        //   tempEntryText = "";
-                        //   _image = null;
-                        //   _bucketUrl = '';
-                        //   lastWords = "";
-                        //   lastError = "";
-                        //   lastStatus = "";
-                        //   _currentTrack = null;
-                        //   _storedTrack = null;
-                        //   _trackReady = false;
-                        //   _spotifyUrl = null; // = "";
-                        //   MainView.of(context).documentIdReference = '';
-                        //   MainView.of(context).date = DateTime.now();
-                        // });
+                          inkling.activeEntry = null;
+                          ownerId = "";
+                          entryText = "";
+                          titleText = "";
+                          tempTitleText = "";
+                          tempEntryText = "";
+                          _image = null;
+                          _bucketUrl = '';
+                          lastWords = "";
+                          lastError = "";
+                          lastStatus = "";
+                          _currentTrack = null;
+                          _storedTrack = null;
+                          _trackReady = false;
+                          _spotifyUrl = null;
+                          _entryEditingController =
+                              TextEditingController(text: entryText);
+                          _titleEditingController =
+                              TextEditingController(text: titleText); // = "";
+                          MainView.of(context).documentIdReference = '';
+                          MainView.of(context).date = DateTime.now();
+                        });
                       },
                     ),
                   ),
@@ -1090,3 +1100,27 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     );
   }
 }
+// setState(() {
+//   _isEditingText = true;
+//   buttonText = "Save";
+//   _entryEditingController =
+//       TextEditingController(text: entryText);
+//   _titleEditingController =
+//       TextEditingController(text: titleText);
+//   inkling.activeEntry = null;
+//   ownerId = "";
+//   entryText = "";
+//   titleText = "";
+//   tempTitleText = "";
+//   tempEntryText = "";
+//   _image = null;
+//   _bucketUrl = '';
+//   lastWords = "";
+//   lastError = "";
+//   lastStatus = "";
+//   _currentTrack = null;
+//   _storedTrack = null;
+//   _trackReady = false;
+//   _spotifyUrl = null; // = "";
+//   MainView.of(context).documentIdReference = '';
+// });

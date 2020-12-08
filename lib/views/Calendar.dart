@@ -35,6 +35,8 @@ class _CalendarState extends State<Calendar> {
   CollectionReference entries = getFireStoreEntriesDB();
 
   Future<void> getCalendarEntries(dateWithMonth) async {
+    if (!mounted) return;
+
     Map<DateTime, List> entryParser = {};
     _entryInfos = [];
     _entries = {};
