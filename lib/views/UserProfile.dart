@@ -35,6 +35,7 @@ class _UserProfile extends State<UserProfile> {
   String _selectedFriendEmail = "";
   String _selectedFriendName = "";
   bool _isDeleteButtonDisabled = true;
+  Map<String, dynamic> _sharingInfo;
 
   @override
   void initState() {
@@ -101,15 +102,34 @@ class _UserProfile extends State<UserProfile> {
   Future<void> _addFriend() async {
     Map<String, dynamic> friend = {'name': _name, 'email': _email};
     bool yourVariableName = await checkFriendEmail(_email);
-    print("friends exist = $yourVariableName");
     if (yourVariableName) {
+      for (var element in friends) {
+        if (element['email'] == _email)
+          return showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('You are already friends with $_email.'),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text('Close'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+      }
       return users.doc(_user.uid).update({
         'friends': FieldValue.arrayUnion([friend])
       }).then((value) => {
             _getNewFriends(),
             showDialog<void>(
               context: context,
-              barrierDismissible: false, // user must tap button!
+              barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: Text('Successfully Added!'),
@@ -128,7 +148,7 @@ class _UserProfile extends State<UserProfile> {
     } else {
       return showDialog<void>(
         context: context,
-        barrierDismissible: false, // user must tap button!
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('The Email address does not exist.'),
@@ -158,32 +178,42 @@ class _UserProfile extends State<UserProfile> {
       'friends': FieldValue.arrayRemove([
         {'email': _selectedFriendEmail, "name": _selectedFriendName}
       ])
-    }).then((value) => {
-          _getNewFriends(),
-          showDialog<void>(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text('Successfully Deleted!'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('Close'),
-                    onPressed: () {
-                      _friendsChecked[_selectedFriendIndex] = false;
-                      _selectedFriendName = "";
-                      _selectedFriendEmail = "";
-                      _isDeleteButtonDisabled = true;
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          )
-        });
+    }).then((value) {
+      _getNewFriends();
+      _sharingInfo = inkling.userProfile["sharing_info"];
+      for (String key in _sharingInfo.keys) {
+        _sharingInfo[key] = _sharingInfo[key]
+            .where((email) => email != _selectedFriendEmail)
+            .toList();
+      }
+      return users
+          .doc(_user.uid)
+          .update({'sharing_info': _sharingInfo}).then((value) => {
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false, // user must tap button!
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Successfully Deleted!'),
+                      actions: <Widget>[
+                        FlatButton(
+                          child: Text('Close'),
+                          onPressed: () {
+                            _friendsChecked[_selectedFriendIndex] = false;
+                            _selectedFriendName = "";
+                            _selectedFriendEmail = "";
+                            _isDeleteButtonDisabled = true;
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                )
+              });
+    });
   }
 
   @override
