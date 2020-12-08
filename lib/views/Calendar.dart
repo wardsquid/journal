@@ -93,16 +93,17 @@ class _CalendarState extends State<Calendar> {
                 }
               })
             });
-    setState(() {
-      _selectedDay = DateTime.now();
-      _entries = entryParser;
-      _selectedEntries = _entryInfos
-          .where((entry) =>
-              (entry["timestamp"].toDate().year == _selectedDay.year &&
-                  entry["timestamp"].toDate().month == _selectedDay.month &&
-                  entry["timestamp"].toDate().day == _selectedDay.day))
-          .toList();
-    });
+    if (mounted)
+      setState(() {
+        _selectedDay = DateTime.now();
+        _entries = entryParser;
+        _selectedEntries = _entryInfos
+            .where((entry) =>
+                (entry["timestamp"].toDate().year == _selectedDay.year &&
+                    entry["timestamp"].toDate().month == _selectedDay.month &&
+                    entry["timestamp"].toDate().day == _selectedDay.day))
+            .toList();
+      });
   }
 
   @override
@@ -111,7 +112,7 @@ class _CalendarState extends State<Calendar> {
     _selectedDay = DateTime.now();
     _selectedEntries = [];
     getCalendarEntries(_selectedDay);
-    print(_entries);
+    // print(_entries);
     _calendarController = CalendarController();
   }
 
@@ -122,7 +123,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _makeEntry() {
-    print(_selectedDay);
+    // print(_selectedDay);
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
