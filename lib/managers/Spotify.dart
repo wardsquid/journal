@@ -216,8 +216,10 @@ Future<void> getTodaysTracks() async {
 
   if (response.statusCode == 200) {
     print("Recently played tracks found");
+    num length = jsonDecode(response.body).length;
 
-    for (var i = 0; i < 50; i++) {}
+    //  for(i = 0; i < length)
+
     _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), 0));
 
     print("artist: ${_storedTrack.artist}");
