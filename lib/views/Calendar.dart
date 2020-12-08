@@ -249,20 +249,24 @@ class _CalendarState extends State<Calendar> {
                     child: Column(
                       children: <Widget>[
                         ListTile(
-                            trailing: IconButton(
-                              icon: Icon(Icons.restore_from_trash),
-                              color: Colors.red,
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return _buildDeleteEntryForm(
-                                        event['doc_id'], event['title']);
-                                  },
-                                  barrierDismissible: false,
-                                );
-                              },
-                            ),
+                            trailing: event['shared']
+                                ? null
+                                : IconButton(
+                                    icon: Icon(Icons.restore_from_trash),
+                                    color: Colors.red,
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return _buildDeleteEntryForm(
+                                            event['doc_id'],
+                                            event['title'],
+                                          );
+                                        },
+                                        barrierDismissible: false,
+                                      );
+                                    },
+                                  ),
                             title: Text(event['title'].toString()),
                             subtitle: Text((event['timestamp'].runtimeType ==
                                         Timestamp
