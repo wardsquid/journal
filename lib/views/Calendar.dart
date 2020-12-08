@@ -35,6 +35,8 @@ class _CalendarState extends State<Calendar> {
   CollectionReference entries = getFireStoreEntriesDB();
 
   Future<void> getCalendarEntries(dateWithMonth) async {
+    if (!mounted) return;
+
     Map<DateTime, List> entryParser = {};
     _entryInfos = [];
     _entries = {};
@@ -93,16 +95,17 @@ class _CalendarState extends State<Calendar> {
                 }
               })
             });
-    setState(() {
-      _selectedDay = DateTime.now();
-      _entries = entryParser;
-      _selectedEntries = _entryInfos
-          .where((entry) =>
-              (entry["timestamp"].toDate().year == _selectedDay.year &&
-                  entry["timestamp"].toDate().month == _selectedDay.month &&
-                  entry["timestamp"].toDate().day == _selectedDay.day))
-          .toList();
-    });
+    if (mounted)
+      setState(() {
+        _selectedDay = DateTime.now();
+        _entries = entryParser;
+        _selectedEntries = _entryInfos
+            .where((entry) =>
+                (entry["timestamp"].toDate().year == _selectedDay.year &&
+                    entry["timestamp"].toDate().month == _selectedDay.month &&
+                    entry["timestamp"].toDate().day == _selectedDay.day))
+            .toList();
+      });
   }
 
   Future<void> _deleteEntry(docId) {
@@ -114,10 +117,10 @@ class _CalendarState extends State<Calendar> {
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
+    if (_selectedDay == null) _selectedDay = DateTime.now();
     _selectedEntries = [];
     getCalendarEntries(_selectedDay);
-    print(_entries);
+    // print(_entries);
     _calendarController = CalendarController();
   }
 
@@ -128,7 +131,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   void _makeEntry() {
-    print(_selectedDay);
+    // print(_selectedDay);
   }
 
   void _onDaySelected(DateTime day, List events, List holidays) {
@@ -163,7 +166,8 @@ class _CalendarState extends State<Calendar> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        label: Text("New entry"),
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
@@ -172,7 +176,7 @@ class _CalendarState extends State<Calendar> {
         },
         // _makeEntry,
         tooltip: 'New Entry',
-        child: Icon(Icons.add),
+        icon: Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -236,59 +240,66 @@ class _CalendarState extends State<Calendar> {
   /// Builds bottom tiles if there are entries on the selected day
 ///////////////////////////////////////////////////////////////////////
   Widget _buildEntryList() {
-    return ListView(
-        children: _selectedEntries
-            .map(
-              (event) => Container(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-                  child: Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0)),
-                    child: Column(
-                      children: <Widget>[
-                        ListTile(
-                            trailing: event['shared']
-                                ? null
-                                : IconButton(
-                                    icon: Icon(Icons.restore_from_trash),
-                                    color: Colors.red,
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return _buildDeleteEntryForm(
-                                            event['doc_id'],
-                                            event['title'],
-                                          );
-                                        },
-                                        barrierDismissible: false,
+    List<Widget> entryList = _selectedEntries
+        .map(
+          (event) => Container(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 5.0, right: 5.0),
+              child: Card(
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0)),
+                child: Column(
+                  children: <Widget>[
+                    ListTile(
+                        trailing: event['shared']
+                            ? null
+                            : IconButton(
+                                icon: Icon(Icons.restore_from_trash),
+                                color: Colors.red,
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return _buildDeleteEntryForm(
+                                        event['doc_id'],
+                                        event['title'],
                                       );
                                     },
-                                  ),
-                            title: Text(event['title'].toString()),
-                            subtitle: Text((event['timestamp'].runtimeType ==
-                                        Timestamp
+                                    barrierDismissible: false,
+                                  );
+                                },
+                              ),
+                        title: Text(event['title'].toString()),
+                        subtitle: Text(
+                            (event['timestamp'].runtimeType == Timestamp
                                     ? dateToHumanReadable(
                                         (event['timestamp'].toDate()))
                                     : dateToHumanReadable(event['timestamp'])) +
                                 (event['shared'] ? " - shared entry" : '')),
-                            onTap: () => {
-                                  MainView.of(context).date = _selectedDay,
-                                  MainView.of(context).documentIdReference =
-                                      event['doc_id'],
-                                  widget.tabController.animateToPage(2,
-                                      duration: Duration(milliseconds: 300),
-                                      curve: Curves.easeIn),
-                                }),
-                      ],
-                    ),
-                  ),
+                        onTap: () => {
+                              MainView.of(context).date = _selectedDay,
+                              MainView.of(context).documentIdReference =
+                                  event['doc_id'],
+                              widget.tabController.animateToPage(2,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.easeIn),
+                            }),
+                  ],
                 ),
               ),
-            )
-            .toList());
+            ),
+          ),
+        )
+        .toList();
+    entryList.add(
+      Container(
+        child: SizedBox(
+          height: 50,
+        ),
+      ),
+    );
+    return ListView(children: entryList);
   }
 
   Widget _buildDeleteEntryForm(String docId, String entryTitle) {

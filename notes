@@ -1,0 +1,11 @@
+Drawer not open on swipe
+
+Restore editing mode
+
+inkling.inProgress
+widget.isEditingText
+
+in mainView init
+check for
+is isEditingText 
+else
