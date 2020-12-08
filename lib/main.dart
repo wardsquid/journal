@@ -19,10 +19,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
   await setUpNotifications();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await inkling.initializeUserCaching();
   await DotEnv().load('.env');
   await getSpotifyAuth();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   runApp(MyApp());
 }
 
