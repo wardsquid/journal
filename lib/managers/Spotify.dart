@@ -15,7 +15,7 @@ import 'dart:convert';
 var _authenticationToken;
 var _currentTrack;
 var _storedTrack;
-List _todaysTracks;
+List<dynamic> _todaysTracks = [];
 
 Future<void> getSpotifyAuth() async {
   String clientId = DotEnv().env['CLIENT_ID'];
@@ -110,6 +110,8 @@ class RecentTrack {
 }
 
 Future<void> loadSpotifyTrack() async {
+  _todaysTracks = [];
+
   final response = await http.get(
       'https://api.spotify.com/v1/me/player/currently-playing',
       headers: {'Authorization': 'Bearer ' + _authenticationToken});
@@ -124,7 +126,7 @@ Future<void> loadSpotifyTrack() async {
     print("imageUrl: ${_currentTrack.imageUrl}");
   } else {
     print('No current track playing');
-    await loadRecentSpotifyTrack();
+    //await loadRecentSpotifyTrack();
   }
 }
 
@@ -156,6 +158,10 @@ fetchStoredTrack() {
   return _storedTrack;
 }
 
+fetchTodaysTracks() {
+  return _todaysTracks;
+}
+
 Future<void> getTrackByUrl(String _url) async {
   print("Getting track by url: $_url auth token $_authenticationToken");
   final response = await http
@@ -181,15 +187,19 @@ class TodayTrack {
   final String url;
   final String href;
   String imageUrl;
+  String next;
 
-  TodayTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
+  TodayTrack(
+      {this.artist, this.track, this.url, this.href, this.imageUrl, this.next});
 
   factory TodayTrack.fromJson(Map<String, dynamic> json, num n) {
+    print("LIMIT ${json['limit']}, NEXT: ${json['next']}");
     return TodayTrack(
         artist: json['items'][n]['track']['artists'][0]['name'],
         track: json['items'][n]['track']['name'],
         url: json['items'][n]['track']['external_urls']['spotify'],
-        href: json['items'][n]['track']['href']);
+        href: json['items'][n]['track']['href'],
+        next: json['next']);
   }
 
   Future<void> getImage() async {
@@ -208,29 +218,73 @@ class TodayTrack {
   }
 }
 
-Future<void> getTodaysTracks() async {
+Future<void> loadTodaysTracks() async {
   print("Getting today's tracks for $_authenticationToken");
-  final response = await http.get(
-      "https://api.spotify.com/v1/me/player/recently-played",
-      headers: {'Authorization': 'Bearer ' + _authenticationToken});
+  // _todaysTracks.length = 50;
+  Map<String, String> _queryParams = {
+    'limit': '5',
+  };
+
+  var endpoint = "https://api.spotify.com/v1/me/player/recently-played";
+  String queryString = Uri(queryParameters: _queryParams).query;
+  var uri = endpoint +
+      '?' +
+      queryString; // result - https://www.myurl.com/api/v1/user?param1=1&param2=2
+  // Uri.decodeComponent(uri); // To encode url
+//https://api.spotify.com/v1/me/player/recently-played?before=1607364438313&limit=10
+
+  final response = await http.get(uri, headers: {
+    'Authorization': 'Bearer ' + _authenticationToken,
+    'contentTypeHeader': 'application/json'
+  });
 
   if (response.statusCode == 200) {
     print("Recently played tracks found");
     num length = jsonDecode(response.body).length;
+    print("length: $length");
 
-    //  for(i = 0; i < length)
-
-    _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), 0));
-
-    print("artist: ${_storedTrack.artist}");
-    print("track: ${_storedTrack.track}");
-    print("url: ${_storedTrack.url}");
-    print("href: ${_storedTrack.href}");
-    print("imageUrl: ${_storedTrack.imageUrl}");
+    for (var i = 0; i < length; i++) {
+      _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), i));
+      await _todaysTracks[i].getImage();
+      print("TODAY'S track: ${_todaysTracks[i].track}");
+      print("artist: ${_todaysTracks[i].artist}");
+      print("url: ${_todaysTracks[i].url}");
+      print("href: ${_todaysTracks[i].href}");
+      print("image: ${_todaysTracks[i].imageUrl}");
+    }
   } else {
     print('Stored track ID not found');
   }
+
+  // adds currently playing track too as it's in progress
+  if (_currentTrack != null) {
+    _todaysTracks.add(_currentTrack);
+  }
 }
+
+// FETCHING MORE THAN 5 tracks - need to use next???
+// final response2 = await http.get(
+//     "https://api.spotify.com/v1/me/player/recently-played?before=1607392056792&limit=5",
+//     headers: {
+//       'Authorization': 'Bearer ' + _authenticationToken,
+//       'contentTypeHeader': 'application/json'
+//     });
+// if (response2.statusCode == 200) {
+//   print("Recently played tracks found");
+//   num length = jsonDecode(response.body).length;
+//   print("length: $length");
+
+//   for (var i = 0; i < length; i++) {
+//     _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response2.body), i));
+//     await _todaysTracks[i].getImage();
+//     print("todaystracks LAST: ${_todaysTracks[9].track}");
+
+// print("TODAY'S track: ${_todaysTracks[i].track}");
+// print("artist: ${_todaysTracks[i].artist}");
+// print("url: ${_todaysTracks[i].url}");
+// print("href: ${_todaysTracks[i].href}");
+// print("image: ${_todaysTracks[i].imageUrl}");
+
 // Future<void> getPlayerState() async {
 //   print("getting current track...");
 //   var playerConnection = await SpotifySdk.subscribeConnectionStatus();
