@@ -42,7 +42,6 @@ class _MainViewState extends State<MainView> {
           if (index != 2) {
             FocusScope.of(context).unfocus();
           }
-          print(inkling.userProfile.toString());
           print(activeDate);
           print(documentId);
         },

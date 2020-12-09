@@ -110,7 +110,8 @@ class _CalendarState extends State<Calendar> {
 
   Future<void> _deleteEntry(docId) {
     return entries.doc(docId).delete().then((value) {
-      return {getCalendarEntries(_selectedDay), Navigator.of(context).pop()};
+      getCalendarEntries(_selectedDay);
+      Navigator.of(context).pop();
     });
   }
 

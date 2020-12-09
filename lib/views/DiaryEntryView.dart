@@ -48,6 +48,8 @@ class DiaryEntryView extends StatefulWidget {
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  GlobalKey<AutoCompleteTextFieldState> _autoCompleteKey =
+      new GlobalKey<AutoCompleteTextFieldState>();
   bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Create a new entry";
@@ -669,6 +671,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
+    print(widget.activeDate);
     dynamic newEntry = await entries
         .add({
           'user_id': _user.uid,
@@ -907,6 +910,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           title: "Recently played:",
           content: //_currentSpotifyTrack(),
               AutoCompleteTextField(
+            key: _autoCompleteKey,
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
             suggestions: suggestionList,
@@ -1140,7 +1144,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           _titleEditingController =
                               TextEditingController(text: titleText); // = "";
                           MainView.of(context).documentIdReference = '';
-                          MainView.of(context).date = DateTime.now();
                         });
                       },
                     ),
