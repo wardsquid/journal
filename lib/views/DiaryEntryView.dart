@@ -449,6 +449,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               autofocus: false,
               focusNode: entryFocusNode,
             ),
+            SizedBox(
+              height: 80,
+            )
           ],
         ),
       );
@@ -1078,6 +1081,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   Widget build(BuildContext context) {
     // print(_isEditingText);
     return Scaffold(
+      appBar: AppBar(
+        leading: GestureDetector(
+          child: Icon(Icons.edit),
+          onTap: () {},
+        ),
+        title: Text("Journal name goes here"),
+        centerTitle: true,
+        actions: [
+          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+        ],
+      ),
       floatingActionButton: Row(children: [
         SizedBox(
           width: 30,

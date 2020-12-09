@@ -116,6 +116,17 @@ class _TimeLineView extends State<TimeLineView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: GestureDetector(
+          child: Icon(Icons.edit),
+          onTap: () {},
+        ),
+        title: Text("Memory Lane"),
+        centerTitle: true,
+        actions: [
+          IconButton(icon: Icon(Icons.account_circle), onPressed: () {}),
+        ],
+      ),
       body: createListView(context, display),
     );
   }

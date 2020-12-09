@@ -85,7 +85,7 @@ Future<void> addUser() async {
   CollectionReference users = getFireStoreUsersDB();
   User currentUser = checkUserLoginStatus();
   final bool doesUserExist = await checkUserExists();
-  if (doesUserExist) {
+  if (doesUserExist == null) {
     users
         .doc(currentUser.uid)
         .set({
