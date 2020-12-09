@@ -108,11 +108,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void initState() {
     // print('init diaryview');
     // print(inkling.userProfile.toString());
-    print(_isEditingText.toString());
+    // print(_isEditingText.toString());
     super.initState();
     _entryEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
-    if (widget.documentId != "") {
+    if (widget.documentId != "" && mounted) {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
@@ -495,14 +495,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             if (titleText != "" && widget.documentId == "")
               {
                 _addNewEntry(),
+                setState(() {
+                  _isEditingText = false;
+                }),
               }
             else if (titleText != "" && widget.documentId != "")
               {
                 _overwriteEntry(),
+                setState(() {
+                  _isEditingText = false;
+                }),
               },
-            setState(() {
-              _isEditingText = false;
-            }),
           }
       },
       label: Text("Save"),
@@ -689,28 +692,39 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
     print(widget.activeDate);
+    Map<String, dynamic> createdEntry = {
+      'user_id': _user.uid,
+      'title': titleText,
+      'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
+                  widget.activeDate.day) !=
+              DateTime(
+                  DateTime.now().year, DateTime.now().month, DateTime.now().day)
+          ? widget.activeDate
+          : DateTime.now(),
+      'content': {
+        'image': (_image != null) ? true : false,
+        'text': entryText,
+        'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
+      },
+      'journal': inkling.currentJournal,
+      'shared_with':
+          inkling.currentlySharingWith.containsKey(inkling.currentJournal)
+              ? inkling.currentlySharingWith[inkling.currentJournal]
+              : [],
+    };
     dynamic newEntry = await entries
-        .add({
-          'user_id': _user.uid,
-          'title': titleText,
-          'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
-                      widget.activeDate.day) !=
-                  DateTime(DateTime.now().year, DateTime.now().month,
-                      DateTime.now().day)
-              ? widget.activeDate
-              : DateTime.now(),
-          'content': {
-            'image': (_image != null) ? true : false,
-            'text': entryText,
-            'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
-          },
-          'journal': inkling.currentJournal,
-          'shared_with':
-              inkling.currentlySharingWith.containsKey(inkling.currentJournal)
-                  ? inkling.currentlySharingWith[inkling.currentJournal]
-                  : [],
-        })
+        .add(createdEntry)
         .then((value) => {
+              setState(() {
+                MainView.of(context).documentIdReference = value.id.toString();
+                ownerId = _user.uid;
+                inkling.activeEntry = createdEntry;
+                print(inkling.activeEntry.toString());
+                print(ownerId);
+                print(widget.documentId);
+                // print(ownerId);
+                // print(widget.documentId);
+              }),
               if (_image != null)
                 {
                   _storage
@@ -723,12 +737,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               // print(value.id),
             })
         .catchError((error) => print("Failed to add entry: $error"));
-    setState(() {
-      MainView.of(context).documentIdReference = newEntry.toString();
-      ownerId = _user.uid;
-      // print(ownerId);
-      // print(widget.documentId);
-    });
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1039,7 +1047,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
-    print(_isEditingText);
+    // print(_isEditingText);
     return Scaffold(
       floatingActionButton: Row(children: [
         SizedBox(
