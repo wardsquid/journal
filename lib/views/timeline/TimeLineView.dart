@@ -4,10 +4,16 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
+import '../../managers/pageView.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 
 class TimeLineView extends StatefulWidget {
+  // final PageController tabController;
+  // TimeLineView({
+  //   Key key,
+  //   this.tabController,
+  // }) : super(key: key);
   TimeLineView({Key key}) : super(key: key);
   LiquidController liquidController;
   @override
@@ -130,6 +136,10 @@ class _TimeLineView extends State<TimeLineView> {
         ],
       ),
       body: createListView(context, display),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => {},
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -167,7 +177,7 @@ class _TimeLineView extends State<TimeLineView> {
       return Container(
         child: Column(children: <Widget>[
           SizedBox(
-            height: 10,
+            height: 30,
           ),
           FloatingActionButton.extended(
               onPressed: () {
