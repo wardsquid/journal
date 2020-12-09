@@ -56,6 +56,7 @@ dependencies:
   flutter_speed_dial: ^1.2.5
   share: ^0.6.5+4
   autocomplete_textfield: ^1.7.3
+  basic_utils: ^2.6.3
 
 dev_dependencies:
   flutter_test:
