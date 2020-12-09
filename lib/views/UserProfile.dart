@@ -219,6 +219,17 @@ class _UserProfile extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: GestureDetector(
+          child: Icon(Icons.edit),
+          onTap: () {},
+        ),
+        title: Text("User Profile"),
+        centerTitle: true,
+        actions: [
+          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+        ],
+      ),
       resizeToAvoidBottomInset: false,
       body: Container(
         decoration: BoxDecoration(
