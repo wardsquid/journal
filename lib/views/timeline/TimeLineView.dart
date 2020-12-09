@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
+import '../../managers/pageView.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 
@@ -138,6 +139,11 @@ class _TimeLineView extends State<TimeLineView> {
         ],
       ),
       body: createListView(context, display),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () =>
+            {widget.liquidController.animateToPage(page: 3, duration: 750)},
+        child: Icon(Icons.add),
+      ),
     );
   }
 
@@ -175,7 +181,7 @@ class _TimeLineView extends State<TimeLineView> {
       return Container(
         child: Column(children: <Widget>[
           SizedBox(
-            height: 10,
+            height: 30,
           ),
           FloatingActionButton.extended(
               onPressed: () {
