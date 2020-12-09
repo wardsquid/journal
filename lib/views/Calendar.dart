@@ -122,7 +122,6 @@ class _CalendarState extends State<Calendar> {
     if (_selectedDay == null) _selectedDay = DateTime.now();
     _selectedEntries = [];
     getCalendarEntries(_selectedDay);
-    // print(_entries);
     _calendarController = CalendarController();
   }
 
@@ -159,6 +158,17 @@ class _CalendarState extends State<Calendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: GestureDetector(
+          child: Icon(Icons.edit),
+          onTap: () {},
+        ),
+        title: Text("Calendar"),
+        centerTitle: true,
+        actions: [
+          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.max,
