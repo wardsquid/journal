@@ -13,6 +13,7 @@ Map<String, dynamic> currentlySharingWith;
 Future<void> initializeUserCaching() async {
   currentJournal = null;
   User current = checkUserLoginStatus();
+  print(current.toString());
   if (current == null)
     return null;
   else {

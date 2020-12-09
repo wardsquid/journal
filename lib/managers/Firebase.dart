@@ -5,6 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'LocalNotificationManager.dart';
+import 'userInfo.dart' as inkling;
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -85,26 +86,18 @@ Future<void> addUser() async {
   CollectionReference users = getFireStoreUsersDB();
   User currentUser = checkUserLoginStatus();
   final bool doesUserExist = await checkUserExists();
-  if (doesUserExist == null) {
-    users
-        .doc(currentUser.uid)
-        .set({
-          'journals_list': ["Personal"],
-          // 'ML_preference': true,
-          // 'ML_preference_updated': false,
-          'reminder': null,
-          'sharing_info': {},
-          'friends': [
-            // {'name': 'Vic', 'email': 'wow@email.com'},
-            // {'name': 'Dustin', 'email': 'cool@email.com'}
-          ],
-          // 'journals': [
-          //   {'uid': 'uid1', 'name': "CC15's super secret diary"},
-          // ],
-          // 'entries': ['uid1', 'uid2', 'uid3', 'uid4']
-        })
-        .then((value) => {print("Successfully added user $currentUser")})
-        .catchError((error) => {print("Failed to add user: $error")});
+  if (doesUserExist == false) {
+    users.doc(currentUser.uid).set({
+      'journals_list': ["Personal"],
+      'reminder': null,
+      'sharing_info': {},
+      'friends': [],
+    }).then((value) async {
+      await inkling.initializeUserCaching();
+      print("Successfully added user $currentUser");
+    }).catchError((error) => {print("Failed to add user: $error")});
+  } else {
+    if (inkling.userProfile == null) await inkling.initializeUserCaching();
   }
 }
 
