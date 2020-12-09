@@ -251,15 +251,14 @@ Future<void> loadTodaysTracks() async {
       print("url: ${_todaysTracks[i].url}");
       print("href: ${_todaysTracks[i].href}");
       print("image: ${_todaysTracks[i].imageUrl}");
-
-      if (_currentTrack != null) {
-        _todaysTracks.add(_currentTrack);
-        print("new track added; updated length: ${_todaysTracks.length}");
-        print("${_todaysTracks[_todaysTracks.length].track}");
-      }
     }
   } else {
     print('Stored track ID not found');
+  }
+
+  // adds currently playing track too as it's in progress
+  if (_currentTrack != null) {
+    _todaysTracks.add(_currentTrack);
   }
 }
 

@@ -60,6 +60,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   bool _trackReady = false;
   String _spotifyUrl; // = "";
   List<dynamic> _todaysTracks;
+  var _chosenTrack;
   var _suggestionTextFieldController = new TextEditingController();
 
   // Controllers
@@ -108,6 +109,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     super.initState();
     _entryEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
+
     if (widget.documentId != "") {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
@@ -829,8 +831,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onTap: () async {
         await _initializeSpotify();
         if (_spotifyToken != null) {
-          print("updating for token $_spotifyToken");
-          await _updateLatestSpotifyTrack();
+          //   print("updating for token $_spotifyToken");
+          //   setState(() {
+          //     _todaysTracks = [];
+          //   });
+          //   await _updateLatestSpotifyTrack();
           _selectTrackPopup(context);
         } else {
           _linkSpotifyPopup(context);
@@ -840,15 +845,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Future<void> _initializeSpotify() async {
-    // Use below code if we want to authenticate from this button, and not on app start
-    // if (_spotifyToken == null) {
-    //   print("no token found");
-    //   await getSpotifyAuth();
     var token = fetchSpotifyToken();
     setState(() {
       _spotifyToken = token;
     });
-    //}
+
+    if (_spotifyToken != null) {
+      print("updating for token $_spotifyToken");
+      setState(() {
+        _todaysTracks = [];
+      });
+    }
+    await _updateLatestSpotifyTrack();
   }
 
   _updateLatestSpotifyTrack() async {
@@ -857,14 +865,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     setState(() {
       _todaysTracks = fetchTodaysTracks();
     });
-    // await loadSpotifyTrack();
-    // setState(() {
-    //   _currentTrack = fetchSpotifyTrack();
-    // });
   }
 
   _selectTrackPopup(context) {
-    //if (_currentTrack != null)
     if (_todaysTracks != null) {
       return Alert(
           context: context,
@@ -875,7 +878,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
             suggestions: _todaysTracks,
-            suggestionsAmount: 50,
+            suggestionsAmount: 5,
+            decoration: InputDecoration(hintText: _todaysTracks[0].track),
             itemFilter: (item, query) {
               return item.track.toLowerCase().startsWith(query.toLowerCase());
             },
@@ -884,25 +888,43 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             },
             itemSubmitted: (item) {
               _suggestionTextFieldController.text = item.track;
+              setState(() {
+                _chosenTrack = item;
+              });
+              print("chosen track: ${item.track}");
             },
             itemBuilder: (context, item) {
               return new ListTile(
                 title: new Text("${item.track}"),
                 subtitle: new Text("${item.artist}"),
-                // leading: Image.network(item.imageUrl, width: 20, height: 20),
+                leading: Image.network(item.imageUrl, width: 20, height: 20),
               );
             },
           ),
           buttons: [
             DialogButton(
-                child: Text("Add song"),
+                child: Text("Pick for me"),
+                color: Colors.pinkAccent,
                 onPressed: () {
+                  Random random = new Random();
+                  int _randomIndex = random.nextInt(_todaysTracks.length - 1);
+                  print("random index: $_randomIndex");
                   setState(() {
-                    _spotifyUrl = _currentTrack.href;
+                    _spotifyUrl = _todaysTracks[_randomIndex].href;
                   });
                   _getTrackByUrl();
                   Navigator.pop(context);
-                })
+                }),
+            DialogButton(
+                child: Text("Add song"),
+                color: Colors.greenAccent,
+                onPressed: () {
+                  setState(() {
+                    _spotifyUrl = _chosenTrack.href;
+                  });
+                  _getTrackByUrl();
+                  Navigator.pop(context);
+                }),
           ]).show();
     }
   }
