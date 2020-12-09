@@ -183,7 +183,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
-          widget.liquidController.animateToPage(page: 2, duration: 600
+          widget.liquidController.animateToPage(page: 3, duration: 600
               // 2,
               //   duration: Duration(milliseconds: 300), curve: Curves.easeIn
               ),
@@ -297,8 +297,7 @@ class _CalendarState extends State<Calendar> {
                               MainView.of(context).documentIdReference =
                                   event['doc_id'],
                               widget.liquidController
-                                  .animateToPage(page: 2, duration: 600)
-                              // .animateToPage(page: 2, duration: 600),
+                                  .animateToPage(page: 3, duration: 600)
                             }),
                   ],
                 ),
