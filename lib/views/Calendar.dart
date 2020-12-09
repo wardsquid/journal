@@ -9,14 +9,14 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 
 class Calendar extends StatefulWidget {
   final String title;
-  LiquidController tabController;
+  LiquidController liquidController;
   DateTime activeDate;
   String documentId;
   Calendar(
       {Key key,
       this.documentId,
       this.title,
-      this.tabController,
+      this.liquidController,
       this.activeDate})
       : super(key: key);
 
@@ -183,7 +183,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
-          widget.tabController.animateToPage(page: 2, duration: 600
+          widget.liquidController.animateToPage(page: 2, duration: 600
               // 2,
               //   duration: Duration(milliseconds: 300), curve: Curves.easeIn
               ),
@@ -296,7 +296,7 @@ class _CalendarState extends State<Calendar> {
                               MainView.of(context).date = _selectedDay,
                               MainView.of(context).documentIdReference =
                                   event['doc_id'],
-                              widget.tabController
+                              widget.liquidController
                                   .animateToPage(page: 2, duration: 600)
                               // .animateToPage(page: 2, duration: 600),
                             }),

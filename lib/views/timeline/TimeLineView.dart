@@ -5,9 +5,11 @@ import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 class TimeLineView extends StatefulWidget {
   TimeLineView({Key key}) : super(key: key);
+  LiquidController liquidController;
   @override
   _TimeLineView createState() => _TimeLineView();
 }

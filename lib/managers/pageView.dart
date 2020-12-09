@@ -65,7 +65,7 @@ class _MainViewState extends State<MainView> {
         Container(
           child: Calendar(
               title: "Diary Calendar",
-              tabController: _liquidController,
+              liquidController: _liquidController,
               activeDate: activeDate,
               documentId: documentId), //index 0
         ),
