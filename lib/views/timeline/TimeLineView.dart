@@ -6,13 +6,16 @@ import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
 import '../../managers/pageView.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 class TimeLineView extends StatefulWidget {
-  final PageController tabController;
-  TimeLineView({
-    Key key,
-    this.tabController,
-  }) : super(key: key);
+  // final PageController tabController;
+  // TimeLineView({
+  //   Key key,
+  //   this.tabController,
+  // }) : super(key: key);
+  TimeLineView({Key key}) : super(key: key);
+  LiquidController liquidController;
   @override
   _TimeLineView createState() => _TimeLineView();
 }

@@ -37,10 +37,13 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 // import views
 import './alerts/DiaryEntryAlerts.dart';
+//import liquid controller
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
+  LiquidController liquidController;
   DiaryEntryView({this.documentId, this.activeDate});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();

@@ -55,6 +55,7 @@ dependencies:
   speech_to_text: ^3.0.1
   flutter_speed_dial: ^1.2.5
   share: ^0.6.5+4
+  liquid_swipe: ^1.5.0
   autocomplete_textfield: ^1.7.3
   basic_utils: ^2.6.3
 

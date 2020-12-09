@@ -10,9 +10,11 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:linkable/linkable.dart';
 import '../managers/userInfo.dart' as inkling;
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
+  LiquidController liquidController;
   @override
   _UserProfile createState() => new _UserProfile(currentUser);
 }
