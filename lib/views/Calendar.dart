@@ -160,12 +160,18 @@ class _CalendarState extends State<Calendar> {
       appBar: AppBar(
         leading: GestureDetector(
           child: Icon(Icons.edit),
-          onTap: () {},
+          onTap: () {
+            widget.liquidController.animateToPage(page: 3, duration: 400);
+          },
         ),
         title: Text("Calendar"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 3, duration: 400);
+              }),
         ],
       ),
       body: Center(

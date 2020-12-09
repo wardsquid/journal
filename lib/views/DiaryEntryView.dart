@@ -1086,7 +1086,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           child: Icon(Icons.edit),
           onTap: () {},
         ),
-        title: Text("Journal name goes here"),
+        title: Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
           IconButton(icon: Icon(Icons.home), onPressed: () {}),

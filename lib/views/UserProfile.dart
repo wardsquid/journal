@@ -222,12 +222,18 @@ class _UserProfile extends State<UserProfile> {
       appBar: AppBar(
         leading: GestureDetector(
           child: Icon(Icons.edit),
-          onTap: () {},
+          onTap: () {
+            widget.liquidController.animateToPage(page: 4, duration: 400);
+          },
         ),
         title: Text("User Profile"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 2, duration: 400);
+              }),
         ],
       ),
       resizeToAvoidBottomInset: false,

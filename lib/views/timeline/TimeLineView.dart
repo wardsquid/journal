@@ -118,13 +118,19 @@ class _TimeLineView extends State<TimeLineView> {
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
-          child: Icon(Icons.edit),
-          onTap: () {},
+          child: Icon(Icons.calendar_today),
+          onTap: () {
+            widget.liquidController.animateToPage(page: 1, duration: 400);
+          },
         ),
         title: Text("Memory Lane"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.account_circle), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.account_circle),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 0, duration: 400);
+              }),
         ],
       ),
       body: createListView(context, display),
