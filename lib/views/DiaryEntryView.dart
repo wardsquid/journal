@@ -655,17 +655,34 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               ] +
               (widget.documentId != '' && ownerId == _user.uid
                   ? [
-                      SpeedDialChild(
-                        child: Icon(Icons.share),
-                        backgroundColor: Colors.orange,
-                        label: 'Share with a friend',
-                        // labelStyle: TextStyle(fontSize: 18.0),
-                        onTap: () => {
-                          Share.share(entryText, subject: titleText),
-                          print('THIRD CHILD')
-                        },
-                      )
-                    ]
+                        SpeedDialChild(
+                          child: Icon(Icons.share),
+                          backgroundColor: Colors.orange,
+                          label: 'Share with a friend',
+                          // labelStyle: TextStyle(fontSize: 18.0),
+                          onTap: () => {
+                            Share.share(entryText, subject: titleText),
+                            print('THIRD CHILD')
+                          },
+                        )
+                      ] +
+                      [
+                        SpeedDialChild(
+                          child: Icon(Icons.restore_from_trash_outlined),
+                          backgroundColor: Colors.red,
+                          label: 'Delete entry',
+                          // labelStyle: TextStyle(fontSize: 18.0),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return _buildDeleteEntryForm();
+                              },
+                              barrierDismissible: false,
+                            );
+                          },
+                        )
+                      ]
                   : []) +
               // Renders the report button only if it is not a blank document
               // and the owner id is not the user
@@ -1074,6 +1091,59 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   /// SPOTIFY
 ///////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////
+  /// DELETE ENTRY
+///////////////////////////////////////////////////////////////////////
+  Widget _buildDeleteEntryForm() {
+    return AlertDialog(
+      title: Text("Are you sure to delete $titleText ?"),
+      contentPadding: EdgeInsets.all(0.0),
+      actions: <Widget>[
+        FlatButton(
+          child: Text(
+            'Delete',
+            style: TextStyle(color: Colors.red),
+          ),
+          onPressed: () {
+            _deleteEntry();
+          },
+        ),
+        FlatButton(
+          child: Text(
+            'Cancel',
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        )
+      ],
+    );
+  }
+
+  Future<void> _deleteEntry() {
+    return entries.doc(widget.documentId).delete().then((value) {
+      setState(() {
+        inkling.activeEntry = null;
+        ownerId = "";
+        entryText = "";
+        titleText = "";
+        tempTitleText = "";
+        tempEntryText = "";
+        _image = null;
+        _bucketUrl = '';
+        lastWords = "";
+        lastError = "";
+        lastStatus = "";
+        _currentTrack = null;
+        _storedTrack = null;
+        _trackReady = false;
+        _spotifyUrl = null; // = "";
+        MainView.of(context).documentIdReference = '';
+      });
+      Navigator.of(context).pop();
+    });
+  }
 
 ///////////////////////////////////////////////////////////////////////
   /// MAIN VIEW
