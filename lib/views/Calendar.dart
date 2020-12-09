@@ -5,10 +5,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../managers/DateToHuman.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 
 class Calendar extends StatefulWidget {
   final String title;
-  final PageController tabController;
+  LiquidController tabController;
   DateTime activeDate;
   String documentId;
   Calendar(
@@ -161,8 +162,10 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
-          widget.tabController.animateToPage(2,
-              duration: Duration(milliseconds: 300), curve: Curves.easeIn),
+          widget.tabController.animateToPage(page: 2, duration: 600
+              // 2,
+              //   duration: Duration(milliseconds: 300), curve: Curves.easeIn
+              ),
         },
         // _makeEntry,
         tooltip: 'New Entry',
@@ -255,9 +258,9 @@ class _CalendarState extends State<Calendar> {
                                   MainView.of(context).date = _selectedDay,
                                   MainView.of(context).documentIdReference =
                                       event['doc_id'],
-                                  widget.tabController.animateToPage(2,
-                                      duration: Duration(milliseconds: 300),
-                                      curve: Curves.easeIn),
+                                  widget.tabController
+                                      .animateToPage(page: 2, duration: 600)
+                                  // .animateToPage(page: 2, duration: 600),
                                 }),
                       ],
                     ),
