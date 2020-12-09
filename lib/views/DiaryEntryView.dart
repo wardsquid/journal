@@ -1125,6 +1125,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           _isEditingText = true;
 
                           inkling.activeEntry = null;
+                          if (ownerId != "") {
+                            MainView.of(context).date = DateTime.now();
+                          }
                           ownerId = "";
                           entryText = "";
                           titleText = "";
