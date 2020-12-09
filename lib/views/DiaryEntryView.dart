@@ -1082,6 +1082,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     // print(_isEditingText);
     return Scaffold(
       appBar: AppBar(
+        //home  edit
         leading: GestureDetector(
           child: Icon(Icons.edit),
           onTap: () {},
@@ -1089,7 +1090,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         title: Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 2, duration: 400);
+              }),
         ],
       ),
       floatingActionButton: Row(children: [

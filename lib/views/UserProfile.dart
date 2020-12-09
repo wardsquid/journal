@@ -221,18 +221,18 @@ class _UserProfile extends State<UserProfile> {
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
-          child: Icon(Icons.edit),
+          child: Icon(Icons.home),
           onTap: () {
-            widget.liquidController.animateToPage(page: 4, duration: 400);
+            widget.liquidController.animateToPage(page: 2, duration: 400);
           },
         ),
         title: Text("User Profile"),
         centerTitle: true,
         actions: [
           IconButton(
-              icon: Icon(Icons.home),
+              icon: Icon(Icons.edit),
               onPressed: () {
-                widget.liquidController.animateToPage(page: 2, duration: 400);
+                widget.liquidController.animateToPage(page: 3, duration: 400);
               }),
         ],
       ),
