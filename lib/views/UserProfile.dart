@@ -15,12 +15,15 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 class UserProfile extends StatefulWidget {
   final User currentUser = checkUserLoginStatus();
   LiquidController liquidController;
+  UserProfile({this.liquidController});
   @override
   _UserProfile createState() => new _UserProfile(currentUser);
 }
 
 class _UserProfile extends State<UserProfile> {
   User currentUser;
+  LiquidController liquidController;
+
   _UserProfile(this.currentUser);
   TimeOfDay reminderTime;
   bool isTimeSet = false;
@@ -221,15 +224,22 @@ class _UserProfile extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.orange,
       appBar: AppBar(
-        leading: GestureDetector(
-          child: Icon(Icons.edit),
-          onTap: () {},
+        leading: IconButton(
+          icon: Icon(Icons.home),
+          onPressed: () {
+            widget.liquidController.animateToPage(page: 2, duration: 750);
+          },
         ),
         title: Text("User Profile"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 4, duration: 750);
+              }),
         ],
       ),
       resizeToAvoidBottomInset: false,

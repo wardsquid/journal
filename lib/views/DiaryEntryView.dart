@@ -44,7 +44,7 @@ class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
   LiquidController liquidController;
-  DiaryEntryView({this.documentId, this.activeDate});
+  DiaryEntryView({this.documentId, this.activeDate, this.liquidController});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -1085,14 +1085,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     // print(_isEditingText);
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-          child: Icon(Icons.edit),
-          onTap: () {},
-        ),
-        title: Text("Journal name goes here"),
+        //home  edit
+        leading:  IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 3, duration: 750);
+              }),
+        title: Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 2, duration: 750);
+              }),
         ],
       ),
       floatingActionButton: Row(children: [
@@ -1111,7 +1117,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Scaffold(
-        backgroundColor: Colors.orange[400], // background color
+        backgroundColor: Colors.orange[200], // background color
         key: _scaffoldKey,
         // resizeToAvoidBottomInset: false,
         drawerEnableOpenDragGesture: false,

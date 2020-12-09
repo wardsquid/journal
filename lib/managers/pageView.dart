@@ -51,16 +51,16 @@ class _MainViewState extends State<MainView> {
       liquidController: _liquidController,
       // ignoreUserGestureWhileAnimating: true,
       onPageChangeCallback: (index) => {
-        if (index != 2) {
-          FocusScope.of(context).unfocus()
-          },
-          print(inkling.userProfile.toString()),
-          print(activeDate),
-          print(documentId),
+        if (index != 2) {FocusScope.of(context).unfocus()},
+        print(inkling.userProfile.toString()),
+        print(activeDate),
+        print(documentId),
       },
       pages: [
         Container(
-          child: UserProfile(),
+          child: UserProfile(
+            liquidController: _liquidController,
+          ),
         ),
         Container(
           child: Calendar(
@@ -70,10 +70,16 @@ class _MainViewState extends State<MainView> {
               documentId: documentId), //index 0
         ),
         Container(
-          child: TimeLineView(),
+          child: TimeLineView(
+            liquidController: _liquidController,
+          ),
         ),
         Container(
-          child: DiaryEntryView(activeDate: activeDate, documentId: documentId),
+          child: DiaryEntryView(
+            activeDate: activeDate,
+            documentId: documentId,
+            liquidController: _liquidController,
+          ),
         ),
         Container(
           color: Colors.red,

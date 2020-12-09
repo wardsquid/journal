@@ -158,15 +158,22 @@ class _CalendarState extends State<Calendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green,
       appBar: AppBar(
-        leading: GestureDetector(
-          child: Icon(Icons.edit),
-          onTap: () {},
+        leading: IconButton(
+          icon: Icon(Icons.home),
+          onPressed: () {
+            widget.liquidController.animateToPage(page: 2, duration: 750);
+          },
         ),
         title: Text("Calendar"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.home), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 3, duration: 750);
+              }),
         ],
       ),
       body: Center(
@@ -183,7 +190,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
-          widget.liquidController.animateToPage(page: 3, duration: 600
+          widget.liquidController.animateToPage(page: 3, duration: 750
               // 2,
               //   duration: Duration(milliseconds: 300), curve: Curves.easeIn
               ),
@@ -297,7 +304,7 @@ class _CalendarState extends State<Calendar> {
                               MainView.of(context).documentIdReference =
                                   event['doc_id'],
                               widget.liquidController
-                                  .animateToPage(page: 3, duration: 600)
+                                  .animateToPage(page: 3, duration: 750)
                             }),
                   ],
                 ),

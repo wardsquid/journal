@@ -9,13 +9,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 
 class TimeLineView extends StatefulWidget {
-  // final PageController tabController;
-  // TimeLineView({
-  //   Key key,
-  //   this.tabController,
-  // }) : super(key: key);
-  TimeLineView({Key key}) : super(key: key);
   LiquidController liquidController;
+  TimeLineView({Key key, this.liquidController}) : super(key: key);
+
   @override
   _TimeLineView createState() => _TimeLineView();
 }
@@ -124,20 +120,28 @@ class _TimeLineView extends State<TimeLineView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blue,
       appBar: AppBar(
-        leading: GestureDetector(
-          child: Icon(Icons.edit),
-          onTap: () {},
+        leading: IconButton(
+          icon: Icon(Icons.calendar_today),
+          onPressed: () {
+            widget.liquidController.animateToPage(page: 1, duration: 750);
+          },
         ),
         title: Text("Memory Lane"),
         centerTitle: true,
         actions: [
-          IconButton(icon: Icon(Icons.account_circle), onPressed: () {}),
+          IconButton(
+              icon: Icon(Icons.account_circle),
+              onPressed: () {
+                widget.liquidController.animateToPage(page: 0, duration: 750);
+              }),
         ],
       ),
       body: createListView(context, display),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {},
+        onPressed: () =>
+            {widget.liquidController.animateToPage(page: 3, duration: 750)},
         child: Icon(Icons.add),
       ),
     );
