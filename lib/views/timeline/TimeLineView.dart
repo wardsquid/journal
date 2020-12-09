@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class TimeLineView extends StatefulWidget {
   TimeLineView({Key key}) : super(key: key);
@@ -15,7 +16,8 @@ class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
   var _storedTrack;
   var _spotifyToken;
-
+  Future<QuerySnapshot> userRetrievalQuery;
+  Future<QuerySnapshot> sharedRetrievalQuery;
   DateTime today = DateTime.now();
   List<Map<String, dynamic>> display = [
     {
@@ -34,30 +36,41 @@ class _TimeLineView extends State<TimeLineView> {
   ];
 
   void pushToList(Map<String, dynamic> entry) async {
+    if (!mounted) return;
+
+    // print("pushing ${entry.toString()}");
+
     if (entry["content"]["spotify"] != null && _spotifyToken != null) {
       var _url = entry["content"]["spotify"];
-      await getTrackByUrl(_url);
-      setState(() {
-        _storedTrack = fetchStoredTrack();
-      });
-      entry["content"]["track"] = _storedTrack.track;
-      entry["content"]["artist"] = _storedTrack.artist;
-      entry["content"]["albumImage"] = _storedTrack.imageUrl;
-      entry["content"]["url"] = _storedTrack.url;
+      print("error is thrown here ${entry.toString}");
+      await getTrackByUrl(_url).then((val) => {
+            if (mounted)
+              setState(() {
+                _storedTrack = fetchStoredTrack();
+              }),
+            entry["content"]["track"] = _storedTrack.track,
+            entry["content"]["artist"] = _storedTrack.artist,
+            entry["content"]["albumImage"] = _storedTrack.imageUrl,
+            entry["content"]["url"] = _storedTrack.url,
+          });
     }
     // print("pushing ${entry.toString()}");
-    setState(() {
-      display.add(entry);
-      display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
-    });
+    if (mounted)
+      setState(() {
+        display.add(entry);
+        display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
+      });
   }
 
   void parseQuery(DateTime date) {
+    if (!mounted) return;
     if (date == null) date = today;
-    fireStoreUserQuery(date).then((value) => {
+    userRetrievalQuery = fireStoreUserQuery(date);
+    userRetrievalQuery.then((value) => {
           value.docs.forEach((element) {
+            print(element.data());
             Map<String, dynamic> entry = element.data();
-            if (entry["content"]["image"] == true) {
+            if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
                     entry["imageUrl"] = value,
                     pushToList(entry),
@@ -67,10 +80,12 @@ class _TimeLineView extends State<TimeLineView> {
             }
           })
         });
-    fireStoreSharedQuery(date).then((value) => {
+    sharedRetrievalQuery = fireStoreSharedQuery(date);
+    sharedRetrievalQuery.then((value) => {
           value.docs.forEach((element) {
+            print(element.data());
             Map<String, dynamic> entry = element.data();
-            if (entry["content"]["image"] == true) {
+            if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
                     entry["imageUrl"] = value,
                     pushToList(entry),
@@ -84,12 +99,16 @@ class _TimeLineView extends State<TimeLineView> {
 
   void initState() {
     super.initState();
+    print("init");
     _spotifyToken = fetchSpotifyToken();
     parseQuery(today);
   }
 
   @override
   void dispose() {
+    print("dispose");
+    sharedRetrievalQuery = null;
+    userRetrievalQuery = null;
     super.dispose();
     //_spotifyToken = fetchSpotifyToken();
   }
@@ -103,6 +122,7 @@ class _TimeLineView extends State<TimeLineView> {
 
   Widget createListView(
       BuildContext context, List<Map<String, dynamic>> entries) {
+    if (!mounted) return null;
     return ListView.builder(
       itemCount: entries.length == null ? 0 : entries.length,
       itemBuilder: (BuildContext context, int index) {
@@ -117,6 +137,7 @@ class _TimeLineView extends State<TimeLineView> {
   }
 
   Widget timeLineCard(BuildContext context, Map<String, dynamic> entry) {
+    if (!mounted) return null;
     Widget imageFadeIn;
     if (entry['imageUrl'] != null)
       imageFadeIn = new Padding(
@@ -137,10 +158,11 @@ class _TimeLineView extends State<TimeLineView> {
           ),
           FloatingActionButton.extended(
               onPressed: () {
-                setState(() {
-                  today = DateTime(today.year, today.month - 1);
-                  parseQuery(today);
-                });
+                if (mounted)
+                  setState(() {
+                    today = DateTime(today.year, today.month - 1);
+                    parseQuery(today);
+                  });
                 // Add your onPressed code here!
               },
               label: Text("read more..."),

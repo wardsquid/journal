@@ -17,55 +17,6 @@ class MainView extends StatefulWidget {
       context.findAncestorStateOfType<_MainViewState>();
 }
 
-// class _MainViewState extends State<MainView> {
-//   static PageController _pageController;
-
-//   //set variable
-//   DateTime activeDate = DateTime.now();
-//   String documentId = "";
-//   set date(DateTime value) => setState(() => activeDate = value);
-//   set documentIdReference(String value) => setState(() => documentId = value);
-
-//   void initState() {
-//     super.initState();
-//     _pageController = PageController(initialPage: 2);
-//   }
-
-//   @override
-//   void dispose() {
-//     _pageController.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return PageView(
-//         controller: _pageController,
-//         onPageChanged: (index) {
-//           if (index != 2) {
-//             FocusScope.of(context).unfocus();
-//           }
-//           print(inkling.userProfile.toString());
-//           print(activeDate);
-//           print(documentId);
-//         },
-//         children: [
-//           TimeLineView(),
-//           Calendar(
-//               title: "Diary Calendar",
-//               tabController: _pageController,
-//               activeDate: activeDate,
-//               documentId: documentId), //index 0
-//           DiaryEntryView(activeDate: activeDate, documentId: documentId),
-//           UserProfile(),
-//           Container(
-//             color: Colors.red,
-//           ), //index 2
-//           //TFLite() TF ML functions may not need
-//         ]);
-//   }
-// }
-
 class _MainViewState extends State<MainView> {
   int page = 0;
   static LiquidController _liquidController;
@@ -93,19 +44,25 @@ class _MainViewState extends State<MainView> {
   Widget build(BuildContext context) {
     return LiquidSwipe(
       initialPage: 2,
+      fullTransitionValue: 200,
       // onPageChangeCallback: () => print("here"),
       enableLoop: false,
       waveType: WaveType.liquidReveal,
       liquidController: _liquidController,
-      ignoreUserGestureWhileAnimating: true,
-      onPageChangeCallback: (value) => {print('value')},
+      // ignoreUserGestureWhileAnimating: true,
+      onPageChangeCallback: (index) => {
+        if (index != 2) {
+          FocusScope.of(context).unfocus()
+          },
+          print(inkling.userProfile.toString()),
+          print(activeDate),
+          print(documentId),
+      },
       pages: [
         Container(
-          color: Colors.blue,
-          child: TimeLineView(),
+          child: UserProfile(),
         ),
         Container(
-          color: Colors.black,
           child: Calendar(
               title: "Diary Calendar",
               tabController: _liquidController,
@@ -113,12 +70,10 @@ class _MainViewState extends State<MainView> {
               documentId: documentId), //index 0
         ),
         Container(
-          color: Colors.blue,
-          child: DiaryEntryView(activeDate: activeDate, documentId: documentId),
+          child: TimeLineView(),
         ),
         Container(
-          color: Colors.black,
-          child: UserProfile(),
+          child: DiaryEntryView(activeDate: activeDate, documentId: documentId),
         ),
         Container(
           color: Colors.red,
