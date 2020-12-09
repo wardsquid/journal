@@ -50,6 +50,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   GlobalKey<AutoCompleteTextFieldState> _autoCompleteKey =
       new GlobalKey<AutoCompleteTextFieldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Create a new entry";
@@ -383,59 +385,71 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Widget _entryText() {
     if (_isEditingText) {
-      return Column(
-        children: <Widget>[
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: .26,
-                      spreadRadius: level * 1.5,
-                      color: Colors.blue.withOpacity(.3))
-                ],
-                color: !_hasSpeech || speech.isListening
-                    ? Colors.blue
-                    : Colors.grey,
-                borderRadius: BorderRadius.all(Radius.circular(50)),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.mic,
-                  color: Colors.white,
+      return Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: Column(
+          children: <Widget>[
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: .26,
+                        spreadRadius: level * 1.5,
+                        color: Colors.blue.withOpacity(.3))
+                  ],
+                  color: !_hasSpeech || speech.isListening
+                      ? Colors.blue
+                      : Colors.grey,
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
                 ),
-                onPressed: !_hasSpeech || speech.isListening
-                    ? stopListening
-                    : startListening,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.mic,
+                    color: Colors.white,
+                  ),
+                  onPressed: !_hasSpeech || speech.isListening
+                      ? stopListening
+                      : startListening,
+                ),
               ),
             ),
-          ),
-          Text(lastWords),
-          TextField(
-            maxLines: null,
-            controller: _titleEditingController,
-            decoration: InputDecoration(hintText: 'Title is...'),
-            onChanged: (text) {
-              titleText = text;
-            },
-            autofocus: true,
-            focusNode: titleFocusNode,
-          ),
-          TextField(
-            maxLines: null,
-            controller: _entryEditingController,
-            decoration: InputDecoration(hintText: 'Dear diary...'),
-            onChanged: (text) {
-              entryText = text;
-            },
-            autofocus: false,
-            focusNode: entryFocusNode,
-          ),
-        ],
+            Text(lastWords),
+            TextFormField(
+              maxLines: null,
+              controller: _titleEditingController,
+              decoration: InputDecoration(hintText: 'Title is...'),
+              onChanged: (text) {
+                titleText = text;
+              },
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter a title';
+                } else if (value.trim() == "") {
+                  return 'Please enter a non-empty title';
+                }
+                return null;
+              },
+              autofocus: true,
+              focusNode: titleFocusNode,
+            ),
+            TextField(
+              maxLines: null,
+              controller: _entryEditingController,
+              decoration: InputDecoration(hintText: 'Dear diary...'),
+              onChanged: (text) {
+                entryText = text;
+              },
+              autofocus: false,
+              focusNode: entryFocusNode,
+            ),
+          ],
+        ),
       );
     }
     if (entryText == "" && titleText == "") {
@@ -476,17 +490,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     return FloatingActionButton.extended(
       heroTag: null,
       onPressed: () => {
-        if (titleText != "" && widget.documentId == "")
+        if (_formKey.currentState.validate())
           {
-            _addNewEntry(),
+            if (titleText != "" && widget.documentId == "")
+              {
+                _addNewEntry(),
+              }
+            else if (titleText != "" && widget.documentId != "")
+              {
+                _overwriteEntry(),
+              },
+            setState(() {
+              _isEditingText = false;
+            }),
           }
-        else if (titleText != "" && widget.documentId != "")
-          {
-            _overwriteEntry(),
-          },
-        setState(() {
-          _isEditingText = false;
-        }),
       },
       label: Text("Save"),
       backgroundColor: Colors.green,

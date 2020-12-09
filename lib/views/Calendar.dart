@@ -296,7 +296,7 @@ class _CalendarState extends State<Calendar> {
     entryList.add(
       Container(
         child: SizedBox(
-          height: 50,
+          height: 70,
         ),
       ),
     );
