@@ -48,6 +48,10 @@ class DiaryEntryView extends StatefulWidget {
 
 class _DiaryEntryViewState extends State<DiaryEntryView> {
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  GlobalKey<AutoCompleteTextFieldState> _autoCompleteKey =
+      new GlobalKey<AutoCompleteTextFieldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   bool toogleML = true;
   bool _isEditingText = false;
   String buttonText = "Create a new entry";
@@ -105,12 +109,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void initState() {
     // print('init diaryview');
     // print(inkling.userProfile.toString());
-    print(_isEditingText.toString());
+    // print(_isEditingText.toString());
     super.initState();
     _entryEditingController = TextEditingController(text: entryText);
     _titleEditingController = TextEditingController(text: titleText);
-
-    if (widget.documentId != "") {
+    if (widget.documentId != "" && mounted) {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
@@ -383,59 +386,71 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Widget _entryText() {
     if (_isEditingText) {
-      return Column(
-        children: <Widget>[
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: .26,
-                      spreadRadius: level * 1.5,
-                      color: Colors.blue.withOpacity(.3))
-                ],
-                color: !_hasSpeech || speech.isListening
-                    ? Colors.blue
-                    : Colors.grey,
-                borderRadius: BorderRadius.all(Radius.circular(50)),
-              ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.mic,
-                  color: Colors.white,
+      return Form(
+        key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: Column(
+          children: <Widget>[
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        blurRadius: .26,
+                        spreadRadius: level * 1.5,
+                        color: Colors.blue.withOpacity(.3))
+                  ],
+                  color: !_hasSpeech || speech.isListening
+                      ? Colors.blue
+                      : Colors.grey,
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
                 ),
-                onPressed: !_hasSpeech || speech.isListening
-                    ? stopListening
-                    : startListening,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.mic,
+                    color: Colors.white,
+                  ),
+                  onPressed: !_hasSpeech || speech.isListening
+                      ? stopListening
+                      : startListening,
+                ),
               ),
             ),
-          ),
-          Text(lastWords),
-          TextField(
-            maxLines: null,
-            controller: _titleEditingController,
-            decoration: InputDecoration(hintText: 'Title is...'),
-            onChanged: (text) {
-              titleText = text;
-            },
-            autofocus: true,
-            focusNode: titleFocusNode,
-          ),
-          TextField(
-            maxLines: null,
-            controller: _entryEditingController,
-            decoration: InputDecoration(hintText: 'Dear diary...'),
-            onChanged: (text) {
-              entryText = text;
-            },
-            autofocus: false,
-            focusNode: entryFocusNode,
-          ),
-        ],
+            Text(lastWords),
+            TextFormField(
+              maxLines: null,
+              controller: _titleEditingController,
+              decoration: InputDecoration(hintText: 'Title is...'),
+              onChanged: (text) {
+                titleText = text;
+              },
+              validator: (value) {
+                if (value.isEmpty) {
+                  return 'Please enter a title';
+                } else if (value.trim() == "") {
+                  return 'Please enter a non-empty title';
+                }
+                return null;
+              },
+              autofocus: true,
+              focusNode: titleFocusNode,
+            ),
+            TextField(
+              maxLines: null,
+              controller: _entryEditingController,
+              decoration: InputDecoration(hintText: 'Dear diary...'),
+              onChanged: (text) {
+                entryText = text;
+              },
+              autofocus: false,
+              focusNode: entryFocusNode,
+            ),
+          ],
+        ),
       );
     }
     if (entryText == "" && titleText == "") {
@@ -476,17 +491,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     return FloatingActionButton.extended(
       heroTag: null,
       onPressed: () => {
-        if (titleText != "" && widget.documentId == "")
+        if (_formKey.currentState.validate())
           {
-            _addNewEntry(),
+            if (titleText != "" && widget.documentId == "")
+              {
+                _addNewEntry(),
+                setState(() {
+                  _isEditingText = false;
+                }),
+              }
+            else if (titleText != "" && widget.documentId != "")
+              {
+                _overwriteEntry(),
+                setState(() {
+                  _isEditingText = false;
+                }),
+              },
           }
-        else if (titleText != "" && widget.documentId != "")
-          {
-            _overwriteEntry(),
-          },
-        setState(() {
-          _isEditingText = false;
-        }),
       },
       label: Text("Save"),
       backgroundColor: Colors.green,
@@ -671,28 +692,40 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
+    print(widget.activeDate);
+    Map<String, dynamic> createdEntry = {
+      'user_id': _user.uid,
+      'title': titleText,
+      'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
+                  widget.activeDate.day) !=
+              DateTime(
+                  DateTime.now().year, DateTime.now().month, DateTime.now().day)
+          ? widget.activeDate
+          : DateTime.now(),
+      'content': {
+        'image': (_image != null) ? true : false,
+        'text': entryText,
+        'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
+      },
+      'journal': inkling.currentJournal,
+      'shared_with':
+          inkling.currentlySharingWith.containsKey(inkling.currentJournal)
+              ? inkling.currentlySharingWith[inkling.currentJournal]
+              : [],
+    };
     dynamic newEntry = await entries
-        .add({
-          'user_id': _user.uid,
-          'title': titleText,
-          'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
-                      widget.activeDate.day) !=
-                  DateTime(DateTime.now().year, DateTime.now().month,
-                      DateTime.now().day)
-              ? widget.activeDate
-              : DateTime.now(),
-          'content': {
-            'image': (_image != null) ? true : false,
-            'text': entryText,
-            'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
-          },
-          'journal': inkling.currentJournal,
-          'shared_with':
-              inkling.currentlySharingWith.containsKey(inkling.currentJournal)
-                  ? inkling.currentlySharingWith[inkling.currentJournal]
-                  : [],
-        })
+        .add(createdEntry)
         .then((value) => {
+              setState(() {
+                MainView.of(context).documentIdReference = value.id.toString();
+                ownerId = _user.uid;
+                inkling.activeEntry = createdEntry;
+                print(inkling.activeEntry.toString());
+                print(ownerId);
+                print(widget.documentId);
+                // print(ownerId);
+                // print(widget.documentId);
+              }),
               if (_image != null)
                 {
                   _storage
@@ -705,12 +738,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               // print(value.id),
             })
         .catchError((error) => print("Failed to add entry: $error"));
-    setState(() {
-      MainView.of(context).documentIdReference = newEntry.toString();
-      ownerId = _user.uid;
-      // print(ownerId);
-      // print(widget.documentId);
-    });
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -917,6 +944,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           //_todaysTracks[0].track,
           content: //_currentSpotifyTrack(),
               AutoCompleteTextField(
+            key: _autoCompleteKey,
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
             suggestions: _todaysTracks,
@@ -1048,7 +1076,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
-    print(_isEditingText);
+    // print(_isEditingText);
     return Scaffold(
       floatingActionButton: Row(children: [
         SizedBox(
@@ -1151,6 +1179,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           _isEditingText = true;
 
                           inkling.activeEntry = null;
+                          if (ownerId != "") {
+                            MainView.of(context).date = DateTime.now();
+                          }
                           ownerId = "";
                           entryText = "";
                           titleText = "";
@@ -1170,7 +1201,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           _titleEditingController =
                               TextEditingController(text: titleText); // = "";
                           MainView.of(context).documentIdReference = '';
-                          MainView.of(context).date = DateTime.now();
                         });
                       },
                     ),
