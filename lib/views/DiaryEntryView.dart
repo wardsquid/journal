@@ -491,11 +491,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
 ///////////////////////////////////////////////////////////////////////
-  /// SAVE FLOATING BUTTOON
+  /// SAVE BUTTOON
 ///////////////////////////////////////////////////////////////////////
   Widget _saveFloatingButton() {
-    return FloatingActionButton.extended(
-      heroTag: null,
+    return IconButton(
       onPressed: () => {
         if (_formKey.currentState.validate())
           {
@@ -515,8 +514,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               },
           }
       },
-      label: Text("Save"),
-      backgroundColor: Colors.green,
       icon: Icon(Icons.save),
     );
   }
@@ -525,8 +522,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// CANCEL FLOATING BUTTON
 ///////////////////////////////////////////////////////////////////////
   Widget _cancelFloatingButton() {
-    return FloatingActionButton.extended(
-      heroTag: null,
+    return IconButton(
+      icon: Icon(Icons.cancel),
       onPressed: () => {
         if (widget.documentId == "")
           {
@@ -553,18 +550,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             })
           }
       },
-      label: Text("Cancel"),
-      backgroundColor: Colors.red,
-      icon: Icon(Icons.cancel),
     );
   }
 
   ///////////////////////////////////////////////////////////////////////
-  /// EDITMODE FLOATING BUTTON
+  /// EDITMODE BUTTON
 ///////////////////////////////////////////////////////////////////////
   Widget _editFloatingButton() {
-    return FloatingActionButton.extended(
-      heroTag: null,
+    return IconButton(
       onPressed: () => {
         tempTitleText = titleText,
         tempEntryText = entryText,
@@ -576,8 +569,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             })
           }
       },
-      label: Text("Edit"),
-      backgroundColor: Colors.purpleAccent,
       icon: Icon(Icons.edit),
     );
   }
@@ -1073,6 +1064,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+  Widget callAction() {
+    if (_isEditingText == true)
+      return _saveFloatingButton();
+    else
+      return _editFloatingButton();
+  }
+
 ///////////////////////////////////////////////////////////////////////
   /// SPOTIFY
 ///////////////////////////////////////////////////////////////////////
@@ -1086,35 +1084,37 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     return Scaffold(
       appBar: AppBar(
         //home  edit
-        leading:  IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                widget.liquidController.animateToPage(page: 3, duration: 750);
-              }),
+        leading: (() {
+          if (_isEditingText == true) {
+            return _cancelFloatingButton();
+          } else {
+            return IconButton(
+                icon: Icon(Icons.home),
+                onPressed: () {
+                  widget.liquidController.animateToPage(page: 2, duration: 750);
+                });
+          }
+        })(),
         title: Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
-          IconButton(
-              icon: Icon(Icons.home),
-              onPressed: () {
-                widget.liquidController.animateToPage(page: 2, duration: 750);
-              }),
+          callAction(),
         ],
       ),
-      floatingActionButton: Row(children: [
-        SizedBox(
-          width: 30,
-        ),
-        if (_isEditingText == true) _cancelFloatingButton(),
-        Spacer(
-          flex: 1,
-        ),
-        if (_isEditingText == false &&
-            widget.documentId != "" &&
-            ownerId == _user.uid)
-          _editFloatingButton(),
-        if (_isEditingText == true) _saveFloatingButton()
-      ]),
+      // floatingActionButton: Row(children: [
+      //   SizedBox(
+      //     width: 30,
+      //   ),
+      //   if (_isEditingText == true) _cancelFloatingButton(),
+      //   Spacer(
+      //     flex: 1,
+      //   ),
+      //   if (_isEditingText == false &&
+      //       widget.documentId != "" &&
+      //       ownerId == _user.uid)
+      //     _editFloatingButton(),
+      //   if (_isEditingText == true) _saveFloatingButton()
+      // ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Scaffold(
         backgroundColor: Colors.orange[200], // background color
