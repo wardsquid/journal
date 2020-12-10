@@ -196,7 +196,7 @@ Widget journalSettings(
               ),
               RaisedButton(
                 onPressed: () {
-                  print(inkling.currentlySharingWith.toString());
+                  // print(inkling.currentlySharingWith.toString());
                   updateJournalSharingInDB(title);
                   Navigator.of(context).pop();
                 },
@@ -287,7 +287,7 @@ Widget addFriendJournalSharing(BuildContext context, String title,
             setState(() => {
                   sharingWith.add(friend["email"]),
                   updateSharingList(title, sharingWith),
-                  print(sharingWith.contains(friend["email"])),
+                  // print(sharingWith.contains(friend["email"])),
                 })
           }
         else
