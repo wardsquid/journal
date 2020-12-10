@@ -110,7 +110,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   @override
   void initState() {
-    // print('init diaryview');
+    // print(inkling.localDocumentStorage.length);
+    // print(inkling.localDocumentStorage);
     // print(inkling.userProfile.toString());
     // print(_isEditingText.toString());
     super.initState();
@@ -334,9 +335,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   Future<void> downloadURLImage(String creatorID) async {
     String setUrl =
         await _storage.ref("$creatorID/${widget.documentId}").getDownloadURL();
-    setState(() {
-      _bucketUrl = setUrl;
-    });
+    if (mounted)
+      setState(() {
+        _bucketUrl = setUrl;
+      });
     // print(_bucketUrl);
   }
 
@@ -344,44 +346,74 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// RETRIEVE ENTRY FROM DB
 ///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
-    if (!mounted) return;
+    // if (!mounted) return;
+    if (inkling.localDocumentStorage.containsKey(documentId)) {
+      readEntryFromLocalStorage(documentId);
+      return;
+    }
 
-    print('called');
+    print('fetching from DB');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        // print('Document data: ${documentSnapshot.data()}');
-        // return documentSnapshot;
-      } else {
+      if (!documentSnapshot.exists)
         print('Document does not exist on the database');
+      if (documentSnapshot.data() != null) {
+        if (documentSnapshot.data()["content"]["image"] == true && mounted) {
+          downloadURLImage(documentSnapshot.data()["user_id"]);
+        } else {
+          _bucketUrl = '';
+        }
+        if (mounted)
+          setState(() {
+            inkling.activeEntry = documentSnapshot.data();
+            titleText = inkling.activeEntry["title"];
+            entryText = inkling.activeEntry["content"]["text"];
+            ownerId = inkling.activeEntry['user_id'];
+            if (inkling.activeEntry["content"].containsKey("spotify")) {
+              _spotifyUrl = inkling.activeEntry["content"]["spotify"];
+            } else {
+              _spotifyUrl = null;
+            }
+            _isEditingText = false;
+            _entryEditingController = TextEditingController(text: entryText);
+            _titleEditingController = TextEditingController(text: titleText);
+          });
       }
-      if (documentSnapshot.data()["content"]["image"] == true && mounted) {
-        downloadURLImage(documentSnapshot.data()["user_id"]);
-      } else {
-        _bucketUrl = '';
-      }
-      if (mounted)
-        setState(() {
-          inkling.activeEntry = documentSnapshot.data();
-          titleText = inkling.activeEntry["title"];
-          entryText = inkling.activeEntry["content"]["text"];
-          ownerId = inkling.activeEntry['user_id'];
-          // if (ownerId == _user.uid)
-          //   print(
-          //       inkling.activeEntry["content"].containsKey("spotify").toString());
-          if (inkling.activeEntry["content"].containsKey("spotify")) {
-            _spotifyUrl = inkling.activeEntry["content"]["spotify"];
-          } else {
-            _spotifyUrl = null;
-          }
-          // print(inkling.activeEntry);
-          _isEditingText = false;
-          _entryEditingController = TextEditingController(text: entryText);
-          _titleEditingController = TextEditingController(text: titleText);
-        });
       if (_spotifyUrl != null && mounted) {
         _getTrackByUrl();
       }
     });
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+  /// RETRIEVE ENTRY FROM LOCAL STORAGE
+///////////////////////////////////////////////////////////////////////
+  Future<void> readEntryFromLocalStorage(String documentId) async {
+    print('fetching from Local Storage');
+    Map<String, dynamic> document = inkling.localDocumentStorage[documentId];
+    // if (!mounted) return;
+    if (document["content"]["image"] == true && mounted) {
+      downloadURLImage(document["user_id"]);
+    } else {
+      _bucketUrl = '';
+    }
+    if (mounted)
+      setState(() {
+        inkling.activeEntry = document;
+        titleText = inkling.activeEntry["title"];
+        entryText = inkling.activeEntry["content"]["text"];
+        ownerId = inkling.activeEntry['user_id'];
+        if (inkling.activeEntry["content"].containsKey("spotify")) {
+          _spotifyUrl = inkling.activeEntry["content"]["spotify"];
+        } else {
+          _spotifyUrl = null;
+        }
+        _isEditingText = false;
+        _entryEditingController = TextEditingController(text: entryText);
+        _titleEditingController = TextEditingController(text: titleText);
+      });
+    if (_spotifyUrl != null && mounted) {
+      _getTrackByUrl();
+    }
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -493,7 +525,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   /// SAVE BUTTOON
 ///////////////////////////////////////////////////////////////////////
-  Widget _saveFloatingButton() {
+  Widget _saveButton() {
     return IconButton(
       onPressed: () => {
         if (_formKey.currentState.validate())
@@ -556,7 +588,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   ///////////////////////////////////////////////////////////////////////
   /// EDITMODE BUTTON
 ///////////////////////////////////////////////////////////////////////
-  Widget _editFloatingButton() {
+  Widget _editButton() {
     return IconButton(
       onPressed: () => {
         tempTitleText = titleText,
@@ -570,6 +602,43 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           }
       },
       icon: Icon(Icons.edit),
+    );
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// NEW ENTRY BUTTON
+///////////////////////////////////////////////////////////////////////
+  Widget _newEntryButton() {
+    return IconButton(
+      onPressed: () {
+        initSpeechState();
+        setState(() {
+          _isEditingText = true;
+          inkling.activeEntry = null;
+          if (ownerId != "") {
+            MainView.of(context).date = DateTime.now();
+          }
+          ownerId = "";
+          entryText = "";
+          titleText = "";
+          tempTitleText = "";
+          tempEntryText = "";
+          _image = null;
+          _bucketUrl = '';
+          lastWords = "";
+          lastError = "";
+          lastStatus = "";
+          _currentTrack = null;
+          _storedTrack = null;
+          _trackReady = false;
+          _spotifyUrl = null;
+          _entryEditingController = TextEditingController(text: entryText);
+          _titleEditingController =
+              TextEditingController(text: titleText); // = "";
+          MainView.of(context).documentIdReference = '';
+        });
+      },
+      icon: Icon(Icons.fiber_new),
     );
   }
 
@@ -731,6 +800,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .add(createdEntry)
         .then((value) => {
               setState(() {
+                // inkling.lastTimelineFetch = inkling
+                inkling.localDocumentStorage[value.id] = createdEntry;
+                print(inkling.localDocumentStorage[value.id]);
                 MainView.of(context).documentIdReference = value.id.toString();
                 ownerId = _user.uid;
                 inkling.activeEntry = createdEntry;
@@ -764,10 +836,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       checkPictureUpdate = true;
     Map<String, dynamic> updatedEntry = {
       'title': titleText,
-      'content': {'text': entryText, 'image': checkPictureUpdate},
+      'content': {
+        'text': entryText,
+        'image': checkPictureUpdate,
+        'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
+      },
+    };
+    inkling.localDocumentStorage[widget.documentId]['title'] = titleText;
+    inkling.localDocumentStorage[widget.documentId]['content'] = {
+      'text': entryText,
+      'image': checkPictureUpdate,
       'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
     };
-
     return entries
         .doc(widget.documentId)
         .update(updatedEntry)
@@ -819,29 +899,30 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       List tags = mlTagConverter(generatedText);
       //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns
       String selectedTagsString = await createTagAlert(context, tags);
-      setState(() {
-        _image = File(pickedFile.path);
-        if (currentText != null || currentText.trim() != '') {
-          if (location != null) {
-            entryText = currentText +
-                '\n' +
-                selectedTagsString +
-                '\n' +
-                "I went to $location ...  \n";
-          } else {
-            entryText = currentText + '\n' + selectedTagsString;
+      if (mounted)
+        setState(() {
+          _image = File(pickedFile.path);
+          if (currentText != null || currentText.trim() != '') {
+            if (location != null) {
+              entryText = currentText +
+                  '\n' +
+                  selectedTagsString +
+                  '\n' +
+                  "I went to $location ...  \n";
+            } else {
+              entryText = currentText + '\n' + selectedTagsString;
+            }
+          } else if (currentText == null || currentText.trim() == '') {
+            if (location != null) {
+              entryText =
+                  selectedTagsString + "\n" + "I went to $location ...  \n";
+            } else {
+              entryText = selectedTagsString;
+            }
           }
-        } else if (currentText == null || currentText.trim() == '') {
-          if (location != null) {
-            entryText =
-                selectedTagsString + "\n" + "I went to $location ...  \n";
-          } else {
-            entryText = selectedTagsString;
-          }
-        }
 
-        _entryEditingController = TextEditingController(text: entryText);
-      });
+          _entryEditingController = TextEditingController(text: entryText);
+        });
     }
   }
 
@@ -929,15 +1010,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
   Future<void> _initializeSpotify() async {
     var token = fetchSpotifyToken();
-    setState(() {
-      _spotifyToken = token;
-    });
+    if (mounted)
+      setState(() {
+        _spotifyToken = token;
+      });
 
     if (_spotifyToken != null) {
       print("updating for token $_spotifyToken");
-      setState(() {
-        _todaysTracks = [];
-      });
+      if (mounted)
+        setState(() {
+          _todaysTracks = [];
+        });
     }
     await _updateLatestSpotifyTrack();
   }
@@ -945,9 +1028,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   _updateLatestSpotifyTrack() async {
     await loadSpotifyTrack();
     await loadTodaysTracks();
-    setState(() {
-      _todaysTracks = fetchTodaysTracks();
-    });
+    if (mounted)
+      setState(() {
+        _todaysTracks = fetchTodaysTracks();
+      });
   }
 
   _selectTrackPopup(context) {
@@ -1025,9 +1109,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               onPressed: () async {
                 await getSpotifyAuth();
                 var token = fetchSpotifyToken();
-                setState(() {
-                  _spotifyToken = token;
-                });
+                if (mounted)
+                  setState(() {
+                    _spotifyToken = token;
+                  });
                 Navigator.pop(context);
               }),
           DialogButton(
@@ -1074,18 +1159,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   _getTrackByUrl() async {
     if (_spotifyUrl != null) {
       await getTrackByUrl(_spotifyUrl);
-      setState(() {
-        _storedTrack = fetchStoredTrack();
-        _trackReady = true;
-      });
+      if (mounted)
+        setState(() {
+          _storedTrack = fetchStoredTrack();
+          _trackReady = true;
+        });
     }
   }
 
   Widget callAction() {
-    if (_isEditingText == true)
-      return _saveFloatingButton();
+    if (_isEditingText == true) return _saveButton();
+    if (_isEditingText == false && ownerId != _user.uid)
+      return _newEntryButton();
     else
-      return _editFloatingButton();
+      return _editButton();
   }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1203,110 +1290,214 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 updateJournalsListName)),
         // body: AnnotatedRegion<SystemUiOverlayStyle>(
         // value: SystemUiOverlayStyle.light,
-        body: Container(
-          margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-          decoration: BoxDecoration(
-              // color: Colors.white, // background color
-              ),
-          child: Card(
-            elevation: 5,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0)),
-            child: ListView(
-              children: <Widget>[
-                // if image is null
-                _image == null
-                    ? (_bucketUrl == ''
-                        // if no image is being loaded from the DB
-                        ? Image.asset(
-                            'assets/Inkling_Login.png',
-                            width: MediaQuery.of(context).size.width - 20,
-                            semanticLabel: "Inkling Logo",
-                          )
-                        // if an image is being loaded from the DB
-                        : FadeInImage(
-                            image: NetworkImage(_bucketUrl),
-                            placeholder: AssetImage(
-                                "assets/placeholder_transparent.gif"),
-                            fit: BoxFit.cover))
-                    // if image is has been selected
-                    : Image.file(
-                        _image,
-                        fit: BoxFit.cover,
-                      ),
-                SizedBox(height: MediaQuery.of(context).size.height / 20),
-                Center(
-                  child: Text(dateToHumanReadable(widget.activeDate)),
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height / 20),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                  child: Center(
-                    child: _entryText(),
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(context).size.height / 20),
-
-                if (_trackReady) _storedSpotifyTrack(),
-
-                if (_isEditingText == false && ownerId != _user.uid)
-                  Center(
-                    // alignment: FractionalOffset.bottomRight,
-                    child: FlatButton(
-                      color: Colors.purpleAccent,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
+        body: widget.documentId == "" && _isEditingText == false
+            ? Center(
+                child: Stack(
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                          image: DecorationImage(
+                            image: AssetImage('assets/place.jpg'),
+                            // width: double.infinity,
+                            fit: BoxFit.cover,
+                          )), // color: Colors.redAccent,
+                      // ),
+                      alignment: Alignment.center,
+                      // child: Image(
+                      //   image: AssetImage('assets/place.jpg'),
+                      //   // height: 250,
+                      //   width: double.infinity,
+                      //   fit: BoxFit.cover,
+                      // ),
+                    ),
+                    Container(
+                        alignment: Alignment.center,
                         child: Text(
-                          buttonText,
-                          style: TextStyle(fontSize: 25, color: Colors.white),
+                          'Tap new,\n and create a new entry\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30.0,
+                            shadows: [
+                              Shadow(
+                                  // bottomLeft
+                                  offset: Offset(-1.5, -1.5),
+                                  color: Colors.black),
+                              Shadow(
+                                  // bottomRight
+                                  offset: Offset(1.5, -1.5),
+                                  color: Colors.black),
+                              Shadow(
+                                  // topRight
+                                  offset: Offset(1.5, 1.5),
+                                  color: Colors.black),
+                              Shadow(
+                                  // topLeft
+                                  offset: Offset(-1.5, 1.5),
+                                  color: Colors.black),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              )
+            : Container(
+                margin: const EdgeInsets.only(left: 10.0, right: 10.0),
+                decoration: BoxDecoration(
+                    // color: Colors.white, // background color
+                    ),
+                child: Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0)),
+                  child: ListView(
+                    children: <Widget>[
+                      // if image is null
+                      _image == null
+                          ? (_bucketUrl == ''
+                              // if no image is being loaded from the DB
+                              ? Stack(
+                                  children: <Widget>[
+                                    Container(
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              3,
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(8.0)),
+                                          image: DecorationImage(
+                                            image: AssetImage(
+                                                'assets/addphoto.jpg'),
+                                            fit: BoxFit.cover,
+                                          )),
+                                      alignment: Alignment.center,
+                                    ),
+                                    Container(
+                                        height:
+                                            MediaQuery.of(context).size.height /
+                                                3,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          'Tell more of your journey\nwith a photo.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 28.0,
+                                            shadows: [
+                                              Shadow(
+                                                  // bottomLeft
+                                                  offset: Offset(-1.5, -1.5),
+                                                  color: Colors.black),
+                                              Shadow(
+                                                  // bottomRight
+                                                  offset: Offset(1.5, -1.5),
+                                                  color: Colors.black),
+                                              Shadow(
+                                                  // topRight
+                                                  offset: Offset(1.5, 1.5),
+                                                  color: Colors.black),
+                                              Shadow(
+                                                  // topLeft
+                                                  offset: Offset(-1.5, 1.5),
+                                                  color: Colors.black),
+                                            ],
+                                          ),
+                                        )),
+                                  ],
+                                )
+
+                              // Image.asset(
+                              //     'assets/Inkling_Login.png',
+                              //     width: MediaQuery.of(context).size.width - 20,
+                              //     semanticLabel: "Inkling Logo",
+                              //   )
+                              // if an image is being loaded from the DB
+                              : FadeInImage(
+                                  image: NetworkImage(_bucketUrl),
+                                  placeholder: AssetImage(
+                                      "assets/placeholder_transparent.gif"),
+                                  fit: BoxFit.cover))
+                          // if image is has been selected
+                          : Image.file(
+                              _image,
+                              fit: BoxFit.cover,
+                            ),
+                      SizedBox(height: MediaQuery.of(context).size.height / 30),
+                      Center(
+                        child: Text(dateToHumanReadable(widget.activeDate)),
+                      ),
+                      SizedBox(height: MediaQuery.of(context).size.height / 30),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15.0, right: 15.0),
+                        child: Center(
+                          child: _entryText(),
                         ),
                       ),
-                      // elevation: 5,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40)),
-                      onPressed: () {
-                        initSpeechState();
-                        setState(() {
-                          // tempTitleText = titleText;
-                          // tempEntryText = entryText;
-                          _isEditingText = true;
+                      SizedBox(height: MediaQuery.of(context).size.height / 20),
 
-                          inkling.activeEntry = null;
-                          if (ownerId != "") {
-                            MainView.of(context).date = DateTime.now();
-                          }
-                          ownerId = "";
-                          entryText = "";
-                          titleText = "";
-                          tempTitleText = "";
-                          tempEntryText = "";
-                          _image = null;
-                          _bucketUrl = '';
-                          lastWords = "";
-                          lastError = "";
-                          lastStatus = "";
-                          _currentTrack = null;
-                          _storedTrack = null;
-                          _trackReady = false;
-                          _spotifyUrl = null;
-                          _entryEditingController =
-                              TextEditingController(text: entryText);
-                          _titleEditingController =
-                              TextEditingController(text: titleText); // = "";
-                          MainView.of(context).documentIdReference = '';
-                        });
-                      },
-                    ),
+                      if (_trackReady) _storedSpotifyTrack(),
+
+                      // if (_isEditingText == false && ownerId != _user.uid)
+                      //   Center(
+                      //     // alignment: FractionalOffset.bottomRight,
+                      //     child: FlatButton(
+                      //       color: Colors.purpleAccent,
+                      //       child: Padding(
+                      //         padding: const EdgeInsets.all(8.0),
+                      //         child: Text(
+                      //           buttonText,
+                      //           style: TextStyle(fontSize: 25, color: Colors.white),
+                      //         ),
+                      //       ),
+                      //       // elevation: 5,
+                      //       shape: RoundedRectangleBorder(
+                      //           borderRadius: BorderRadius.circular(40)),
+                      //       onPressed: () {
+                      //         initSpeechState();
+                      //         setState(() {
+                      //           // tempTitleText = titleText;
+                      //           // tempEntryText = entryText;
+                      //           _isEditingText = true;
+
+                      //           inkling.activeEntry = null;
+                      //           if (ownerId != "") {
+                      //             MainView.of(context).date = DateTime.now();
+                      //           }
+                      //           ownerId = "";
+                      //           entryText = "";
+                      //           titleText = "";
+                      //           tempTitleText = "";
+                      //           tempEntryText = "";
+                      //           _image = null;
+                      //           _bucketUrl = '';
+                      //           lastWords = "";
+                      //           lastError = "";
+                      //           lastStatus = "";
+                      //           _currentTrack = null;
+                      //           _storedTrack = null;
+                      //           _trackReady = false;
+                      //           _spotifyUrl = null;
+                      //           _entryEditingController =
+                      //               TextEditingController(text: entryText);
+                      //           _titleEditingController =
+                      //               TextEditingController(text: titleText); // = "";
+                      //           MainView.of(context).documentIdReference = '';
+                      //         });
+                      //       },
+                      //     ),
+                      //   ),
+                      // SizedBox(height: MediaQuery.of(context).size.height / 20),
+                    ],
                   ),
-                SizedBox(height: MediaQuery.of(context).size.height / 20),
-              ],
-            ),
-          ),
-        ),
+                ),
+              ),
         floatingActionButton: speedDial(),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      ),
+      ), // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+    // );
   }
 }
 // setState(() {

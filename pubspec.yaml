@@ -79,8 +79,6 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/
-    - assets/select_image.png
-    - assets/onBoarding1.jpeg
     - assets/model.tflite
     - assets/labels.txt
     - .env

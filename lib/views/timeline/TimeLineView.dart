@@ -7,6 +7,7 @@ import '../../managers/Spotify.dart';
 import '../../managers/pageView.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import '../../managers/userInfo.dart' as inkling;
 
 class TimeLineView extends StatefulWidget {
   LiquidController liquidController;
@@ -18,6 +19,7 @@ class TimeLineView extends StatefulWidget {
 
 class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
+
   var _storedTrack;
   var _spotifyToken;
   Future<QuerySnapshot> userRetrievalQuery;
@@ -67,38 +69,63 @@ class _TimeLineView extends State<TimeLineView> {
   }
 
   void parseQuery(DateTime date) {
-    if (!mounted) return;
-    if (date == null) date = today;
-    userRetrievalQuery = fireStoreUserQuery(date);
-    userRetrievalQuery.then((value) => {
-          value.docs.forEach((element) {
-            print(element.data());
-            Map<String, dynamic> entry = element.data();
-            if (entry["content"]["image"] == true && mounted) {
-              downloadURLImage(entry["user_id"], element.id).then((value) => {
-                    entry["imageUrl"] = value,
-                    pushToList(entry),
-                  });
-            } else {
-              pushToList(entry);
-            }
-          })
-        });
-    sharedRetrievalQuery = fireStoreSharedQuery(date);
-    sharedRetrievalQuery.then((value) => {
-          value.docs.forEach((element) {
-            print(element.data());
-            Map<String, dynamic> entry = element.data();
-            if (entry["content"]["image"] == true && mounted) {
-              downloadURLImage(entry["user_id"], element.id).then((value) => {
-                    entry["imageUrl"] = value,
-                    pushToList(entry),
-                  });
-            } else {
-              pushToList(entry);
-            }
-          })
-        });
+    // if (inkling.lastTimelineFetch != null &&
+    // DateTime.now().difference(inkling.lastTimelineFetch).inMinutes > 1) {}
+    print('difference');
+
+    // if (inkling.lastTimelineFetch != null &&
+    //     DateTime.now().difference(inkling.lastTimelineFetch).inMinutes < 2) {
+    //   print(DateTime.now().difference(inkling.lastTimelineFetch).inMinutes > 1);
+    //   print(DateTime.now().difference(inkling.lastTimelineFetch).inMinutes);
+    //   print('calling from storage');
+    //   inkling.localDocumentStorage.forEach((documentId, entry) {
+    //     if (entry["content"]["image"] == true && mounted) {
+    //       downloadURLImage(entry["user_id"], documentId).then((value) => {
+    //             entry["imageUrl"] = value,
+    //             pushToList(entry),
+    //           });
+    //     } else {
+    //       pushToList(entry);
+    //     }
+    //   });
+    // } else {
+      if (date == null) date = today;
+      userRetrievalQuery = fireStoreUserQuery(date);
+      userRetrievalQuery.then((value) => {
+            value.docs.forEach((element) {
+              // print(element.data());
+              Map<String, dynamic> entry = element.data();
+              inkling.addToLocalStorage(element.id, entry);
+              if (entry["content"]["image"] == true && mounted) {
+                downloadURLImage(entry["user_id"], element.id).then((value) => {
+                      entry["imageUrl"] = value,
+                      pushToList(entry),
+                    });
+              } else {
+                pushToList(entry);
+              }
+            })
+          });
+      sharedRetrievalQuery = fireStoreSharedQuery(date);
+      sharedRetrievalQuery.then((value) => {
+            value.docs.forEach((element) {
+              // print(element.data());
+              Map<String, dynamic> entry = element.data();
+              inkling.addToLocalStorage(element.id, entry);
+              if (entry["content"]["image"] == true && mounted) {
+                downloadURLImage(entry["user_id"], element.id).then((value) => {
+                      entry["imageUrl"] = value,
+                      pushToList(entry),
+                    });
+              } else {
+                pushToList(entry);
+              }
+            }),
+            // inkling.lastTimelineFetch = DateTime.now(),
+            // inkling.timeSinceLastFetch =
+            //     DateTime.now().difference(inkling.lastTimelineFetch),
+          });
+    // }
   }
 
   void initState() {
@@ -140,8 +167,10 @@ class _TimeLineView extends State<TimeLineView> {
       ),
       body: createListView(context, display),
       floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            {widget.liquidController.animateToPage(page: 3, duration: 750)},
+        onPressed: () => {
+          MainView.of(context).documentIdReference = '',
+          widget.liquidController.animateToPage(page: 3, duration: 750)
+        },
         child: Icon(Icons.add),
       ),
     );

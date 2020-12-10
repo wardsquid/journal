@@ -227,7 +227,7 @@ class _CalendarState extends State<Calendar> {
 ///////////////////////////////////////////////////////////////////////
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
-    print(first.toString());
+    // print(first.toString());
     getCalendarEntries(first);
   }
 
