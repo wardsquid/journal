@@ -179,14 +179,39 @@ class _CalendarState extends State<Calendar> {
               }),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
+      body: Center (
+        child: Stack(
           children: <Widget>[
-            _buildTableCalendar(),
-            Expanded(child: _buildEntryList()),
+            Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                _buildTableCalendar(),
+                Expanded(child: _buildEntryList()),
+              ],
+            ),
+            Container(
+              alignment: Alignment.center,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.chevron_left_rounded,
+                    size: 80.0,
+                    color: Colors.black,
+                  ),
+                  Spacer(),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 80.0,
+                    color: Colors.black
+                  ,)                          
+                ],
+              ),
+            ), 
           ],
-        ),
+        )
+        
+        
+
       ),
       floatingActionButton: FloatingActionButton.extended(
         label: Text("New Entry"),
