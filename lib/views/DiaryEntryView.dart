@@ -897,6 +897,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       List<String> generatedText = generateText(labelMap);
       //converts the array of related prompt strings into the prompt tags to be displayed in the alert box
       List tags = mlTagConverter(generatedText);
+      print("TAGS: $tags");
       //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns
       String selectedTagsString = await createTagAlert(context, tags);
       if (mounted)
@@ -964,7 +965,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           if (location != null) {
             entryText = currentText +
                 '\n' +
+                '\n' +
                 selectedTagsString +
+                '\n' +
                 '\n' +
                 "I went to $location ...  \n";
           } else {
@@ -1312,6 +1315,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       //   fit: BoxFit.cover,
                       // ),
                     ),
+                    // Container(
+                    //   alignment: Alignment.center,
+                    // ), //chevron icons
                     Container(
                         alignment: Alignment.center,
                         child: Text(
