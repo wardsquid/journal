@@ -241,6 +241,7 @@ class _CalendarState extends State<Calendar> {
       child: TableCalendar(
         calendarController: _calendarController,
         events: _entries,
+        availableGestures: AvailableGestures.verticalSwipe,
         startingDayOfWeek: StartingDayOfWeek.monday,
         calendarStyle: CalendarStyle(
           selectedColor: Colors.deepOrange[400],
