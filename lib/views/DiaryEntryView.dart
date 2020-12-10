@@ -347,8 +347,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
     // if (!mounted) return;
-    if (inkling.localDocumentStorage.containsKey(documentId)) {
-      readEntryFromLocalStorage(documentId);
+    if (inkling.orderedListIDMap.containsKey(documentId)) {
+      readEntryFromLocalStorage((inkling.orderedListIDMap[documentId]));
+      print('called from localList');
       return;
     }
 
@@ -387,12 +388,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   ///////////////////////////////////////////////////////////////////////
   /// RETRIEVE ENTRY FROM LOCAL STORAGE
 ///////////////////////////////////////////////////////////////////////
-  Future<void> readEntryFromLocalStorage(String documentId) async {
+  Future<void> readEntryFromLocalStorage(int index) async {
     print('fetching from Local Storage');
-    Map<String, dynamic> document = inkling.localDocumentStorage[documentId];
+
+    Map<String, dynamic> document = inkling.orderedList[index];
+    print(document.toString());
     // if (!mounted) return;
-    if (document["content"]["image"] == true && mounted) {
-      downloadURLImage(document["user_id"]);
+    if (document["content"]["image"] == true &&
+        document["imageUrl"].length > 0 &&
+        mounted) {
+      _bucketUrl = document["imageUrl"];
     } else {
       _bucketUrl = '';
     }
