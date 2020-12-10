@@ -6,6 +6,7 @@ import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../managers/DateToHuman.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import '../managers/userInfo.dart' as inkling;
 
 class Calendar extends StatefulWidget {
   final String title;
@@ -110,6 +111,8 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> _deleteEntry(docId) {
+    inkling.localDocumentStorage.remove(widget.documentId);
+
     return entries.doc(docId).delete().then((value) {
       getCalendarEntries(_selectedDay);
       Navigator.of(context).pop();

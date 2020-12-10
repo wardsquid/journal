@@ -1226,6 +1226,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _storedTrack = null;
         _trackReady = false;
         _spotifyUrl = null; // = "";
+        inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
       Navigator.of(context).pop();

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -89,42 +91,42 @@ class _TimeLineView extends State<TimeLineView> {
     //     }
     //   });
     // } else {
-      if (date == null) date = today;
-      userRetrievalQuery = fireStoreUserQuery(date);
-      userRetrievalQuery.then((value) => {
-            value.docs.forEach((element) {
-              // print(element.data());
-              Map<String, dynamic> entry = element.data();
-              inkling.addToLocalStorage(element.id, entry);
-              if (entry["content"]["image"] == true && mounted) {
-                downloadURLImage(entry["user_id"], element.id).then((value) => {
-                      entry["imageUrl"] = value,
-                      pushToList(entry),
-                    });
-              } else {
-                pushToList(entry);
-              }
-            })
-          });
-      sharedRetrievalQuery = fireStoreSharedQuery(date);
-      sharedRetrievalQuery.then((value) => {
-            value.docs.forEach((element) {
-              // print(element.data());
-              Map<String, dynamic> entry = element.data();
-              inkling.addToLocalStorage(element.id, entry);
-              if (entry["content"]["image"] == true && mounted) {
-                downloadURLImage(entry["user_id"], element.id).then((value) => {
-                      entry["imageUrl"] = value,
-                      pushToList(entry),
-                    });
-              } else {
-                pushToList(entry);
-              }
-            }),
-            // inkling.lastTimelineFetch = DateTime.now(),
-            // inkling.timeSinceLastFetch =
-            //     DateTime.now().difference(inkling.lastTimelineFetch),
-          });
+    if (date == null) date = today;
+    userRetrievalQuery = fireStoreUserQuery(date);
+    userRetrievalQuery.then((value) => {
+          value.docs.forEach((element) {
+            // print(element.data());
+            Map<String, dynamic> entry = element.data();
+            // inkling.addToLocalStorage(element.id, entry);
+            if (entry["content"]["image"] == true && mounted) {
+              downloadURLImage(entry["user_id"], element.id).then((value) => {
+                    entry["imageUrl"] = value,
+                    pushToList(entry),
+                  });
+            } else {
+              pushToList(entry);
+            }
+          })
+        });
+    sharedRetrievalQuery = fireStoreSharedQuery(date);
+    sharedRetrievalQuery.then((value) => {
+          value.docs.forEach((element) {
+            // print(element.data());
+            Map<String, dynamic> entry = element.data();
+            // inkling.addToLocalStorage(element.id, entry);
+            if (entry["content"]["image"] == true && mounted) {
+              downloadURLImage(entry["user_id"], element.id).then((value) => {
+                    entry["imageUrl"] = value,
+                    pushToList(entry),
+                  });
+            } else {
+              pushToList(entry);
+            }
+          }),
+          // inkling.lastTimelineFetch = DateTime.now(),
+          // inkling.timeSinceLastFetch =
+          //     DateTime.now().difference(inkling.lastTimelineFetch),
+        });
     // }
   }
 
