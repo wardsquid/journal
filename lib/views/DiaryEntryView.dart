@@ -2,7 +2,7 @@ import 'package:inkling/managers/DateToHuman.dart';
 import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-
+import 'timeline/TimeLineView.dart';
 // dart imports
 import 'dart:io';
 import 'dart:convert';
@@ -822,6 +822,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               }),
               if (_image != null)
                 {
+                  ////
+                  // inkling.lastTimelineFetch = null,
                   _storage
                       .ref("${_user.uid}/${value.id}")
                       .putFile(_image)
@@ -831,12 +833,11 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         .getDownloadURL()
                         .then((url) {
                       createdEntry["imageUrl"] = url;
-                      setState(() {
-                        inkling.orderedListIDMap
-                            .forEach((key, value) => value = value + 1);
-                        inkling.orderedListIDMap[value.id.toString()] = 0;
-                        inkling.orderedList.insert(0, createdEntry);
-                      });
+                      // setState(() {
+                      inkling.orderedListIDMap
+                          .forEach((key, value) => value = value + 1);
+                      inkling.orderedListIDMap[value.id.toString()] = 0;
+                      inkling.orderedList.insert(0, createdEntry);
                     });
                   }).catchError(
                           (error) => print("Failed to upload photo: $error"))
@@ -877,12 +878,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       'image': checkPictureUpdate,
       'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
     };
+
     return entries
         .doc(widget.documentId)
         .update(updatedEntry)
         .then((value) => {
               if (_image != null)
                 {
+                  // inkling.lastTimelineFetch = null,
+                  // inkling.orderedList[index]["imageUrl"] = '',
+                  // inkling.orderedList[index]["doc_id"] = widget.documentId,
                   _storage
                       .ref(
                           "${inkling.activeEntry['user_id']}/${widget.documentId}")

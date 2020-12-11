@@ -194,6 +194,13 @@ class _TimeLineView extends State<TimeLineView> {
 
   Widget timeLineCard(BuildContext context, Map<String, dynamic> entry) {
     if (!mounted) return null;
+    if (entry['imageUrl'] == '') {
+      downloadURLImage(entry["user_id"], entry["doc_id"]).then((value) => {
+            setState(() {
+              entry["imageUrl"] = value;
+            })
+          });
+    }
     Widget imageFadeIn;
     if (entry['imageUrl'] != null)
       imageFadeIn = new Padding(
