@@ -98,9 +98,11 @@ List<String> generateText(Map<String, double> labelMap) {
   // ]);
   // List<String> bento = List.from(['bento']);
   List<String> dogPrompts = List.from([
-    'I spent time with...',
-    'We went to...',
-    'Whenever I play with...',
+    'How did spending time with... make you feel?',
+    'How did you spend your time with...?',
+    'When do you need ... the most?',
+    'What memory did you make with...',
+    'Who is this cutie?!'
   ]);
   List<String> parkPrompts = List.from([
     'The park was so...today',

@@ -83,6 +83,16 @@ class _MainViewState extends State<MainView> {
         ),
         Container(
           color: Colors.red,
+          alignment: Alignment.center,
+          child: Row(
+            children: [
+              Icon(
+                Icons.chevron_left_rounded,
+                size: 80.0,
+                color: Colors.white,
+                )                        
+            ],
+          ),
         ),
       ],
     );

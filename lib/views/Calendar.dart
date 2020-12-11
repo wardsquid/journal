@@ -167,7 +167,7 @@ class _CalendarState extends State<Calendar> {
         leading: IconButton(
           icon: Icon(Icons.home),
           onPressed: () {
-            widget.liquidController.animateToPage(page: 2, duration: 750);
+            widget.liquidController.jumpToPage(page: 2);
           },
         ),
         title: Text("Calendar"),
@@ -176,18 +176,43 @@ class _CalendarState extends State<Calendar> {
           IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
-                widget.liquidController.animateToPage(page: 3, duration: 750);
+                widget.liquidController.jumpToPage(page: 3);
               }),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
+      body: Center (
+        child: Stack(
           children: <Widget>[
-            _buildTableCalendar(),
-            Expanded(child: _buildEntryList()),
+            Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                _buildTableCalendar(),
+                Expanded(child: _buildEntryList()),
+              ],
+            ),
+            Container(
+              alignment: Alignment.center,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.chevron_left_rounded,
+                    size: 80.0,
+                    color: Colors.black,
+                  ),
+                  Spacer(),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 80.0,
+                    color: Colors.black
+                  ,)                          
+                ],
+              ),
+            ), 
           ],
-        ),
+        )
+        
+        
+
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Color(0xFFFA6164),
@@ -195,10 +220,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
-          widget.liquidController.animateToPage(page: 3, duration: 750
-              // 2,
-              //   duration: Duration(milliseconds: 300), curve: Curves.easeIn
-              ),
+          widget.liquidController.jumpToPage(page: 3),
         },
         // _makeEntry,
         tooltip: 'New Entry',
@@ -246,6 +268,7 @@ class _CalendarState extends State<Calendar> {
       child: TableCalendar(
         calendarController: _calendarController,
         events: _entries,
+        availableGestures: AvailableGestures.verticalSwipe,
         startingDayOfWeek: StartingDayOfWeek.monday,
         calendarStyle: CalendarStyle(
           selectedColor: Color(0xFFFA6164),
@@ -309,7 +332,7 @@ class _CalendarState extends State<Calendar> {
                               MainView.of(context).documentIdReference =
                                   event['doc_id'],
                               widget.liquidController
-                                  .animateToPage(page: 3, duration: 750)
+                                  .jumpToPage(page: 3)
                             }),
                   ],
                 ),
