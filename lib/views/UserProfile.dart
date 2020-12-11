@@ -224,8 +224,9 @@ class _UserProfile extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.orange,
+      backgroundColor: Color(0xFF2C4096),
       appBar: AppBar(
+        backgroundColor: Color(0xFF8BBEF3),
         leading: IconButton(
           icon: Icon(Icons.home),
           onPressed: () {
@@ -244,13 +245,13 @@ class _UserProfile extends State<UserProfile> {
       ),
       resizeToAvoidBottomInset: false,
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: [Colors.blue[100], Colors.blue[400]],
-          ),
-        ),
+        // decoration: BoxDecoration(
+        //   gradient: LinearGradient(
+        //     begin: Alignment.topRight,
+        //     end: Alignment.bottomLeft,
+        //     colors: [Colors.blue[100], Colors.blue[400]],
+        //   ),
+        // ),
         child: Center(
           child: SingleChildScrollView(
             child: Column(

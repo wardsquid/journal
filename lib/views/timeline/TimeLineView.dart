@@ -146,8 +146,9 @@ class _TimeLineView extends State<TimeLineView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: Color(0xFF2C4096),
       appBar: AppBar(
+        backgroundColor: Colors.orange[300],
         leading: IconButton(
           icon: Icon(Icons.calendar_today),
           onPressed: () {

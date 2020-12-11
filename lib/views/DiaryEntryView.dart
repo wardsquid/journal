@@ -822,11 +822,31 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   _storage
                       .ref("${_user.uid}/${value.id}")
                       .putFile(_image)
-                      .then((value) => print("Photo Uploaded Successfully"))
-                      .catchError(
+                      .then((uploadReturn) {
+                    _storage
+                        .ref(uploadReturn.ref.fullPath)
+                        .getDownloadURL()
+                        .then((url) {
+                      createdEntry["imageUrl"] = url;
+                      setState(() {
+                        inkling.orderedListIDMap
+                            .forEach((key, value) => value = value + 1);
+                        inkling.orderedListIDMap[widget.documentId] = 0;
+                        inkling.orderedList.insert(0, createdEntry);
+                      });
+                    });
+                  }).catchError(
                           (error) => print("Failed to upload photo: $error"))
-                },
-              // print(value.id),
+                }
+              else
+                {
+                  setState(() {
+                    inkling.orderedListIDMap
+                        .forEach((key, value) => value = value + 1);
+                    inkling.orderedListIDMap[widget.documentId] = 0;
+                    inkling.orderedList.insert(0, createdEntry);
+                  })
+                }
             })
         .catchError((error) => print("Failed to add entry: $error"));
   }
