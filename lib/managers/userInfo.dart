@@ -9,7 +9,7 @@ Map<String, dynamic> userProfile;
 Map<String, dynamic> activeEntry;
 String currentJournal;
 Map<String, dynamic> currentlySharingWith;
-Map<String, dynamic> localDocumentStorage = {};
+// Map<String, dynamic> localDocumentStorage = {};
 DateTime
     lastTimelineFetch; //= DateTime.now().subtract(new Duration(minutes: 5));
 DateTime
@@ -36,11 +36,11 @@ void updateJournal() {
   currentJournal = userProfile['journals_list'][0].toString();
 }
 
-void addToLocalStorage(String documentId, Map<String, dynamic> document) {
-  // print(documentId);
-  // print(document);
-  localDocumentStorage[documentId] = document;
-}
+// void addToLocalStorage(String documentId, Map<String, dynamic> document) {
+//   // print(documentId);
+//   // print(document);
+//   localDocumentStorage[documentId] = document;
+// }
 ///////////////////////////////////////////////
 /// import 'userInfo.dart' as inkling;
 /// inkling.userProfile

@@ -111,7 +111,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> _deleteEntry(docId) {
-    inkling.localDocumentStorage.remove(widget.documentId);
+    // inkling.localDocumentStorage.remove(widget.documentId);
 
     return entries.doc(docId).delete().then((value) {
       getCalendarEntries(_selectedDay);

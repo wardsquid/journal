@@ -97,7 +97,7 @@ class _TimeLineView extends State<TimeLineView> {
             Map<String, dynamic> entry = element.data();
             // if (entry['timestamp'].runtimeType == Timestamp)
             //   entry['timestamp'] = entry['timestamp'].toDate();
-            inkling.addToLocalStorage(element.id, entry);
+            // inkling.addToLocalStorage(element.id, entry);
 
             if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
