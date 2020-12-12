@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'LoginPage.dart';
 import '../managers/SignIn.dart';
 import '../managers/Firebase.dart';
@@ -267,7 +268,7 @@ class _UserProfile extends State<UserProfile> {
                           radius: 60,
                           backgroundColor: Colors.transparent,
                         ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 30),
                         Text(
                           'NAME',
                           style: TextStyle(
@@ -297,7 +298,7 @@ class _UserProfile extends State<UserProfile> {
                               color: Colors.deepPurple,
                               fontWeight: FontWeight.bold),
                         ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 30),
                         RaisedButton(
                           onPressed: () async {
                             _openReminderPopup(context);
@@ -315,29 +316,7 @@ class _UserProfile extends State<UserProfile> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40)),
                         ),
-                        SizedBox(height: 40),
-                        RaisedButton(
-                          onPressed: () {
-                            signOutGoogle();
-                            Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(builder: (context) {
-                              return LoginPage();
-                            }), ModalRoute.withName('/'));
-                          },
-                          color: Colors.deepPurple,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Sign Out',
-                              style:
-                                  TextStyle(fontSize: 25, color: Colors.white),
-                            ),
-                          ),
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40)),
-                        ),
-                        SizedBox(height: 40),
+                        SizedBox(height: 30),
                         RaisedButton(
                           color: Colors.deepPurple,
                           child: Padding(
@@ -360,12 +339,27 @@ class _UserProfile extends State<UserProfile> {
                                 barrierDismissible: false);
                           },
                         ),
-                        SizedBox(height: 80),
-                        Linkable(
-                          linkColor: Colors.white,
-                          textColor: Colors.deepPurple,
-                          text:
-                              "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
+                        SizedBox(height: 30),
+                        RaisedButton(
+                          onPressed: () {
+                            signOutGoogle();
+                            Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (context) {
+                              return LoginPage();
+                            }), ModalRoute.withName('/'));
+                          },
+                          color: Colors.deepPurple,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Sign Out',
+                              style:
+                                  TextStyle(fontSize: 25, color: Colors.white),
+                            ),
+                          ),
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40)),
                         ),
                       ],
                     ),
@@ -382,6 +376,18 @@ class _UserProfile extends State<UserProfile> {
                   ],
                 ),
               ),
+              Container(
+                alignment: Alignment.bottomCenter,
+                padding: EdgeInsets.only(bottom: 10, right: 10),
+                child: InkWell(
+                  child: Text(
+                    "Privacy Policy",
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  onTap: () =>
+                      launch("https://sites.google.com/view/inkling-policy"),
+                ),
+              )
             ],
           ),
         ));
