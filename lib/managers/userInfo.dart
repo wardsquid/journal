@@ -23,12 +23,13 @@ Map<String, dynamic> activeEntry = {
 };
 String currentJournal;
 Map<String, dynamic> currentlySharingWith;
-Map<String, dynamic> localDocumentStorage = {};
+// Map<String, dynamic> localDocumentStorage = {};
 DateTime
     lastTimelineFetch; //= DateTime.now().subtract(new Duration(minutes: 5));
 DateTime
     lastCalendarFetch; //= DateTime.now().subtract(new Duration(minutes: 5));
-Duration timeSinceLastFetch = new Duration(minutes: 5);
+List<Map<String, dynamic>> orderedList = [];
+Map<String, int> orderedListIDMap = {};
 
 Future<void> initializeUserCaching() async {
   currentJournal = null;
@@ -49,15 +50,11 @@ void updateJournal() {
   currentJournal = userProfile['journals_list'][0].toString();
 }
 
-void addToLocalStorage(String documentId, Map<String, dynamic> document) {
-  // print(documentId);
-  // print(document);
-  localDocumentStorage[documentId] = document;
-  if (localDocumentStorage[documentId]['timestamp'].runtimeType == Timestamp) {
-    localDocumentStorage[documentId]['timestamp'] =
-        localDocumentStorage[documentId]['timestamp'].toDate();
-  }
-}
+// void addToLocalStorage(String documentId, Map<String, dynamic> document) {
+//   // print(documentId);
+//   // print(document);
+//   localDocumentStorage[documentId] = document;
+// }
 ///////////////////////////////////////////////
 /// import 'userInfo.dart' as inkling;
 /// inkling.userProfile

@@ -123,7 +123,7 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> _deleteEntry(docId) {
-    inkling.localDocumentStorage.remove(widget.documentId);
+    // inkling.localDocumentStorage.remove(widget.documentId);
     return entries.doc(docId).delete().then((value) {
       getCalendarEntries(_selectedDay);
       Navigator.of(context).pop();
@@ -172,8 +172,9 @@ class _CalendarState extends State<Calendar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green,
+      backgroundColor: Color(0xFF2C4096),
       appBar: AppBar(
+        backgroundColor: Color(0xFFFA6164),
         leading: IconButton(
           icon: Icon(Icons.home),
           onPressed: () {
@@ -221,6 +222,7 @@ class _CalendarState extends State<Calendar> {
         ],
       )),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Color(0xFFFA6164),
         label: Text("New Entry"),
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
@@ -256,9 +258,9 @@ class _CalendarState extends State<Calendar> {
         availableGestures: AvailableGestures.verticalSwipe,
         startingDayOfWeek: StartingDayOfWeek.monday,
         calendarStyle: CalendarStyle(
-          selectedColor: Colors.deepOrange[400],
+          selectedColor: Color(0xFFFA6164),
           todayColor: Colors.deepOrange[200],
-          markersColor: Colors.brown[700],
+          markersColor: Color(0xFF2C4096),
           outsideDaysVisible: false,
         ),
         headerStyle: HeaderStyle(

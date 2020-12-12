@@ -2,7 +2,7 @@ import 'package:inkling/managers/DateToHuman.dart';
 import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
 import 'package:autocomplete_textfield/autocomplete_textfield.dart';
-
+import 'timeline/TimeLineView.dart';
 // dart imports
 import 'dart:io';
 import 'dart:convert';
@@ -346,9 +346,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// RETRIEVE ENTRY FROM DB
 ///////////////////////////////////////////////////////////////////////
   Future<void> readEntry(String documentId) async {
-    // if (!mounted) return;
-    if (inkling.localDocumentStorage.containsKey(documentId)) {
-      readEntryFromLocalStorage(documentId);
+    inkling.orderedListIDMap
+        .forEach((key, value) => print('index $value, docid $key'));
+    if (inkling.orderedListIDMap.containsKey(documentId)) {
+      print('inkling.orderedListIDMap.containsKey(documentId)');
+      readEntryFromLocalStorage((inkling.orderedListIDMap[documentId]));
+      print('called from localList');
       return;
     }
 
@@ -387,12 +390,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   ///////////////////////////////////////////////////////////////////////
   /// RETRIEVE ENTRY FROM LOCAL STORAGE
 ///////////////////////////////////////////////////////////////////////
-  Future<void> readEntryFromLocalStorage(String documentId) async {
+  Future<void> readEntryFromLocalStorage(int index) async {
     print('fetching from Local Storage');
-    Map<String, dynamic> document = inkling.localDocumentStorage[documentId];
+
+    Map<String, dynamic> document = inkling.orderedList[index];
+    print(document.toString());
     // if (!mounted) return;
-    if (document["content"]["image"] == true && mounted) {
-      downloadURLImage(document["user_id"]);
+    if (document["content"]["image"] == true &&
+        document["imageUrl"].length > 0 &&
+        mounted) {
+      _bucketUrl = document["imageUrl"];
     } else {
       _bucketUrl = '';
     }
@@ -778,6 +785,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     print(widget.activeDate);
     Map<String, dynamic> createdEntry = {
       'user_id': _user.uid,
+      'user_name': _user.displayName,
       'title': titleText,
       'timestamp': DateTime(widget.activeDate.year, widget.activeDate.month,
                   widget.activeDate.day) !=
@@ -801,8 +809,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .then((value) => {
               setState(() {
                 // inkling.lastTimelineFetch = inkling
-                inkling.localDocumentStorage[value.id] = createdEntry;
-                print(inkling.localDocumentStorage[value.id]);
+                // inkling.localDocumentStorage[value.id] = createdEntry;
+                // print(inkling.localDocumentStorage[value.id]);
                 MainView.of(context).documentIdReference = value.id.toString();
                 ownerId = _user.uid;
                 inkling.activeEntry = createdEntry;
@@ -814,14 +822,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               }),
               if (_image != null)
                 {
+                  ////
+                  // inkling.lastTimelineFetch = null,
                   _storage
                       .ref("${_user.uid}/${value.id}")
                       .putFile(_image)
-                      .then((value) => print("Photo Uploaded Successfully"))
-                      .catchError(
+                      .then((uploadReturn) {
+                    _storage
+                        .ref(uploadReturn.ref.fullPath)
+                        .getDownloadURL()
+                        .then((url) {
+                      createdEntry["imageUrl"] = url;
+                      // setState(() {
+                      inkling.orderedListIDMap
+                          .forEach((key, value) => value = value + 1);
+                      inkling.orderedListIDMap[value.id.toString()] = 0;
+                      inkling.orderedList.insert(0, createdEntry);
+                    });
+                  }).catchError(
                           (error) => print("Failed to upload photo: $error"))
-                },
-              // print(value.id),
+                }
+              else
+                {
+                  setState(() {
+                    inkling.orderedListIDMap
+                        .forEach((key, value) => value = value + 1);
+                    inkling.orderedListIDMap[value.id.toString()] = 0;
+                    inkling.orderedList.insert(0, createdEntry);
+                  })
+                }
             })
         .catchError((error) => print("Failed to add entry: $error"));
   }
@@ -842,24 +871,35 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
       },
     };
-    inkling.localDocumentStorage[widget.documentId]['title'] = titleText;
-    inkling.localDocumentStorage[widget.documentId]['content'] = {
+    final int index = inkling.orderedListIDMap[widget.documentId];
+    inkling.orderedList[index]['title'] = titleText;
+    inkling.orderedList[index]['content'] = {
       'text': entryText,
       'image': checkPictureUpdate,
       'spotify': (_spotifyUrl != null) ? _spotifyUrl : null,
     };
+
     return entries
         .doc(widget.documentId)
         .update(updatedEntry)
         .then((value) => {
               if (_image != null)
                 {
+                  // inkling.lastTimelineFetch = null,
+                  // inkling.orderedList[index]["imageUrl"] = '',
+                  // inkling.orderedList[index]["doc_id"] = widget.documentId,
                   _storage
                       .ref(
                           "${inkling.activeEntry['user_id']}/${widget.documentId}")
                       .putFile(_image)
-                      .then((value) => print("Photo Uploaded Successfully"))
-                      .catchError(
+                      .then((uploadReturn) {
+                    _storage
+                        .ref(uploadReturn.ref.fullPath)
+                        .getDownloadURL()
+                        .then((url) {
+                      inkling.orderedList[index]["imageUrl"] = url;
+                    });
+                  }).catchError(
                           (error) => print("Failed to upload photo: $error"))
                 }
             })
@@ -1229,7 +1269,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _storedTrack = null;
         _trackReady = false;
         _spotifyUrl = null; // = "";
-        inkling.localDocumentStorage.remove(widget.documentId);
+        // inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
       Navigator.of(context).pop();
