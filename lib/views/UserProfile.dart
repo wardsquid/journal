@@ -224,168 +224,167 @@ class _UserProfile extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.orange,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.home),
-          onPressed: () {
-            widget.liquidController.animateToPage(page: 2, duration: 750);
-          },
+        backgroundColor: Colors.orange,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: Icon(Icons.home),
+            onPressed: () {
+              widget.liquidController.animateToPage(page: 2, duration: 750);
+            },
+          ),
+          title: Text("User Profile"),
+          centerTitle: true,
+          actions: [
+            IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () {
+                  widget.liquidController.animateToPage(page: 4, duration: 750);
+                }),
+          ],
         ),
-        title: Text("User Profile"),
-        centerTitle: true,
-        actions: [
-          IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () {
-                widget.liquidController.animateToPage(page: 4, duration: 750);
-              }),
-        ],
-      ),
-      resizeToAvoidBottomInset: false,
-      body: Center(
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topRight,
-                  end: Alignment.bottomLeft,
-                  colors: [Colors.blue[100], Colors.blue[400]],
+        resizeToAvoidBottomInset: false,
+        body: Center(
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [Colors.blue[100], Colors.blue[400]],
+                  ),
                 ),
-              ),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          currentUser.photoURL,
-                        ),
-                        radius: 60,
-                        backgroundColor: Colors.transparent,
-                      ),
-                      SizedBox(height: 40),
-                      Text(
-                        'NAME',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54),
-                      ),
-                      Text(
-                        currentUser.displayName,
-                        style: TextStyle(
-                            fontSize: 25,
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        'EMAIL',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54),
-                      ),
-                      Text(
-                        currentUser.email, //email,
-                        style: TextStyle(
-                            fontSize: 25,
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 40),
-                      RaisedButton(
-                        onPressed: () async {
-                          _openReminderPopup(context);
-                        },
-                        color: Colors.deepPurple,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Set Reminder',
-                            style: TextStyle(fontSize: 25, color: Colors.white),
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            currentUser.photoURL,
                           ),
+                          radius: 60,
+                          backgroundColor: Colors.transparent,
                         ),
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40)),
-                      ),
-                      SizedBox(height: 40),
-                      RaisedButton(
-                        onPressed: () {
-                          signOutGoogle();
-                          Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (context) {
-                            return LoginPage();
-                          }), ModalRoute.withName('/'));
-                        },
-                        color: Colors.deepPurple,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Sign Out',
-                            style: TextStyle(fontSize: 25, color: Colors.white),
+                        SizedBox(height: 40),
+                        Text(
+                          'NAME',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54),
+                        ),
+                        Text(
+                          currentUser.displayName,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          'EMAIL',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54),
+                        ),
+                        Text(
+                          currentUser.email, //email,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 40),
+                        RaisedButton(
+                          onPressed: () async {
+                            _openReminderPopup(context);
+                          },
+                          color: Colors.deepPurple,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Set Reminder',
+                              style:
+                                  TextStyle(fontSize: 25, color: Colors.white),
+                            ),
                           ),
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40)),
                         ),
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40)),
-                      ),
-                      SizedBox(height: 40),
-                      RaisedButton(
-                        color: Colors.deepPurple,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Friends',
-                            style: TextStyle(fontSize: 25, color: Colors.white),
+                        SizedBox(height: 40),
+                        RaisedButton(
+                          onPressed: () {
+                            signOutGoogle();
+                            Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (context) {
+                              return LoginPage();
+                            }), ModalRoute.withName('/'));
+                          },
+                          color: Colors.deepPurple,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Sign Out',
+                              style:
+                                  TextStyle(fontSize: 25, color: Colors.white),
+                            ),
                           ),
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40)),
                         ),
-                        elevation: 5,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40)),
-                        onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return _buildFriendsList();
-                              },
-                              barrierDismissible: false);
-                        },
-                      ),
-                      SizedBox(height: 80),
-                      Linkable(
-                        linkColor: Colors.white,
-                        textColor: Colors.deepPurple,
-                        text:
-                            "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
-                      ),
-                    ],
+                        SizedBox(height: 40),
+                        RaisedButton(
+                          color: Colors.deepPurple,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Friends',
+                              style:
+                                  TextStyle(fontSize: 25, color: Colors.white),
+                            ),
+                          ),
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(40)),
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return _buildFriendsList();
+                                },
+                                barrierDismissible: false);
+                          },
+                        ),
+                        SizedBox(height: 80),
+                        Linkable(
+                          linkColor: Colors.white,
+                          textColor: Colors.deepPurple,
+                          text:
+                              "Privacy Policy: \nhttps://sites.google.com/view/inkling-policy",
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Container(
-              alignment: Alignment.center,
-              child: Row(
-                children: [
-                  Spacer(),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 80.0,
-                    color: Colors.white
-                  )                          
-                ],
+              Container(
+                alignment: Alignment.center,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    Icon(Icons.chevron_right_rounded,
+                        size: 80.0, color: Colors.white)
+                  ],
+                ),
               ),
-            ),
-          ],
-         ) 
-      ,)
-    );
+            ],
+          ),
+        ));
   }
 
   Widget _buildFriendsList() {
