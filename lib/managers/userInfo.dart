@@ -6,7 +6,21 @@ import 'Firebase.dart';
 
 // bool isLoggedIn = false;
 Map<String, dynamic> userProfile;
-Map<String, dynamic> activeEntry;
+Map<String, dynamic> activeEntry = {
+  "title": "### Load More ###",
+  "timestamp": Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
+  "content": {
+    "image": false,
+    'text': "filler",
+    "spotify": null,
+    "artist": null,
+    "track": null,
+    "albumImage": null,
+    "url": null, // to open in spotify
+  },
+  "shared_with": [],
+  "user_name": "",
+};
 String currentJournal;
 Map<String, dynamic> currentlySharingWith;
 // Map<String, dynamic> localDocumentStorage = {};

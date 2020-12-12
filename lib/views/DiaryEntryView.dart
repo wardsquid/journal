@@ -1296,7 +1296,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 });
           }
         })(),
-        title: Text(inkling.currentJournal),
+        title: ownerId != _user.uid &&
+                inkling.activeEntry['shared_with'].length > 0
+            ?
+            // Text("Shared Journal")
+            (inkling.activeEntry['user_name'] == null)
+                ? Text("Shared Journal")
+                : Text("Shared by ${inkling.activeEntry['user_name']}")
+            : Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
           callAction(),
@@ -1368,8 +1375,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           Icon(
                             Icons.chevron_right_rounded,
                             size: 80.0,
-                            color: Colors.white
-                          ,)                          
+                            color: Colors.white,
+                          )
                         ],
                       ),
                     ), //chevron icons
@@ -1489,7 +1496,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             ),
                       SizedBox(height: MediaQuery.of(context).size.height / 30),
                       Center(
-                        child: Text(dateToHumanReadable(widget.activeDate)),
+                        child: Text(
+                          dateToHumanReadable(widget.activeDate) +
+                              (inkling.activeEntry['user_id'] != _user.uid &&
+                                      inkling.activeEntry['shared_with']
+                                              .length >
+                                          0
+                                  ? (inkling.activeEntry['user_name'] == null)
+                                      ? " - shared entry"
+                                      : " - shared by ${inkling.activeEntry['user_name']}"
+                                  : ''),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height / 30),
                       Padding(

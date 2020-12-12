@@ -70,6 +70,7 @@ class _CalendarState extends State<Calendar> {
                 //print(_entries);
               })
             });
+
     /////////////////////////////////////////////////////////////////////////////////////
     /// RETRIEVE POSTS SHARED WITH USER
     /////////////////////////////////////////////////////////////////////////////////////
@@ -79,24 +80,35 @@ class _CalendarState extends State<Calendar> {
             isGreaterThanOrEqualTo:
                 DateTime(dateWithMonth.year, dateWithMonth.month))
         .get()
-        .then((QuerySnapshot querySnapshot) => {
-              querySnapshot.docs.forEach((doc) {
-                Map<String, dynamic> entryInfo = {
-                  "doc_id": doc.id,
-                  "title": doc["title"],
-                  "timestamp": doc["timestamp"],
-                  "shared": true,
-                };
-                _entryInfos.add(entryInfo);
-                DateTime date = entryInfo["timestamp"].toDate();
-                DateTime formatDate = DateTime(date.year, date.month, date.day);
-                if (entryParser.containsKey(formatDate)) {
-                  entryParser[formatDate].add(entryInfo["title"]);
-                } else {
-                  entryParser[formatDate] = [entryInfo["title"]];
-                }
-              })
-            });
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((doc) {
+        Map<String, dynamic> entryInfo;
+        if (doc.data().containsKey("user_name")) {
+          entryInfo = {
+            "doc_id": doc.id,
+            "title": doc["title"],
+            "timestamp": doc["timestamp"],
+            "shared": true,
+            "user_name": doc["user_name"],
+          };
+        } else {
+          entryInfo = {
+            "doc_id": doc.id,
+            "title": doc["title"],
+            "timestamp": doc["timestamp"],
+            "shared": true,
+          };
+        }
+        _entryInfos.add(entryInfo);
+        DateTime date = entryInfo["timestamp"].toDate();
+        DateTime formatDate = DateTime(date.year, date.month, date.day);
+        if (entryParser.containsKey(formatDate)) {
+          entryParser[formatDate].add(entryInfo["title"]);
+        } else {
+          entryParser[formatDate] = [entryInfo["title"]];
+        }
+      });
+    });
     if (mounted)
       setState(() {
         _selectedDay = DateTime.now();
@@ -112,7 +124,6 @@ class _CalendarState extends State<Calendar> {
 
   Future<void> _deleteEntry(docId) {
     // inkling.localDocumentStorage.remove(widget.documentId);
-
     return entries.doc(docId).delete().then((value) {
       getCalendarEntries(_selectedDay);
       Navigator.of(context).pop();
@@ -180,40 +191,36 @@ class _CalendarState extends State<Calendar> {
               }),
         ],
       ),
-      body: Center (
-        child: Stack(
-          children: <Widget>[
-            Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                _buildTableCalendar(),
-                Expanded(child: _buildEntryList()),
+      body: Center(
+          child: Stack(
+        children: <Widget>[
+          Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              _buildTableCalendar(),
+              Expanded(child: _buildEntryList()),
+            ],
+          ),
+          Container(
+            alignment: Alignment.center,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.chevron_left_rounded,
+                  size: 80.0,
+                  color: Colors.black,
+                ),
+                Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 80.0,
+                  color: Colors.black,
+                )
               ],
             ),
-            Container(
-              alignment: Alignment.center,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.chevron_left_rounded,
-                    size: 80.0,
-                    color: Colors.black,
-                  ),
-                  Spacer(),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 80.0,
-                    color: Colors.black
-                  ,)                          
-                ],
-              ),
-            ), 
-          ],
-        )
-        
-        
-
-      ),
+          ),
+        ],
+      )),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Color(0xFFFA6164),
         label: Text("New Entry"),
@@ -222,30 +229,10 @@ class _CalendarState extends State<Calendar> {
           MainView.of(context).documentIdReference = "",
           widget.liquidController.jumpToPage(page: 3),
         },
-        // _makeEntry,
         tooltip: 'New Entry',
         icon: Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      // BottomNavigationBar(
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       label: 'Home',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.business),
-      //       label: 'Business',
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.school),
-      //       label: 'School',
-      //     ),
-      //   ],
-      //   currentIndex: _selectedIndex,
-      //   selectedItemColor: Colors.amber[800],
-      //   onTap: _onItemTapped,
-      // ),
     );
   }
 
@@ -322,17 +309,21 @@ class _CalendarState extends State<Calendar> {
                               ),
                         title: Text(event['title'].toString()),
                         subtitle: Text(
-                            (event['timestamp'].runtimeType == Timestamp
-                                    ? dateToHumanReadable(
-                                        (event['timestamp'].toDate()))
-                                    : dateToHumanReadable(event['timestamp'])) +
-                                (event['shared'] ? " - shared entry" : '')),
+                          (event['timestamp'].runtimeType == Timestamp
+                                  ? dateToHumanReadable(
+                                      (event['timestamp'].toDate()))
+                                  : dateToHumanReadable(event['timestamp'])) +
+                              (event['shared']
+                                  ? (event['user_name'] == null)
+                                      ? " - shared entry"
+                                      : " - shared by ${event['user_name']}"
+                                  : ''),
+                        ),
                         onTap: () => {
                               MainView.of(context).date = _selectedDay,
                               MainView.of(context).documentIdReference =
                                   event['doc_id'],
-                              widget.liquidController
-                                  .jumpToPage(page: 3)
+                              widget.liquidController.jumpToPage(page: 3)
                             }),
                   ],
                 ),
