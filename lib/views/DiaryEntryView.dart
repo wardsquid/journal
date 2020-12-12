@@ -621,7 +621,22 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         initSpeechState();
         setState(() {
           _isEditingText = true;
-          inkling.activeEntry = null;
+          inkling.activeEntry = {
+            "title": "### Load More ###",
+            "timestamp":
+                Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
+            "content": {
+              "image": false,
+              'text': "filler",
+              "spotify": null,
+              "artist": null,
+              "track": null,
+              "albumImage": null,
+              "url": null, // to open in spotify
+            },
+            "shared_with": [],
+            "user_name": "",
+          };
           if (ownerId != "") {
             MainView.of(context).date = DateTime.now();
           }
