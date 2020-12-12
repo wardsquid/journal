@@ -307,15 +307,16 @@ class _CalendarState extends State<Calendar> {
                               ),
                         title: Text(event['title'].toString()),
                         subtitle: Text(
-                            (event['timestamp'].runtimeType == Timestamp
-                                    ? dateToHumanReadable(
-                                        (event['timestamp'].toDate()))
-                                    : dateToHumanReadable(event['timestamp'])) +
-                                (event['shared']
-                                    ? (event['user_name'] == null)
-                                        ? " - shared entry"
-                                        : " - shared by ${event['user_name']}"
-                                    : '')),
+                          (event['timestamp'].runtimeType == Timestamp
+                                  ? dateToHumanReadable(
+                                      (event['timestamp'].toDate()))
+                                  : dateToHumanReadable(event['timestamp'])) +
+                              (event['shared']
+                                  ? (event['user_name'] == null)
+                                      ? " - shared entry"
+                                      : " - shared by ${event['user_name']}"
+                                  : ''),
+                        ),
                         onTap: () => {
                               MainView.of(context).date = _selectedDay,
                               MainView.of(context).documentIdReference =

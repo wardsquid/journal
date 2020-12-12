@@ -7,7 +7,8 @@ import '../../managers/EntryRetriever.dart';
 import '../../managers/DateToHuman.dart';
 import '../../managers/Spotify.dart';
 import '../../managers/pageView.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import '../../managers/Firebase.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import '../../managers/userInfo.dart' as inkling;
 
@@ -22,6 +23,7 @@ class TimeLineView extends StatefulWidget {
 class _TimeLineView extends State<TimeLineView> {
 //  final DateTime origin = DateTime.parse("2020-10-23");
 
+  final User _user = checkUserLoginStatus();
   var _storedTrack;
   var _spotifyToken;
   Future<QuerySnapshot> userRetrievalQuery;
@@ -38,8 +40,10 @@ class _TimeLineView extends State<TimeLineView> {
         "artist": null,
         "track": null,
         "albumImage": null,
-        "url": null // to open in spotify
+        "url": null, // to open in spotify
       },
+      "shared_with": [],
+      "user_name": "",
     }
   ];
 
@@ -168,30 +172,29 @@ class _TimeLineView extends State<TimeLineView> {
         ],
       ),
       body: Center(
-        child: Stack(
-          children: <Widget>[
-            createListView(context, display),
-              Container(
-                alignment: Alignment.center,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.chevron_left_rounded,
-                      size: 80.0,
-                      color: Colors.black,
-                    ),
-                    Spacer(),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 80.0,
-                      color: Colors.black
-                    ,)                          
-                  ],
+          child: Stack(
+        children: <Widget>[
+          createListView(context, display),
+          Container(
+            alignment: Alignment.center,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.chevron_left_rounded,
+                  size: 80.0,
+                  color: Colors.black,
                 ),
-              ),
-          ],
-        )
-      ),
+                Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 80.0,
+                  color: Colors.black,
+                )
+              ],
+            ),
+          ),
+        ],
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: () => {
           MainView.of(context).documentIdReference = '',
@@ -269,9 +272,17 @@ class _TimeLineView extends State<TimeLineView> {
             ListTile(
               leading: Icon(Icons.menu_book_rounded),
               title: Text(entry['title'].toString()),
-              subtitle: Text(entry['timestamp'].runtimeType == Timestamp
-                  ? dateToHumanReadable((entry['timestamp'].toDate()))
-                  : dateToHumanReadable(entry['timestamp'])),
+              subtitle: Text(
+                (entry['timestamp'].runtimeType == Timestamp
+                        ? dateToHumanReadable((entry['timestamp'].toDate()))
+                        : dateToHumanReadable(entry['timestamp'])) +
+                    (entry['user_id'] != _user.uid &&
+                            entry['shared_with'].length > 0
+                        ? (entry['user_name'] == null)
+                            ? " - shared entry"
+                            : " - shared by ${entry['user_name']}"
+                        : ''),
+              ),
             ),
             // Spotify
             if (entry["content"]["spotify"] != null && _spotifyToken != null)
