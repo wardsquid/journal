@@ -29,6 +29,7 @@ class _TimeLineView extends State<TimeLineView> {
   DateTime today = DateTime.now();
   List<Map<String, dynamic>> display = [
     {
+      "id": '0',
       "title": "### Load More ###",
       "timestamp": Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
       "content": {
@@ -45,9 +46,6 @@ class _TimeLineView extends State<TimeLineView> {
 
   void pushToList(Map<String, dynamic> entry) async {
     if (!mounted) return;
-
-    // print("pushing ${entry.toString()}");
-
     if (entry["content"]["spotify"] != null && _spotifyToken != null) {
       var _url = entry["content"]["spotify"];
       print("error is thrown here ${entry.toString}");
@@ -62,48 +60,32 @@ class _TimeLineView extends State<TimeLineView> {
             entry["content"]["url"] = _storedTrack.url,
           });
     }
-    // print("pushing ${entry.toString()}");
     if (mounted)
       setState(() {
         display.add(entry);
         display.sort((b, a) => a["timestamp"].compareTo(b["timestamp"]));
+        inkling.orderedList = display;
+        inkling.orderedList.forEach((element) =>
+            inkling.orderedListIDMap[element['id']] =
+                inkling.orderedList.indexOf(element));
+        print(inkling.orderedList.toString());
       });
   }
 
   void parseQuery(DateTime date) {
-    // if (inkling.lastTimelineFetch != null &&
-    // DateTime.now().difference(inkling.lastTimelineFetch).inMinutes > 1) {}
-    print('difference');
-
-    // if (inkling.lastTimelineFetch != null &&
-    //     DateTime.now().difference(inkling.lastTimelineFetch).inMinutes < 2) {
-    //   print(DateTime.now().difference(inkling.lastTimelineFetch).inMinutes > 1);
-    //   print(DateTime.now().difference(inkling.lastTimelineFetch).inMinutes);
-    //   print('calling from storage');
-    //   inkling.localDocumentStorage.forEach((documentId, entry) {
-    //     if (entry["content"]["image"] == true && mounted) {
-    //       downloadURLImage(entry["user_id"], documentId).then((value) => {
-    //             entry["imageUrl"] = value,
-    //             pushToList(entry),
-    //           });
-    //     } else {
-    //       pushToList(entry);
-    //     }
-    //   });
-    // } else {
     if (date == null) date = today;
     userRetrievalQuery = fireStoreUserQuery(date);
     userRetrievalQuery.then((value) => {
           value.docs.forEach((element) {
-            // print(element.data());
             Map<String, dynamic> entry = element.data();
-            // inkling.addToLocalStorage(element.id, entry);
             if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
                     entry["imageUrl"] = value,
+                    entry["id"] = element.id,
                     pushToList(entry),
                   });
             } else {
+              entry["id"] = element.id;
               pushToList(entry);
             }
           })
@@ -113,28 +95,43 @@ class _TimeLineView extends State<TimeLineView> {
           value.docs.forEach((element) {
             // print(element.data());
             Map<String, dynamic> entry = element.data();
+            // if (entry['timestamp'].runtimeType == Timestamp)
+            //   entry['timestamp'] = entry['timestamp'].toDate();
             // inkling.addToLocalStorage(element.id, entry);
+
             if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
                     entry["imageUrl"] = value,
+                    entry["id"] = element.id,
                     pushToList(entry),
                   });
             } else {
+              entry["id"] = element.id;
               pushToList(entry);
             }
           }),
-          // inkling.lastTimelineFetch = DateTime.now(),
-          // inkling.timeSinceLastFetch =
-          //     DateTime.now().difference(inkling.lastTimelineFetch),
+          if (mounted)
+            {
+              inkling.lastTimelineFetch = DateTime.now(),
+            }
         });
-    // }
   }
+  // }
+  // }
 
   void initState() {
     super.initState();
     print("init");
+
     _spotifyToken = fetchSpotifyToken();
-    parseQuery(today);
+    if (inkling.lastTimelineFetch != null &&
+        DateTime.now().difference(inkling.lastTimelineFetch).inMinutes < 5) {
+      display = inkling.orderedList;
+      print(DateTime.now().difference(inkling.lastTimelineFetch));
+    } else {
+      print('fetching from DB');
+      parseQuery(today);
+    }
   }
 
   @override
@@ -149,8 +146,9 @@ class _TimeLineView extends State<TimeLineView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: Color(0xFF2C4096),
       appBar: AppBar(
+        backgroundColor: Colors.orange[300],
         leading: IconButton(
           icon: Icon(Icons.calendar_today),
           onPressed: () {
@@ -220,6 +218,13 @@ class _TimeLineView extends State<TimeLineView> {
 
   Widget timeLineCard(BuildContext context, Map<String, dynamic> entry) {
     if (!mounted) return null;
+    if (entry['imageUrl'] == '') {
+      downloadURLImage(entry["user_id"], entry["doc_id"]).then((value) => {
+            setState(() {
+              entry["imageUrl"] = value;
+            })
+          });
+    }
     Widget imageFadeIn;
     if (entry['imageUrl'] != null)
       imageFadeIn = new Padding(
