@@ -1209,8 +1209,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 icon: Icon(Icons.play_circle_fill,
                     color: Colors.green, size: 50.0),
                 onPressed: () {
-                  // open in spotify
-                  return launch(_storedTrack.url);
+                  // play in spotify
+                  _playSpotifyTrack();
                 }));
   }
 
@@ -1226,8 +1226,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   _playSpotifyTrack() async {
-    if (_storedTrack.url != null) {
-      print("shall I play ${_storedTrack.url}");
+    if (_storedTrack.uri != null) {
+      await playSpotifyTrack(_storedTrack.uri, _storedTrack.url);
     }
   }
 

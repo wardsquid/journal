@@ -5,6 +5,7 @@
 // import 'package:spotify_sdk/models/image_uri.dart';
 // import 'package:spotify_sdk/models/player_context.dart';
 // import 'package:spotify_sdk/models/player_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -43,9 +44,11 @@ class StoredTrack {
   final String track;
   final String url;
   final String href;
+  final String uri;
   final String imageUrl;
 
-  StoredTrack({this.artist, this.track, this.url, this.href, this.imageUrl});
+  StoredTrack(
+      {this.artist, this.track, this.url, this.href, this.uri, this.imageUrl});
 
   factory StoredTrack.fromJson(Map<String, dynamic> json) {
     return StoredTrack(
@@ -53,6 +56,7 @@ class StoredTrack {
         track: json['name'],
         url: json['external_urls']['spotify'],
         href: json['href'],
+        uri: json['uri'],
         imageUrl: json['album']['images'][0]['url']);
   }
 }
@@ -173,9 +177,10 @@ Future<void> getTrackByUrl(String _url) async {
 
     print("artist: ${_storedTrack.artist}");
     print("track: ${_storedTrack.track}");
-    print("url: ${_storedTrack.url}");
-    print("href: ${_storedTrack.href}");
-    print("imageUrl: ${_storedTrack.imageUrl}");
+    // print("url: ${_storedTrack.url}");
+    // print("href: ${_storedTrack.href}");
+    print("uri: ${_storedTrack.uri}");
+    // print("imageUrl: ${_storedTrack.imageUrl}");
   } else {
     print('Stored track ID not found');
   }
@@ -186,11 +191,18 @@ class TodayTrack {
   final String track;
   final String url;
   final String href;
+  final String uri;
   String imageUrl;
   String next;
 
   TodayTrack(
-      {this.artist, this.track, this.url, this.href, this.imageUrl, this.next});
+      {this.artist,
+      this.track,
+      this.url,
+      this.href,
+      this.imageUrl,
+      this.uri,
+      this.next});
 
   factory TodayTrack.fromJson(Map<String, dynamic> json, num n) {
     print("LIMIT ${json['limit']}, NEXT: ${json['next']}");
@@ -199,6 +211,7 @@ class TodayTrack {
         track: json['items'][n]['track']['name'],
         url: json['items'][n]['track']['external_urls']['spotify'],
         href: json['items'][n]['track']['href'],
+        uri: json['items'][n]['track']['uri'],
         next: json['next']);
   }
 
@@ -248,9 +261,10 @@ Future<void> loadTodaysTracks() async {
       await _todaysTracks[i].getImage();
       print("TODAY'S track: ${_todaysTracks[i].track}");
       print("artist: ${_todaysTracks[i].artist}");
-      print("url: ${_todaysTracks[i].url}");
-      print("href: ${_todaysTracks[i].href}");
-      print("image: ${_todaysTracks[i].imageUrl}");
+      // print("url: ${_todaysTracks[i].url}");
+      // print("href: ${_todaysTracks[i].href}");
+      print("uri: ${_todaysTracks[i].uri}");
+      // print("image: ${_todaysTracks[i].imageUrl}");
     }
   } else {
     print('Stored track ID not found');
@@ -262,17 +276,26 @@ Future<void> loadTodaysTracks() async {
   }
 }
 
-playSpotifyTrack(String _url) async {
-  print("sending $_url to spotify...");
+playSpotifyTrack(String _uri, String _url) async {
+  print("sending $_uri to spotify...");
 
   final response = await http.put('https://api.spotify.com/v1/me/player/play',
-      headers: {'Authorization': 'Bearer ' + _authenticationToken},
-      body: {"context_uri": "spotify:album:5ht7ItJgpBH7W6vJ5BqpPr"});
+      headers: {
+        'Authorization': 'Bearer ' + _authenticationToken,
+        'contentTypeHeader': 'application/json'
+      },
+      body: jsonEncode({
+        "uris": [
+          _uri,
+        ]
+      }));
 
   if (response.statusCode == 200) {
-    print("playing $_url!");
+    print("playing $_uri!");
+  } else if (response.statusCode == 404) {
+    return launch(_url);
   } else {
-    print("Error playing track");
+    print("Error playing track: ${response.statusCode}");
   }
 }
 
