@@ -182,3 +182,17 @@ Future<bool> updateJournalSharing(
     return false;
   }
 }
+
+Future<bool> updateJournalSharingCascade() {}
+Future<bool> deleteJournalEntriesCascade() {}
+Future<bool> deleteJournalUser() {}
+
+Future<bool> deletePhoto(String documentId) async {
+  final FirebaseStorage _storage = getStorage();
+  try {
+    _storage.ref("${_auth.currentUser.uid}/$documentId").delete();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}

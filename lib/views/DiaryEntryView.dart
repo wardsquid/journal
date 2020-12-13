@@ -1267,23 +1267,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Future<void> _deleteEntry() {
+    // deletes from local storage
+    final int deleteIndex = inkling.orderedListIDMap[widget.documentId];
+    inkling.orderedList.removeAt(deleteIndex);
+    // deletes picture from cloud storage
+    if (inkling.activeEntry['content']['image']) {
+      deletePhoto(widget.documentId);
+    }
+    // delete entry from firestore and sets the state
     return entries.doc(widget.documentId).delete().then((value) {
       setState(() {
-        inkling.activeEntry = null;
-        ownerId = "";
-        entryText = "";
-        titleText = "";
-        tempTitleText = "";
-        tempEntryText = "";
-        _image = null;
-        _bucketUrl = '';
-        lastWords = "";
-        lastError = "";
-        lastStatus = "";
-        _currentTrack = null;
-        _storedTrack = null;
-        _trackReady = false;
-        _spotifyUrl = null;
         inkling.activeEntry = {
           "title": "### Load More ###",
           "timestamp":
@@ -1299,7 +1292,22 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           },
           "shared_with": [],
           "user_name": "",
-        }; // = "";
+        };
+        ownerId = "";
+        entryText = "";
+        titleText = "";
+        tempTitleText = "";
+        tempEntryText = "";
+        _image = null;
+        _bucketUrl = '';
+        lastWords = "";
+        lastError = "";
+        lastStatus = "";
+        _currentTrack = null;
+        _storedTrack = null;
+        _trackReady = false;
+        _spotifyUrl = null;
+        // = "";
         // inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
