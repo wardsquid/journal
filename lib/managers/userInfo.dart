@@ -23,11 +23,8 @@ Map<String, dynamic> activeEntry = {
 };
 String currentJournal;
 Map<String, dynamic> currentlySharingWith;
-// Map<String, dynamic> localDocumentStorage = {};
-DateTime
-    lastTimelineFetch; //= DateTime.now().subtract(new Duration(minutes: 5));
-DateTime
-    lastCalendarFetch; //= DateTime.now().subtract(new Duration(minutes: 5));
+DateTime lastTimelineFetch;
+DateTime lastCalendarFetch;
 List<Map<String, dynamic>> orderedList = [];
 Map<String, int> orderedListIDMap = {};
 
@@ -50,11 +47,6 @@ void updateJournal() {
   currentJournal = userProfile['journals_list'][0].toString();
 }
 
-// void addToLocalStorage(String documentId, Map<String, dynamic> document) {
-//   // print(documentId);
-//   // print(document);
-//   localDocumentStorage[documentId] = document;
-// }
 ///////////////////////////////////////////////
 /// import 'userInfo.dart' as inkling;
 /// inkling.userProfile

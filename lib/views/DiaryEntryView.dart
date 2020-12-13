@@ -139,10 +139,66 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// STATE MANAGEMENT CALLBACKS
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
+  /// CHANGES ACTIVE JOURNAL (TAP ON DRAWER ENTRY)
+/////////////////////////////////////////////////////////////////////////////////////
+  void changeActiveJournal(String text) {
+    setState(() {
+      inkling.currentJournal = text;
+    });
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////
+  /// DELETE JOURNAL AND RELATED ENTRY / PICTURE
+/////////////////////////////////////////////////////////////////////////////////////
+  void deleteJournal(String journalName) async {
+    // in progress snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Deleting...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    // creates a copy of the list
+    List<dynamic> newList = [...inkling.userProfile['journals_list']];
+    // remove the journal
+    newList.remove(journalName);
+    bool writeResult = await deleteJournalEntriesCascade(journalName);
+    await addJournalToDB(newList);
+
+    // result snackbar
+    if (writeResult) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Journal deleted.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      setState(() {
+        print(inkling.userProfile['journals_list']);
+        inkling.userProfile['journals_list'] = newList;
+        print(inkling.userProfile['journals_list']);
+        changeActiveJournal('Personal');
+        MainView.of(context).documentId = '';
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Something went wrong, please try again.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+/////////////////////////////////////////////////////////////////////////////////////
   /// UPDATE JOURNALS NAME LIST
 /////////////////////////////////////////////////////////////////////////////////////
-  void updateJournalsListName(List<dynamic> journalsList) async {
-    bool writeResult = await addJournalToDB(journalsList);
+  void updateJournalsListName(
+      List<dynamic> journalsList, String oldTitle, String newTitle) async {
+    bool updateJournalList = await addJournalToDB(journalsList);
+    bool updatePreviousEntries =
+        await updateJournalNameCascade(oldTitle, newTitle);
+    bool writeResult = updateJournalList && updatePreviousEntries;
 
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -151,6 +207,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           duration: const Duration(seconds: 2),
         ),
       );
+
       setState(() {
         inkling.userProfile['journals_list'] = journalsList;
         // addJournalToDB(inkling.userProfile['journal_list']);
@@ -198,15 +255,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
 //////////////////////////////////////////////////////////////////////////////////
-  /// CHANGES ACTIVE JOURNAL (TAP ON DRAWER ENTRY)
-/////////////////////////////////////////////////////////////////////////////////////
-  void changeActiveJournal(String text) {
-    setState(() {
-      inkling.currentJournal = text;
-    });
-  }
-
-//////////////////////////////////////////////////////////////////////////////////
   /// CREATES A NEW JOURNAL AND SETS IT AS ACTIVE
 /////////////////////////////////////////////////////////////////////////////////////
   void updateSharingList(String title, List<dynamic> sharingWith) {
@@ -221,7 +269,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// POSTS THE UPDATED SHARING SETTINGS TO THE DB
 /////////////////////////////////////////////////////////////////////////////////////
   void updateJournalSharingInDB(String journalName) async {
-    bool writeResult = await updateJournalSharing(inkling.currentlySharingWith);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('updating $journalName settings...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    bool updateUserSettings =
+        await updateJournalSharing(inkling.currentlySharingWith);
+    bool updateOlderEntries = await updateJournalSharingCascade(
+        journalName, inkling.currentlySharingWith[journalName]);
+    bool writeResult = updateUserSettings && updateOlderEntries;
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1267,23 +1325,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Future<void> _deleteEntry() {
+    // deletes from local storage
+    final int deleteIndex = inkling.orderedListIDMap[widget.documentId];
+    inkling.orderedList.removeAt(deleteIndex);
+    // deletes picture from cloud storage
+    if (inkling.activeEntry['content']['image']) {
+      deletePhoto(widget.documentId);
+    }
+    // delete entry from firestore and sets the state
     return entries.doc(widget.documentId).delete().then((value) {
       setState(() {
-        inkling.activeEntry = null;
-        ownerId = "";
-        entryText = "";
-        titleText = "";
-        tempTitleText = "";
-        tempEntryText = "";
-        _image = null;
-        _bucketUrl = '';
-        lastWords = "";
-        lastError = "";
-        lastStatus = "";
-        _currentTrack = null;
-        _storedTrack = null;
-        _trackReady = false;
-        _spotifyUrl = null;
         inkling.activeEntry = {
           "title": "### Load More ###",
           "timestamp":
@@ -1299,7 +1350,22 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           },
           "shared_with": [],
           "user_name": "",
-        }; // = "";
+        };
+        ownerId = "";
+        entryText = "";
+        titleText = "";
+        tempTitleText = "";
+        tempEntryText = "";
+        _image = null;
+        _bucketUrl = '';
+        lastWords = "";
+        lastError = "";
+        lastStatus = "";
+        _currentTrack = null;
+        _storedTrack = null;
+        _trackReady = false;
+        _spotifyUrl = null;
+        // = "";
         // inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
@@ -1369,7 +1435,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 changeActiveJournal,
                 updateSharingList,
                 updateJournalSharingInDB,
-                updateJournalsListName)),
+                updateJournalsListName,
+                deleteJournal)),
         // body: AnnotatedRegion<SystemUiOverlayStyle>(
         // value: SystemUiOverlayStyle.light,
         body: widget.documentId == "" && _isEditingText == false
