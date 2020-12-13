@@ -49,3 +49,8 @@ Future<String> downloadURLImage(String ownerId, String documentId) async {
       await _storage.ref("$ownerId/$documentId").getDownloadURL();
   return imageUrl;
 }
+
+Future<bool> updatedDiaryName(){}
+Future<bool> updatedDiarySharing(){}
+Future<bool> deletePhotoEntry(){}
+Future<bool> deleteDiary(){}
