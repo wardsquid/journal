@@ -291,7 +291,9 @@ playSpotifyTrack(String _uri, String _url) async {
       }));
 
   if (response.statusCode == 200) {
-    print("playing $_uri!");
+    print("opening $_uri in spotify");
+  } else if (response.statusCode == 204) {
+    print("playing $_uri in background");
   } else if (response.statusCode == 404) {
     return launch(_url);
   } else {
