@@ -183,7 +183,35 @@ Future<bool> updateJournalSharing(
   }
 }
 
-Future<bool> updateJournalSharingCascade() {}
+Future<bool> updateJournalNameCascade() {}
+
+Future<bool> updateJournalSharingCascade(
+    String journalName, List<dynamic> sharingInfo) async {
+  CollectionReference _entries = getFireStoreEntriesDB();
+  try {
+    QuerySnapshot updateSharing = await _entries
+        .where('user_id', isEqualTo: _auth.currentUser.uid)
+        .where('journal', isEqualTo: journalName)
+        .get();
+    updateSharing.docs.forEach((document) {
+      _entries.doc(document.id).update({"shared_with": sharingInfo});
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+Future<bool> deletePhoto(String documentId) async {
+  final FirebaseStorage _storage = getStorage();
+
+  try {
+    _storage.ref("${_auth.currentUser.uid}/$documentId").delete();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 Future<bool> deleteJournalEntriesCascade(String journalName) async {
   CollectionReference _entries = getFireStoreEntriesDB();
@@ -201,17 +229,6 @@ Future<bool> deleteJournalEntriesCascade(String journalName) async {
       print('deleting ${document.id}');
       _entries.doc(document.id).delete();
     });
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-Future<bool> deletePhoto(String documentId) async {
-  final FirebaseStorage _storage = getStorage();
-
-  try {
-    _storage.ref("${_auth.currentUser.uid}/$documentId").delete();
     return true;
   } catch (error) {
     return false;

@@ -171,6 +171,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       print(inkling.userProfile['journals_list']);
       changeActiveJournal('Personal');
     });
+
+    // result snackbar
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -262,7 +264,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// POSTS THE UPDATED SHARING SETTINGS TO THE DB
 /////////////////////////////////////////////////////////////////////////////////////
   void updateJournalSharingInDB(String journalName) async {
-    bool writeResult = await updateJournalSharing(inkling.currentlySharingWith);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('updating $journalName settings...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    bool updateUserSettings =
+        await updateJournalSharing(inkling.currentlySharingWith);
+    bool updateOlderEntries = await updateJournalSharingCascade(
+        journalName, inkling.currentlySharingWith[journalName]);
+    bool writeResult = updateUserSettings && updateOlderEntries;
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
