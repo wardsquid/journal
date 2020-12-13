@@ -178,6 +178,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         inkling.userProfile['journals_list'] = newList;
         print(inkling.userProfile['journals_list']);
         changeActiveJournal('Personal');
+        MainView.of(context).documentId = '';
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -195,7 +196,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   void updateJournalsListName(
       List<dynamic> journalsList, String oldTitle, String newTitle) async {
     bool updateJournalList = await addJournalToDB(journalsList);
-    bool updatePreviousEntries = 
+    bool updatePreviousEntries =
         await updateJournalNameCascade(oldTitle, newTitle);
     bool writeResult = updateJournalList && updatePreviousEntries;
 
