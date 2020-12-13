@@ -41,7 +41,8 @@ class _TimeLineView extends State<TimeLineView> {
         "artist": null,
         "track": null,
         "albumImage": null,
-        "url": null, // to open in spotify
+        "url": null, // to open spotify
+        "uri": null, // to play in background
       },
       "shared_with": [],
       "user_name": "",
@@ -62,6 +63,7 @@ class _TimeLineView extends State<TimeLineView> {
             entry["content"]["artist"] = _storedTrack.artist,
             entry["content"]["albumImage"] = _storedTrack.imageUrl,
             entry["content"]["url"] = _storedTrack.url,
+            entry["content"]["uri"] = _storedTrack.uri
           });
     }
     if (mounted)
@@ -203,6 +205,12 @@ class _TimeLineView extends State<TimeLineView> {
     );
   }
 
+  _playSpotifyTrack(_url, _uri) async {
+    if (_uri != null) {
+      await playSpotifyTrack(_url, _uri);
+    }
+  }
+
   Widget createListView(
       BuildContext context, List<Map<String, dynamic>> entries) {
     if (!mounted) return null;
@@ -300,8 +308,10 @@ class _TimeLineView extends State<TimeLineView> {
                     icon: Icon(Icons.play_circle_fill,
                         color: Colors.green, size: 50.0),
                     onPressed: () {
-                      // open in spotify
-                      return launch(entry["content"]["url"]);
+                      // play in spotify
+                      _playSpotifyTrack(
+                          entry["content"]["url"], entry["content"]["uri"]);
+                      //return launch(entry["content"]["url"]);
                     }),
                 isThreeLine: true,
               ),
