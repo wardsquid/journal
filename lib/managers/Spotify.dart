@@ -262,6 +262,20 @@ Future<void> loadTodaysTracks() async {
   }
 }
 
+playSpotifyTrack(String _url) async {
+  print("sending $_url to spotify...");
+
+  final response = await http.put('https://api.spotify.com/v1/me/player/play',
+      headers: {'Authorization': 'Bearer ' + _authenticationToken},
+      body: {"context_uri": "spotify:album:5ht7ItJgpBH7W6vJ5BqpPr"});
+
+  if (response.statusCode == 200) {
+    print("playing $_url!");
+  } else {
+    print("Error playing track");
+  }
+}
+
 // FETCHING MORE THAN 5 tracks - need to use next???
 // final response2 = await http.get(
 //     "https://api.spotify.com/v1/me/player/recently-played?before=1607392056792&limit=5",

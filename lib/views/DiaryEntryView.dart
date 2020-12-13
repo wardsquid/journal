@@ -1225,6 +1225,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+  _playSpotifyTrack() async {
+    if (_storedTrack.url != null) {
+      print("shall I play ${_storedTrack.url}");
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
   Widget callAction() {
     if (_isEditingText == true) return _saveButton();
     if (_isEditingText == false && ownerId != _user.uid)
@@ -1232,10 +1242,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     else
       return _editButton();
   }
-
-///////////////////////////////////////////////////////////////////////
-  /// SPOTIFY
-///////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////
   /// DELETE ENTRY
