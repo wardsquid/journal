@@ -11,7 +11,8 @@ Widget journalDrawer(
     Function changeActiveJournal,
     Function updateSharingList,
     Function updateJournalSharingInDB,
-    Function updateJournalsListName) {
+    Function updateJournalsListName,
+    Function deleteJournal) {
   return Drawer(
     child: ListView(
       padding: EdgeInsets.zero,
@@ -30,7 +31,7 @@ Widget journalDrawer(
         ),
         for (String title in userProfile['journals_list'])
           journalTile(context, title, changeActiveJournal, updateSharingList,
-              updateJournalSharingInDB, updateJournalsListName),
+              updateJournalSharingInDB, updateJournalsListName, deleteJournal),
         ListTile(
           title: Text("Create a new Journal..."),
           onTap: () {
@@ -57,7 +58,8 @@ Widget journalTile(
     Function changeActiveJournal,
     Function updateSharingList,
     Function updateJournalSharingInDB,
-    Function updateJournalsListName) {
+    Function updateJournalsListName,
+    Function deleteJournal) {
   return new ListTile(
     leading: journalName != "Personal"
         ? IconButton(
@@ -73,7 +75,8 @@ Widget journalTile(
                         journalName,
                         updateSharingList,
                         updateJournalSharingInDB,
-                        updateJournalsListName);
+                        updateJournalsListName,
+                        deleteJournal);
                   },
                   barrierDismissible: false,
 
@@ -155,7 +158,8 @@ Widget journalSettings(
     String title,
     Function updateSharingList,
     Function updateJournalSharingInDB,
-    Function updateJournalsListName) {
+    Function updateJournalsListName,
+    Function deleteJournal) {
   // final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   print("here");
 
@@ -251,7 +255,7 @@ Widget journalSettings(
                 context: context,
                 barrierDismissible: false, // user must tap button!
                 builder: (BuildContext context) {
-                  return deleteDiary(context, title);
+                  return deleteDiary(context, title, deleteJournal);
                 });
           }),
       // FlatButton(
@@ -308,7 +312,7 @@ Widget addFriendJournalSharing(BuildContext context, String title,
 /////////////////////////////////////////////
 /// DELETE JOURNAL ALERT
 /////////////////////////////////////////////
-Widget deleteDiary(BuildContext context, String title) {
+Widget deleteDiary(BuildContext context, String title, Function deleteJournal) {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _deleteController = TextEditingController();
 
@@ -344,11 +348,13 @@ Widget deleteDiary(BuildContext context, String title) {
       FlatButton(
           child: Text('Confirm'),
           onPressed: () {
-            // if (_formKey.currentState.validate()) {
-            //   updateJournal(_diaryController.text);
-            //   _formKey.currentState.save();
-            //   Navigator.of(context).pop();
-            // }
+            if (_formKey.currentState.validate()) {
+              //   updateJournal(_diaryController.text);
+              deleteJournal(title);
+              _formKey.currentState.save();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            }
           }),
       FlatButton(
           child: Text('Cancel'),

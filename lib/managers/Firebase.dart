@@ -184,11 +184,32 @@ Future<bool> updateJournalSharing(
 }
 
 Future<bool> updateJournalSharingCascade() {}
-Future<bool> deleteJournalEntriesCascade() {}
-Future<bool> deleteJournalUser() {}
+
+Future<bool> deleteJournalEntriesCascade(String journalName) async {
+  CollectionReference _entries = getFireStoreEntriesDB();
+  try {
+    QuerySnapshot toBeRemoved = await _entries
+        .where('user_id', isEqualTo: _auth.currentUser.uid)
+        .where('journal', isEqualTo: journalName)
+        .get();
+    toBeRemoved.docs.forEach((document) {
+      Map<String, dynamic> entry = document.data();
+      if (entry["content"]["image"] == true) {
+        print('deleting photo associated with ${document.id}');
+        deletePhoto(document.id);
+      }
+      print('deleting ${document.id}');
+      _entries.doc(document.id).delete();
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 Future<bool> deletePhoto(String documentId) async {
   final FirebaseStorage _storage = getStorage();
+
   try {
     _storage.ref("${_auth.currentUser.uid}/$documentId").delete();
     return true;

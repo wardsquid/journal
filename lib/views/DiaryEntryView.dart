@@ -139,6 +139,56 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// STATE MANAGEMENT CALLBACKS
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
+  /// CHANGES ACTIVE JOURNAL (TAP ON DRAWER ENTRY)
+/////////////////////////////////////////////////////////////////////////////////////
+  void changeActiveJournal(String text) {
+    setState(() {
+      inkling.currentJournal = text;
+    });
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////
+  /// DELETE JOURNAL AND RELATED ENTRY / PICTURE
+/////////////////////////////////////////////////////////////////////////////////////
+  void deleteJournal(String journalName) async {
+    // in progress snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Deleting...'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    // creates a copy of the list
+    List<dynamic> newList = [...inkling.userProfile['journals_list']];
+    // remove the journal
+    newList.remove(journalName);
+    bool writeResult = await deleteJournalEntriesCascade(journalName);
+    await addJournalToDB(newList);
+
+    setState(() {
+      print(inkling.userProfile['journals_list']);
+      inkling.userProfile['journals_list'] = newList;
+      print(inkling.userProfile['journals_list']);
+      changeActiveJournal('Personal');
+    });
+    if (writeResult) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Journal deleted.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Something went wrong, please try again.'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+/////////////////////////////////////////////////////////////////////////////////////
   /// UPDATE JOURNALS NAME LIST
 /////////////////////////////////////////////////////////////////////////////////////
   void updateJournalsListName(List<dynamic> journalsList) async {
@@ -195,15 +245,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         ),
       );
     }
-  }
-
-//////////////////////////////////////////////////////////////////////////////////
-  /// CHANGES ACTIVE JOURNAL (TAP ON DRAWER ENTRY)
-/////////////////////////////////////////////////////////////////////////////////////
-  void changeActiveJournal(String text) {
-    setState(() {
-      inkling.currentJournal = text;
-    });
   }
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1377,7 +1418,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 changeActiveJournal,
                 updateSharingList,
                 updateJournalSharingInDB,
-                updateJournalsListName)),
+                updateJournalsListName,
+                deleteJournal)),
         // body: AnnotatedRegion<SystemUiOverlayStyle>(
         // value: SystemUiOverlayStyle.light,
         body: widget.documentId == "" && _isEditingText == false
