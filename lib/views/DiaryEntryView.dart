@@ -165,13 +165,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     bool writeResult = await deleteJournalEntriesCascade(journalName);
     await addJournalToDB(newList);
 
-    setState(() {
-      print(inkling.userProfile['journals_list']);
-      inkling.userProfile['journals_list'] = newList;
-      print(inkling.userProfile['journals_list']);
-      changeActiveJournal('Personal');
-    });
-
     // result snackbar
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -180,6 +173,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           duration: const Duration(seconds: 2),
         ),
       );
+      setState(() {
+        print(inkling.userProfile['journals_list']);
+        inkling.userProfile['journals_list'] = newList;
+        print(inkling.userProfile['journals_list']);
+        changeActiveJournal('Personal');
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -193,8 +192,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 /////////////////////////////////////////////////////////////////////////////////////
   /// UPDATE JOURNALS NAME LIST
 /////////////////////////////////////////////////////////////////////////////////////
-  void updateJournalsListName(List<dynamic> journalsList) async {
-    bool writeResult = await addJournalToDB(journalsList);
+  void updateJournalsListName(
+      List<dynamic> journalsList, String oldTitle, String newTitle) async {
+    bool updateJournalList = await addJournalToDB(journalsList);
+    bool updatePreviousEntries = 
+        await updateJournalNameCascade(oldTitle, newTitle);
+    bool writeResult = updateJournalList && updatePreviousEntries;
 
     if (writeResult) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -203,6 +206,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           duration: const Duration(seconds: 2),
         ),
       );
+
       setState(() {
         inkling.userProfile['journals_list'] = journalsList;
         // addJournalToDB(inkling.userProfile['journal_list']);

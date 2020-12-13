@@ -183,7 +183,21 @@ Future<bool> updateJournalSharing(
   }
 }
 
-Future<bool> updateJournalNameCascade() {}
+Future<bool> updateJournalNameCascade(String oldName, String newName) async {
+  CollectionReference _entries = getFireStoreEntriesDB();
+  try {
+    QuerySnapshot updateSharing = await _entries
+        .where('user_id', isEqualTo: _auth.currentUser.uid)
+        .where('journal', isEqualTo: oldName)
+        .get();
+    updateSharing.docs.forEach((document) {
+      _entries.doc(document.id).update({"journal": newName});
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
 
 Future<bool> updateJournalSharingCascade(
     String journalName, List<dynamic> sharingInfo) async {
