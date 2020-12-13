@@ -1283,7 +1283,23 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _currentTrack = null;
         _storedTrack = null;
         _trackReady = false;
-        _spotifyUrl = null; // = "";
+        _spotifyUrl = null;
+        inkling.activeEntry = {
+          "title": "### Load More ###",
+          "timestamp":
+              Timestamp.fromDate(DateTime.parse("1900-01-01 13:27:00")),
+          "content": {
+            "image": false,
+            'text': "filler",
+            "spotify": null,
+            "artist": null,
+            "track": null,
+            "albumImage": null,
+            "url": null, // to open in spotify
+          },
+          "shared_with": [],
+          "user_name": "",
+        }; // = "";
         // inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
