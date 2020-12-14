@@ -1267,8 +1267,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 icon: Icon(Icons.play_circle_fill,
                     color: Colors.green, size: 50.0),
                 onPressed: () {
-                  // open in spotify
-                  return launch(_storedTrack.url);
+                  // play in spotify
+                  _playSpotifyTrack();
                 }));
   }
 
@@ -1283,6 +1283,16 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     }
   }
 
+  _playSpotifyTrack() async {
+    if (_storedTrack.uri != null) {
+      await playSpotifyTrack(_storedTrack.uri, _storedTrack.url);
+    }
+  }
+
+  ///////////////////////////////////////////////////////////////////////
+  /// SPOTIFY
+///////////////////////////////////////////////////////////////////////
+
   Widget callAction() {
     if (_isEditingText == true) return _saveButton();
     if (_isEditingText == false && ownerId != _user.uid)
@@ -1290,10 +1300,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     else
       return _editButton();
   }
-
-///////////////////////////////////////////////////////////////////////
-  /// SPOTIFY
-///////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////
   /// DELETE ENTRY
