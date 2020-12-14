@@ -682,6 +682,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Widget _newEntryButton() {
     return IconButton(
+      splashColor: Colors.pink[300],
+      focusColor: Colors.pink[300],
+      hoverColor: Colors.pink[300],
       onPressed: () {
         initSpeechState();
         setState(() {
@@ -725,7 +728,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           MainView.of(context).documentIdReference = '';
         });
       },
-      icon: Icon(Icons.fiber_new),
+      icon: Icon(Icons.add),
     );
   }
 
@@ -740,6 +743,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 
       // marginRight: 18,
       // marginBottom: 20,
+      elevation: 10,
       animatedIcon: AnimatedIcons.menu_close,
       animatedIconTheme: IconThemeData(size: 22.0),
       // this is ignored if animatedIcon is non null
@@ -757,15 +761,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onClose: () => print('DIAL CLOSED'),
       tooltip: 'Speed Dial',
       heroTag: 'speed-dial-hero-tag',
-      backgroundColor: Colors.pink,
+      backgroundColor: Color(0xFF8BBFE3),
       foregroundColor: Colors.white,
-      elevation: 8.0,
       shape: CircleBorder(),
       children: (_isEditingText == true)
           ? ([
               SpeedDialChild(
                 child: Icon(Icons.menu_book),
-                backgroundColor: Colors.brown,
+                backgroundColor: Color(0xFF8BBFE3),
                 label: 'Current Journal: ${inkling.currentJournal}',
                 // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => {
@@ -777,14 +780,14 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               if (_isEditingText == true) _spotifySpeedDial(),
               SpeedDialChild(
                 child: Icon(Icons.add_photo_alternate),
-                backgroundColor: Colors.red,
-                label: 'Add a photo from your Gallery',
+                backgroundColor: Color(0xFFf2296a),
+                label: 'Add from Gallery',
                 // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => _getFromGallery(),
               ),
               SpeedDialChild(
                 child: Icon(Icons.add_a_photo),
-                backgroundColor: Colors.blue,
+                backgroundColor: Color(0xFFFA6164),
                 label: 'Add from Camera',
                 // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => _getFromCamera(),
@@ -797,7 +800,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           ([
                 SpeedDialChild(
                   child: Icon(Icons.menu_book),
-                  backgroundColor: Colors.brown,
+                  backgroundColor: Colors.orange[300],
                   label: 'Current Journal: ${inkling.currentJournal}',
                   // labelStyle: TextStyle(fontSize: 18.0),
                   onTap: () => {
@@ -813,7 +816,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   ? [
                         SpeedDialChild(
                           child: Icon(Icons.share),
-                          backgroundColor: Colors.orange,
+                          backgroundColor: Color(0xFFFA6164),
                           label: 'Share with a friend',
                           // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () => {
@@ -825,7 +828,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       [
                         SpeedDialChild(
                           child: Icon(Icons.restore_from_trash_outlined),
-                          backgroundColor: Colors.red,
+                          backgroundColor: Color(0xFFf2296a),
                           label: 'Delete entry',
                           // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () {
@@ -1140,7 +1143,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   SpeedDialChild _spotifySpeedDial() {
     return SpeedDialChild(
       child: Icon(Icons.music_note),
-      backgroundColor: Colors.green,
+      backgroundColor: Color(0xFF13cf96),
       label: 'Add Spotify track',
       onTap: () async {
         await _initializeSpotify();
@@ -1222,7 +1225,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           buttons: [
             DialogButton(
                 child: Text("Pick for me"),
-                color: Colors.pinkAccent,
+                color: Color(0xFF8BBFE3),
                 onPressed: () {
                   Random random = new Random();
                   int _randomIndex = random.nextInt(_todaysTracks.length - 1);
@@ -1241,7 +1244,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 }),
             DialogButton(
                 child: Text("Add song"),
-                color: Colors.greenAccent,
+                color: Color(0xFF13cf96),
                 onPressed: () {
                   setState(() {
                     _spotifyUrl = _chosenTrack.href;
@@ -1304,7 +1307,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             subtitle: Text('${_storedTrack.artist}'),
             isThreeLine: true,
             trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red, size: 30.0),
+                icon: Icon(Icons.delete, color: Color(0xFFf2296a), size: 30.0),
                 onPressed: () {
                   // remove widget
                   setState(() {
@@ -1370,7 +1373,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         FlatButton(
           child: Text(
             'Delete',
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: Color(0xFFf2296a)),
           ),
           onPressed: () {
             _deleteEntry();
@@ -1446,6 +1449,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     // print(_isEditingText);
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFF8BBFE3),
         //home  edit
         leading: (() {
           if (_isEditingText == true) {
@@ -1453,6 +1457,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           } else {
             return IconButton(
                 icon: Icon(Icons.home),
+                splashColor: Colors.pink[300],
+                focusColor: Colors.pink[300],
+                hoverColor: Colors.pink[300],
                 onPressed: () {
                   widget.liquidController.animateToPage(page: 2, duration: 750);
                 });
@@ -1488,7 +1495,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       // ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Scaffold(
-        backgroundColor: Colors.orange[200], // background color
+        backgroundColor: Color(0xFF2C4096), // background color
         key: _scaffoldKey,
         // resizeToAvoidBottomInset: false,
         drawerEnableOpenDragGesture: false,
@@ -1526,6 +1533,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       //   fit: BoxFit.cover,
                       // ),
                     ),
+                    Container(
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          '\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 27.0,
+                          ),
+                        )),
                     Container(
                         alignment: Alignment.center,
                         child: FlatButton(
@@ -1574,35 +1592,18 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                             });
                           },
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18.0),
+                            borderRadius: BorderRadius.circular(11.0),
                           ), //side: BorderSide(color: Colors.white, width: 4)),
                           // shape: StadiumBorder(),//Border.all(width: 5.0, color: Colors.white),
-                          color: Colors.orange[300],
+                          color: Color(0xFFf2296a),
+                          padding: EdgeInsets.all(10),
                           child: Text(
-                            'Tap new,\n and create a new entry\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
+                            'Create a new entry',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 30.0,
-                              shadows: [
-                                Shadow(
-                                    // bottomLeft
-                                    offset: Offset(-1.5, -1.5),
-                                    color: Colors.black),
-                                Shadow(
-                                    // bottomRight
-                                    offset: Offset(1.5, -1.5),
-                                    color: Colors.black),
-                                Shadow(
-                                    // topRight
-                                    offset: Offset(1.5, 1.5),
-                                    color: Colors.black),
-                                Shadow(
-                                    // topLeft
-                                    offset: Offset(-1.5, 1.5),
-                                    color: Colors.black),
-                              ],
                             ),
                           ),
                         )),
@@ -1646,7 +1647,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                                 3,
                                         alignment: Alignment.center,
                                         child: Text(
-                                          'Tell more of your journey\nwith a photo.',
+                                          'Add more to your story\nwith a photo',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
                                             color: Colors.white,

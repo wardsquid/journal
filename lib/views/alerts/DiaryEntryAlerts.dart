@@ -26,14 +26,14 @@ Widget journalDrawer(
             ),
           ),
           decoration: BoxDecoration(
-            color: Colors.purpleAccent,
+            color: Color(0xFFf2296a),
           ),
         ),
         for (String title in userProfile['journals_list'])
           journalTile(context, title, changeActiveJournal, updateSharingList,
               updateJournalSharingInDB, updateJournalsListName, deleteJournal),
         ListTile(
-          title: Text("Create a new Journal..."),
+          title: Text("Create a new journal..."),
           onTap: () {
             showDialog(
               context: context,

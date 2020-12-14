@@ -225,9 +225,13 @@ class _UserProfile extends State<UserProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.orange,
+        backgroundColor: Color(0xFF2C4096),
         appBar: AppBar(
+          backgroundColor: Color(0xFFf2296a),
           leading: IconButton(
+            splashColor: Colors.orange[300],
+            highlightColor: Colors.orange[300],
+            hoverColor: Colors.orange[300],
             icon: Icon(Icons.home),
             onPressed: () {
               widget.liquidController.animateToPage(page: 2, duration: 750);
@@ -248,13 +252,7 @@ class _UserProfile extends State<UserProfile> {
           child: Stack(
             children: [
               Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [Colors.blue[100], Colors.blue[400]],
-                  ),
-                ),
+                decoration: BoxDecoration(color: Color(0xFF2C4096)),
                 child: Center(
                   child: SingleChildScrollView(
                     child: Column(
@@ -274,13 +272,13 @@ class _UserProfile extends State<UserProfile> {
                           style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black54),
+                              color: Colors.white54),
                         ),
                         Text(
                           currentUser.displayName,
                           style: TextStyle(
                               fontSize: 25,
-                              color: Colors.deepPurple,
+                              color: Colors.white,
                               fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 20),
@@ -289,21 +287,24 @@ class _UserProfile extends State<UserProfile> {
                           style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black54),
+                              color: Colors.white54),
                         ),
                         Text(
                           currentUser.email, //email,
                           style: TextStyle(
                               fontSize: 25,
-                              color: Colors.deepPurple,
+                              color: Colors.white,
                               fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 30),
                         RaisedButton(
+                          splashColor: Colors.orange[300],
+                          highlightColor: Colors.orange[300],
+                          hoverColor: Colors.orange[300],
                           onPressed: () async {
                             _openReminderPopup(context);
                           },
-                          color: Colors.deepPurple,
+                          color: Color(0xFF13cf96),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
@@ -312,13 +313,16 @@ class _UserProfile extends State<UserProfile> {
                                   TextStyle(fontSize: 25, color: Colors.white),
                             ),
                           ),
-                          elevation: 5,
+                          elevation: 10,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40)),
                         ),
                         SizedBox(height: 30),
                         RaisedButton(
-                          color: Colors.deepPurple,
+                          color: Color(0xFF8BBFE3),
+                          splashColor: Colors.orange[300],
+                          highlightColor: Colors.orange[300],
+                          hoverColor: Colors.orange[300],
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
@@ -327,7 +331,7 @@ class _UserProfile extends State<UserProfile> {
                                   TextStyle(fontSize: 25, color: Colors.white),
                             ),
                           ),
-                          elevation: 5,
+                          elevation: 10,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40)),
                           onPressed: () {
@@ -341,6 +345,9 @@ class _UserProfile extends State<UserProfile> {
                         ),
                         SizedBox(height: 30),
                         RaisedButton(
+                          splashColor: Colors.orange[300],
+                          highlightColor: Colors.orange[300],
+                          hoverColor: Colors.orange[300],
                           onPressed: () {
                             signOutGoogle();
                             Navigator.of(context).pushAndRemoveUntil(
@@ -348,7 +355,7 @@ class _UserProfile extends State<UserProfile> {
                               return LoginPage();
                             }), ModalRoute.withName('/'));
                           },
-                          color: Colors.deepPurple,
+                          color: Color(0xFFf2296a),
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
@@ -357,7 +364,7 @@ class _UserProfile extends State<UserProfile> {
                                   TextStyle(fontSize: 25, color: Colors.white),
                             ),
                           ),
-                          elevation: 5,
+                          elevation: 10,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40)),
                         ),
@@ -370,10 +377,8 @@ class _UserProfile extends State<UserProfile> {
                 alignment: Alignment.bottomCenter,
                 padding: EdgeInsets.only(bottom: 10, right: 10),
                 child: InkWell(
-                  child: Text(
-                    "Privacy Policy",
-                    style: TextStyle(fontSize: 15),
-                  ),
+                  child: Text("Privacy Policy",
+                      style: TextStyle(fontSize: 15, color: Colors.white54)),
                   onTap: () =>
                       launch("https://sites.google.com/view/inkling-policy"),
                 ),

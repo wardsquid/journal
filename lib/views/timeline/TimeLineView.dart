@@ -159,6 +159,9 @@ class _TimeLineView extends State<TimeLineView> {
         backgroundColor: Colors.orange[300],
         leading: IconButton(
           icon: Icon(Icons.calendar_today),
+          splashColor: Colors.pink[300],
+          highlightColor: Colors.pink[300],
+          hoverColor: Colors.pink[300],
           onPressed: () {
             widget.liquidController.animateToPage(page: 1, duration: 750);
           },
@@ -168,6 +171,9 @@ class _TimeLineView extends State<TimeLineView> {
         actions: [
           IconButton(
               icon: Icon(Icons.account_circle),
+              splashColor: Colors.pink[300],
+              highlightColor: Colors.pink[300],
+              hoverColor: Colors.pink[300],
               onPressed: () {
                 widget.liquidController.animateToPage(page: 0, duration: 750);
               }),
@@ -188,6 +194,8 @@ class _TimeLineView extends State<TimeLineView> {
           widget.liquidController.animateToPage(page: 3, duration: 750)
         },
         child: Icon(Icons.add),
+        backgroundColor: Color(0xFFFA6164),
+        elevation: 10,
       ),
     );
   }
@@ -243,6 +251,9 @@ class _TimeLineView extends State<TimeLineView> {
             height: 30,
           ),
           FloatingActionButton.extended(
+              splashColor: Colors.pink[300],
+              focusColor: Colors.pink[300],
+              hoverColor: Colors.pink[300],
               heroTag: null,
               onPressed: () {
                 if (mounted)
@@ -252,12 +263,12 @@ class _TimeLineView extends State<TimeLineView> {
                   });
                 // Add your onPressed code here!
               },
-              label: Text("read more..."),
+              label: Text("Read more..."),
               icon: Icon(Icons.menu_book),
-              backgroundColor: Colors.purpleAccent,
+              backgroundColor: Colors.orange[300],
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16.0))),
-              elevation: 5),
+              elevation: 10),
           SizedBox(
             height: 10,
           )
