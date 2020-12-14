@@ -188,6 +188,9 @@ class _CalendarState extends State<Calendar> {
         backgroundColor: Color(0xFFFA6164),
         leading: IconButton(
           icon: Icon(Icons.home),
+          splashColor: Colors.orange[300],
+          highlightColor: Colors.orange[300],
+          hoverColor: Colors.orange[300],
           onPressed: () {
             widget.liquidController.jumpToPage(page: 2);
           },
@@ -197,6 +200,9 @@ class _CalendarState extends State<Calendar> {
         actions: [
           IconButton(
               icon: Icon(Icons.edit),
+              splashColor: Colors.orange[300],
+              highlightColor: Colors.orange[300],
+              hoverColor: Colors.orange[300],
               onPressed: () {
                 widget.liquidController.jumpToPage(page: 3);
               }),
@@ -235,6 +241,9 @@ class _CalendarState extends State<Calendar> {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Color(0xFFFA6164),
         label: Text("New Entry"),
+        splashColor: Colors.orange[300],
+        hoverColor: Colors.orange[300],
+        focusColor: Colors.orange[300],
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
@@ -242,6 +251,7 @@ class _CalendarState extends State<Calendar> {
         },
         tooltip: 'New Entry',
         icon: Icon(Icons.add),
+        elevation: 10,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -304,7 +314,7 @@ class _CalendarState extends State<Calendar> {
                             ? null
                             : IconButton(
                                 icon: Icon(Icons.restore_from_trash),
-                                color: Colors.red,
+                                color: Color(0xFFC73967),
                                 onPressed: () {
                                   showDialog(
                                     context: context,
@@ -355,13 +365,13 @@ class _CalendarState extends State<Calendar> {
 
   Widget _buildDeleteEntryForm(String docId, String entryTitle) {
     return AlertDialog(
-      title: Text("Are you sure to delete $entryTitle ?"),
+      title: Text("Are you sure you want to delete $entryTitle ?"),
       contentPadding: EdgeInsets.all(0.0),
       actions: <Widget>[
         FlatButton(
           child: Text(
             'Delete',
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: Color(0xFFf2296a)),
           ),
           onPressed: () {
             _deleteEntry(docId);

@@ -26,14 +26,14 @@ Widget journalDrawer(
             ),
           ),
           decoration: BoxDecoration(
-            color: Colors.purpleAccent,
+            color: Color(0xFFf2296a),
           ),
         ),
         for (String title in userProfile['journals_list'])
           journalTile(context, title, changeActiveJournal, updateSharingList,
               updateJournalSharingInDB, updateJournalsListName, deleteJournal),
         ListTile(
-          title: Text("Create a new Journal..."),
+          title: Text("Create a new journal..."),
           onTap: () {
             showDialog(
               context: context,
@@ -410,7 +410,8 @@ Widget changeDiaryName(
             List<dynamic> journalsList = inkling.userProfile["journals_list"];
             int titleIndex = journalsList.indexOf(title);
             journalsList[titleIndex] = _nameChangeController.text;
-            updateJournalsListName(journalsList, title, _nameChangeController.text);
+            updateJournalsListName(
+                journalsList, title, _nameChangeController.text);
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             FocusScope.of(context).unfocus();
