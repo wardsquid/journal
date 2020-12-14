@@ -293,7 +293,7 @@ class _TimeLineView extends State<TimeLineView> {
                             entry['shared_with'].length > 0
                         ? (entry['user_name'] == null)
                             ? " - shared entry"
-                            : " - shared by ${entry['user_name']}"
+                            : " - shared by ${entry['user_name'].split(" ")[0]}"
                         : ''),
               ),
             ),
