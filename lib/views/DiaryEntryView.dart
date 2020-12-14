@@ -549,9 +549,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               autofocus: false,
               focusNode: entryFocusNode,
             ),
-            SizedBox(
-              height: 80,
-            )
           ],
         ),
       );
@@ -1198,6 +1195,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   });
                   _getTrackByUrl();
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Song added below.'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }),
             DialogButton(
                 child: Text("Add song"),
@@ -1208,6 +1211,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   });
                   _getTrackByUrl();
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Song added below.'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }),
           ]).show();
     }
@@ -1249,27 +1258,36 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _storedSpotifyTrack() {
-    return ListTile(
-        leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
-        title: Text('${_storedTrack.track}'),
-        subtitle: Text('${_storedTrack.artist}'),
-        isThreeLine: true,
-        trailing: _isEditingText
-            ? IconButton(
-                icon: Icon(Icons.remove_circle, color: Colors.red, size: 50.0),
+    return _isEditingText
+        ? ListTile(
+            contentPadding: EdgeInsets.only(right: 80),
+            leading:
+                Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+            title: Text('${_storedTrack.track}'),
+            subtitle: Text('${_storedTrack.artist}'),
+            isThreeLine: true,
+            trailing: IconButton(
+                icon: Icon(Icons.delete, color: Colors.red, size: 30.0),
                 onPressed: () {
                   // remove widget
                   setState(() {
                     _trackReady = false;
                   });
-                })
-            : IconButton(
+                }))
+        : ListTile(
+            leading:
+                Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+            title: Text('${_storedTrack.track}'),
+            subtitle: Text('${_storedTrack.artist}'),
+            isThreeLine: true,
+            trailing: IconButton(
                 icon: Icon(Icons.play_circle_fill,
                     color: Colors.green, size: 50.0),
                 onPressed: () {
                   // play in spotify
                   _playSpotifyTrack();
-                }));
+                }),
+          );
   }
 
   _getTrackByUrl() async {
@@ -1620,9 +1638,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           child: _entryText(),
                         ),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height / 20),
-
+                      SizedBox(height: MediaQuery.of(context).size.height / 50),
                       if (_trackReady) _storedSpotifyTrack(),
+                      SizedBox(height: MediaQuery.of(context).size.height / 50),
 
                       // if (_isEditingText == false && ownerId != _user.uid)
                       //   Center(
