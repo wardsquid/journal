@@ -78,6 +78,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   // Controllers
   TextEditingController _entryEditingController;
   TextEditingController _titleEditingController;
+  // FocusNode FocusNode;
 
   // Entry related variables
   String ownerId = "";

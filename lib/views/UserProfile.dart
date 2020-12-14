@@ -471,9 +471,7 @@ class _UserProfile extends State<UserProfile> {
               style: TextStyle(fontSize: 15),
             ),
             onPressed: () {
-              if (_friendsChecked.length > 0) {
-                _friendsChecked[_selectedFriendIndex] = false;
-              }
+              _friendsChecked[_selectedFriendIndex] = false;
               _selectedFriendName = "";
               _selectedFriendEmail = "";
               _isDeleteButtonDisabled = true;
@@ -572,9 +570,7 @@ class _UserProfile extends State<UserProfile> {
             style: TextStyle(fontSize: 15),
           ),
           onPressed: () {
-            if (_friendsChecked.length > 0) {
-              _friendsChecked[_selectedFriendIndex] = false;
-            }
+            _friendsChecked[_selectedFriendIndex] = false;
             _selectedFriendName = "";
             _selectedFriendEmail = "";
             _isDeleteButtonDisabled = true;

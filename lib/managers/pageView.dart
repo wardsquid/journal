@@ -55,6 +55,7 @@ class _MainViewState extends State<MainView> {
       // ignoreUserGestureWhileAnimating: true,
       onPageChangeCallback: (index) => {
         if (index != 3) {FocusScope.of(context).unfocus()},
+        // if(editController == true && index == 3) {FocusScope.of(context).unfocus()
         if (previousPage == 3 && index == 2) editController = false, //
         print('$previousPage'),
         print('switching to $index'),
