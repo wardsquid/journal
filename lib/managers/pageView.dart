@@ -18,6 +18,7 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
+  int previousPage = 2;
   int page = 0;
   static LiquidController _liquidController;
 
@@ -25,6 +26,8 @@ class _MainViewState extends State<MainView> {
   //set variable
   DateTime activeDate = DateTime.now();
   String documentId = "";
+  bool editController = false;
+  set isEditing(bool value) => setState(() => editController = value);
   set date(DateTime value) => setState(() => activeDate = value);
   set documentIdReference(String value) => setState(() => documentId = value);
   List<Container> pages;
@@ -51,10 +54,14 @@ class _MainViewState extends State<MainView> {
       liquidController: _liquidController,
       // ignoreUserGestureWhileAnimating: true,
       onPageChangeCallback: (index) => {
-        if (index != 2) {FocusScope.of(context).unfocus()},
-        print(inkling.userProfile.toString()),
-        print(activeDate),
-        print(documentId),
+        if (index != 3) {FocusScope.of(context).unfocus()},
+        if (previousPage == 3 && index == 2) editController = false, //
+        print('$previousPage'),
+        print('switching to $index'),
+        // print(inkling.userProfile.toString()),
+        // print(activeDate),
+        // print(documentId),
+        previousPage = index,
       },
       pages: [
         Container(
@@ -64,14 +71,17 @@ class _MainViewState extends State<MainView> {
         ),
         Container(
           child: Calendar(
-              title: "Diary Calendar",
-              liquidController: _liquidController,
-              activeDate: activeDate,
-              documentId: documentId), //index 0
+            title: "Diary Calendar",
+            liquidController: _liquidController,
+            activeDate: activeDate,
+            documentId: documentId,
+            editController: editController,
+          ), //index 0
         ),
         Container(
           child: TimeLineView(
             liquidController: _liquidController,
+            editController: editController,
           ),
         ),
         Container(
@@ -79,21 +89,22 @@ class _MainViewState extends State<MainView> {
             activeDate: activeDate,
             documentId: documentId,
             liquidController: _liquidController,
+            editController: editController,
           ),
         ),
-        Container(
-          color: Colors.red,
-          alignment: Alignment.center,
-          child: Row(
-            children: [
-              Icon(
-                Icons.chevron_left_rounded,
-                size: 80.0,
-                color: Colors.white,
-                )                        
-            ],
-          ),
-        ),
+        // Container(
+        //   color: Colors.red,
+        //   alignment: Alignment.center,
+        //   child: Row(
+        //     children: [
+        //       Icon(
+        //         Icons.chevron_left_rounded,
+        //         size: 80.0,
+        //         color: Colors.white,
+        //       )
+        //     ],
+        //   ),
+        // ),
       ],
     );
     // @override
@@ -144,4 +155,5 @@ class _MainViewState extends State<MainView> {
 
 typedef void DateTimeCallback(DateTime val);
 typedef void StringCallback(String val);
+typedef void BoolCallback(bool val);
 //declare here as well

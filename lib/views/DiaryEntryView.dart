@@ -44,7 +44,12 @@ class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
   LiquidController liquidController;
-  DiaryEntryView({this.documentId, this.activeDate, this.liquidController});
+  bool editController;
+  DiaryEntryView(
+      {this.documentId,
+      this.activeDate,
+      this.liquidController,
+      this.editController});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -121,6 +126,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
+    }
+    if (widget.editController) {
+      _isEditingText = true;
     }
     entryFocusNode = FocusNode();
     titleFocusNode = FocusNode();
