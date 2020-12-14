@@ -197,6 +197,7 @@ class _TimeLineView extends State<TimeLineView> {
         heroTag: null,
         onPressed: () => {
           MainView.of(context).documentIdReference = '',
+          MainView.of(context).date = DateTime.now(),
           widget.liquidController.animateToPage(page: 3, duration: 750)
         },
         child: Icon(Icons.add),
