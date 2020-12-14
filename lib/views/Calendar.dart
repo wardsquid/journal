@@ -129,17 +129,18 @@ class _CalendarState extends State<Calendar> {
   }
 
   Future<void> _deleteEntry(docId) {
-    // deletes from local storage
-    final int deleteIndex = inkling.orderedListIDMap[widget.documentId];
-    inkling.orderedList.removeAt(deleteIndex);
-    // deletes picture from cloud storage
-    if (inkling.activeEntry['content']['image']) {
-      deletePhoto(widget.documentId);
+    if (inkling.orderedListIDMap.containsKey(docId)) {
+      // deletes from local storage
+      final int deleteIndex = inkling.orderedListIDMap[docId];
+      inkling.orderedList.removeAt(deleteIndex);
+      // deletes picture from cloud storage
+      if (inkling.activeEntry['content']['image']) {
+        deletePhoto(docId);
+      }
+      if (docId == widget.documentId) {
+        MainView.of(context).documentIdReference = '';
+      }
     }
-    if (docId == widget.documentId) {
-      MainView.of(context).documentIdReference = '';
-    }
-
     // delete entry from firestore and sets the state
     return entries.doc(docId).delete().then((value) {
       getCalendarEntries(_selectedDay);

@@ -39,7 +39,6 @@ class _MainViewState extends State<MainView> {
 
   // @override
   void dispose() {
-    //   _liquidController.dispose();
     super.dispose();
   }
 
@@ -48,20 +47,12 @@ class _MainViewState extends State<MainView> {
     return LiquidSwipe(
       initialPage: 2,
       fullTransitionValue: 200,
-      // onPageChangeCallback: () => print("here"),
       enableLoop: false,
       waveType: WaveType.liquidReveal,
       liquidController: _liquidController,
-      // ignoreUserGestureWhileAnimating: true,
       onPageChangeCallback: (index) => {
         if (index != 3) {FocusScope.of(context).unfocus()},
-        // if(editController == true && index == 3) {FocusScope.of(context).unfocus()
         if (previousPage == 3 && index == 2) editController = false, //
-        print('$previousPage'),
-        print('switching to $index'),
-        // print(inkling.userProfile.toString()),
-        // print(activeDate),
-        // print(documentId),
         previousPage = index,
       },
       pages: [
