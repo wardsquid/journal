@@ -1527,24 +1527,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       // ),
                     ),
                     Container(
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.chevron_left_rounded,
-                            size: 80.0,
-                            color: Colors.white,
-                          ),
-                          Spacer(),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 80.0,
-                            color: Colors.white,
-                          )
-                        ],
-                      ),
-                    ), //chevron icons
-                    Container(
                         alignment: Alignment.center,
                         child: FlatButton(
                           onPressed: () {
