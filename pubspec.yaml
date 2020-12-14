@@ -58,6 +58,7 @@ dependencies:
   liquid_swipe: ^1.5.0
   autocomplete_textfield: ^1.7.3
   basic_utils: ^2.6.3
+  esys_flutter_share: ^1.0.2
 
 dev_dependencies:
   flutter_test:

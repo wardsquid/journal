@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:inkling/managers/DateToHuman.dart';
 import 'package:share/share.dart';
 import '../managers/userInfo.dart' as inkling;
@@ -22,6 +23,7 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart' as esys;
 
 // import managers
 import '../managers/Firebase.dart';
@@ -820,8 +822,20 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           label: 'Share with a friend',
                           // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () => {
-                            Share.share(entryText, subject: titleText),
-                            print('THIRD CHILD')
+                            if (_image == null)
+                              {
+                                if (_bucketUrl == "")
+                                  {
+                                    Share.share(entryText, subject: titleText),
+                                  }
+                                else
+                                  {_shareImageFromUrl()}
+                              }
+                            else
+                              {
+                                Share.shareFiles([_image.path],
+                                    subject: titleText, text: entryText)
+                              }
                           },
                         )
                       ] +
@@ -859,6 +873,21 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     ]
                   : [])),
     );
+  }
+
+///////////////////////////////////////////////////////////////////////
+  /// SHARE IMAGE FROM URL
+///////////////////////////////////////////////////////////////////////
+  Future<void> _shareImageFromUrl() async {
+    try {
+      var request = await HttpClient().getUrl(Uri.parse(_bucketUrl));
+      var response = await request.close();
+      Uint8List bytes = await consolidateHttpClientResponseBytes(response);
+      await esys.Share.file('Share with', 'share.jpg', bytes, 'image/jpg',
+          text: titleText + '\n' + entryText);
+    } catch (e) {
+      print('error: $e');
+    }
   }
 
 ///////////////////////////////////////////////////////////////////////
