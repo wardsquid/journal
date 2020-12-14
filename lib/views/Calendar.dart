@@ -233,6 +233,7 @@ class _CalendarState extends State<Calendar> {
         ],
       )),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'calendarNewEntry',
         backgroundColor: Color(0xFFFA6164),
         label: Text("New Entry"),
         onPressed: () => {
