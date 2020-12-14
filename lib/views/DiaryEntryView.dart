@@ -1302,19 +1302,22 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     _trackReady = false;
                   });
                 }))
-        : ListTile(
-            leading:
-                Image.network(_storedTrack.imageUrl, width: 70, height: 70),
-            title: Text('${_storedTrack.track}'),
-            subtitle: Text('${_storedTrack.artist}'),
-            isThreeLine: true,
-            trailing: IconButton(
-                icon: Icon(Icons.play_circle_fill,
-                    color: Colors.green, size: 50.0),
-                onPressed: () {
-                  // play in spotify
-                  _playSpotifyTrack();
-                }),
+        : Padding(
+            padding: EdgeInsets.only(bottom: 50),
+            child: ListTile(
+              leading:
+                  Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+              title: Text('${_storedTrack.track}'),
+              subtitle: Text('${_storedTrack.artist}'),
+              isThreeLine: true,
+              trailing: IconButton(
+                  icon: Icon(Icons.play_circle_fill,
+                      color: Colors.green, size: 50.0),
+                  onPressed: () {
+                    // play in spotify
+                    _playSpotifyTrack();
+                  }),
+            ),
           );
   }
 
