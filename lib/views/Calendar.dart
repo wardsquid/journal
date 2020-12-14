@@ -39,7 +39,6 @@ class _CalendarState extends State<Calendar> {
   CollectionReference entries = getFireStoreEntriesDB();
 
   Future<void> getCalendarEntries(dateWithMonth) async {
-    // print(dateWithMonth);
     if (!mounted) return;
 
     Map<DateTime, List> entryParser = {};
@@ -70,7 +69,6 @@ class _CalendarState extends State<Calendar> {
                 } else {
                   entryParser[formatDate] = [entryInfo["title"]];
                 }
-                //print(_entries);
               })
             });
 
@@ -254,8 +252,6 @@ class _CalendarState extends State<Calendar> {
 ///////////////////////////////////////////////////////////////////////
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
-    // print(first.toString());
-    // print(first);
     getCalendarEntries(first);
   }
 

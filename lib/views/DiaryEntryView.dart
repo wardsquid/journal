@@ -738,29 +738,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// SPEED DIAL
 ////////////////////////////////////////////////////////////////
   Widget speedDial() {
-    // print('speedDial');
-    // print(inkling.userProfile.toString());
     return SpeedDial(
-      // both default to 16
-
-      // marginRight: 18,
-      // marginBottom: 20,
       elevation: 10,
       animatedIcon: AnimatedIcons.menu_close,
       animatedIconTheme: IconThemeData(size: 22.0),
-      // this is ignored if animatedIcon is non null
-      // child: Icon(Icons.add),
-      visible: true, //_dialVisible,
-      // If true user is forced to close dial manually
-      // by tapping main button and overlay is not rendered.
+      visible: true,
       closeManually: false,
       curve: Curves.bounceIn,
       overlayColor: Colors.black,
       overlayOpacity: 0.5,
-      onOpen: () => {
-        print('OPENING DIAL'),
-      },
-      onClose: () => print('DIAL CLOSED'),
+      onOpen: () => {},
+      onClose: () => {},
       tooltip: 'Speed Dial',
       heroTag: 'speed-dial-hero-tag',
       backgroundColor: Color(0xFF8BBFE3),
@@ -772,10 +760,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 child: Icon(Icons.menu_book),
                 backgroundColor: Color(0xFF8BBFE3),
                 label: 'Current Journal: ${inkling.currentJournal}',
-                // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => {
-                  // print(inkling.userProfile.keys.toString()),
-                  // print(_user.email),
                   _scaffoldKey.currentState.openDrawer(),
                 },
               ),
@@ -784,14 +769,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 child: Icon(Icons.add_photo_alternate),
                 backgroundColor: Color(0xFFf2296a),
                 label: 'Add from Gallery',
-                // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => _getFromGallery(),
               ),
               SpeedDialChild(
                 child: Icon(Icons.add_a_photo),
                 backgroundColor: Color(0xFFFA6164),
                 label: 'Add from Camera',
-                // labelStyle: TextStyle(fontSize: 18.0),
                 onTap: () => _getFromCamera(),
               ),
             ])
@@ -804,15 +787,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   child: Icon(Icons.menu_book),
                   backgroundColor: Colors.orange[300],
                   label: 'Current Journal: ${inkling.currentJournal}',
-                  // labelStyle: TextStyle(fontSize: 18.0),
                   onTap: () => {
-                    // print(inkling.userProfile.keys.toString()),
-                    // print(_user.email),
                     _scaffoldKey.currentState.openDrawer(),
                   },
                 ),
-
-                // if
               ] +
               (widget.documentId != '' && ownerId == _user.uid
                   ? [
@@ -820,7 +798,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           child: Icon(Icons.share),
                           backgroundColor: Color(0xFFFA6164),
                           label: 'Share with a friend',
-                          // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () => {
                             if (_image == null)
                               {
@@ -844,7 +821,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           child: Icon(Icons.restore_from_trash_outlined),
                           backgroundColor: Color(0xFFf2296a),
                           label: 'Delete entry',
-                          // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () {
                             showDialog(
                               context: context,
@@ -857,15 +833,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         )
                       ]
                   : []) +
-              // Renders the report button only if it is not a blank document
-              // and the owner id is not the user
               (widget.documentId != '' && ownerId != _user.uid
                   ? [
                       SpeedDialChild(
                           child: Icon(Icons.mail),
                           backgroundColor: Colors.black,
                           label: 'Report Entry',
-                          // labelStyle: TextStyle(fontSize: 18.0),
                           onTap: () => {
                                 launch(_emailLaunchUri.toString()),
                                 print('Report Functionality'),
@@ -936,22 +909,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   createdEntry["content"]["url"] = _storedTrack.url,
                 },
               setState(() {
-                // inkling.lastTimelineFetch = inkling
-                // inkling.localDocumentStorage[value.id] = createdEntry;
-                // print(inkling.localDocumentStorage[value.id]);
                 MainView.of(context).documentIdReference = value.id.toString();
                 ownerId = _user.uid;
                 inkling.activeEntry = createdEntry;
-                // print(inkling.activeEntry.toString());
-                // print(ownerId);
-                // print(widget.documentId);
-                // print(ownerId);
-                // print(widget.documentId);
               }),
               if (_image != null)
                 {
-                  ////
-                  // inkling.lastTimelineFetch = null,
                   _storage
                       .ref("${_user.uid}/${value.id}")
                       .putFile(_image)
@@ -961,7 +924,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         .getDownloadURL()
                         .then((url) {
                       createdEntry["imageUrl"] = url;
-                      // setState(() {
                       inkling.orderedListIDMap
                           .forEach((key, value) => value = value + 1);
                       inkling.orderedListIDMap[value.id.toString()] = 0;
@@ -1024,9 +986,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 },
               if (_image != null)
                 {
-                  // inkling.lastTimelineFetch = null,
-                  // inkling.orderedList[index]["imageUrl"] = '',
-                  // inkling.orderedList[index]["doc_id"] = widget.documentId,
                   _storage
                       .ref(
                           "${inkling.activeEntry['user_id']}/${widget.documentId}")
@@ -1067,7 +1026,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           "lon": _coordinates[1].toString()
         });
         location = results.data;
-        // print(location);
       }
 
       //pulls labels from image
@@ -1177,11 +1135,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       onTap: () async {
         await _initializeSpotify();
         if (_spotifyToken != null) {
-          //   print("updating for token $_spotifyToken");
-          //   setState(() {
-          //     _todaysTracks = [];
-          //   });
-          //   await _updateLatestSpotifyTrack();
           _selectTrackPopup(context);
         } else {
           _linkSpotifyPopup(context);
@@ -1221,9 +1174,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       return Alert(
           context: context,
           title: "Type a song you listened to today:",
-          //_todaysTracks[0].track,
-          content: //_currentSpotifyTrack(),
-              AutoCompleteTextField(
+          content: AutoCompleteTextField(
             key: _autoCompleteKey,
             controller: _suggestionTextFieldController,
             clearOnSubmit: false,
@@ -1463,7 +1414,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         _trackReady = false;
         _spotifyUrl = null;
         // = "";
-        // inkling.localDocumentStorage.remove(widget.documentId);
         MainView.of(context).documentIdReference = '';
       });
       Navigator.of(context).pop();
@@ -1475,11 +1425,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   @override
   Widget build(BuildContext context) {
-    // print(_isEditingText);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF8BBFE3),
-        //home  edit
         leading: (() {
           if (_isEditingText == true) {
             return _cancelFloatingButton();
@@ -1496,9 +1444,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         })(),
         title: ownerId != _user.uid &&
                 inkling.activeEntry['shared_with'].length > 0
-            ?
-            // Text("Shared Journal")
-            (inkling.activeEntry['user_name'] == null)
+            ? (inkling.activeEntry['user_name'] == null)
                 ? Text("Shared Journal")
                 : Text(
                     "Shared by ${inkling.activeEntry['user_name'].split(" ")[0]}")
@@ -1508,25 +1454,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           callAction(),
         ],
       ),
-      // floatingActionButton: Row(children: [
-      //   SizedBox(
-      //     width: 30,
-      //   ),
-      //   if (_isEditingText == true) _cancelFloatingButton(),
-      //   Spacer(
-      //     flex: 1,
-      //   ),
-      //   if (_isEditingText == false &&
-      //       widget.documentId != "" &&
-      //       ownerId == _user.uid)
-      //     _editFloatingButton(),
-      //   if (_isEditingText == true) _saveFloatingButton()
-      // ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endTop,
       body: Scaffold(
         backgroundColor: Color(0xFF2C4096), // background color
         key: _scaffoldKey,
-        // resizeToAvoidBottomInset: false,
         drawerEnableOpenDragGesture: false,
         drawer: Scaffold(
             backgroundColor: Colors.transparent,
@@ -1539,8 +1470,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 updateJournalSharingInDB,
                 updateJournalsListName,
                 deleteJournal)),
-        // body: AnnotatedRegion<SystemUiOverlayStyle>(
-        // value: SystemUiOverlayStyle.light,
         body: widget.documentId == "" && _isEditingText == false
             ? Center(
                 child: Stack(
@@ -1704,12 +1633,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                         )),
                                   ],
                                 )
-
-                              // Image.asset(
-                              //     'assets/Inkling_Login.png',
-                              //     width: MediaQuery.of(context).size.width - 20,
-                              //     semanticLabel: "Inkling Logo",
-                              //   )
                               // if an image is being loaded from the DB
                               : FadeInImage(
                                   image: NetworkImage(_bucketUrl),
@@ -1746,57 +1669,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       SizedBox(height: MediaQuery.of(context).size.height / 50),
                       if (_trackReady) _storedSpotifyTrack(),
                       SizedBox(height: MediaQuery.of(context).size.height / 50),
-
-                      // if (_isEditingText == false && ownerId != _user.uid)
-                      //   Center(
-                      //     // alignment: FractionalOffset.bottomRight,
-                      //     child: FlatButton(
-                      //       color: Colors.purpleAccent,
-                      //       child: Padding(
-                      //         padding: const EdgeInsets.all(8.0),
-                      //         child: Text(
-                      //           buttonText,
-                      //           style: TextStyle(fontSize: 25, color: Colors.white),
-                      //         ),
-                      //       ),
-                      //       // elevation: 5,
-                      //       shape: RoundedRectangleBorder(
-                      //           borderRadius: BorderRadius.circular(40)),
-                      //       onPressed: () {
-                      //         initSpeechState();
-                      //         setState(() {
-                      //           // tempTitleText = titleText;
-                      //           // tempEntryText = entryText;
-                      //           _isEditingText = true;
-
-                      //           inkling.activeEntry = null;
-                      //           if (ownerId != "") {
-                      //             MainView.of(context).date = DateTime.now();
-                      //           }
-                      //           ownerId = "";
-                      //           entryText = "";
-                      //           titleText = "";
-                      //           tempTitleText = "";
-                      //           tempEntryText = "";
-                      //           _image = null;
-                      //           _bucketUrl = '';
-                      //           lastWords = "";
-                      //           lastError = "";
-                      //           lastStatus = "";
-                      //           _currentTrack = null;
-                      //           _storedTrack = null;
-                      //           _trackReady = false;
-                      //           _spotifyUrl = null;
-                      //           _entryEditingController =
-                      //               TextEditingController(text: entryText);
-                      //           _titleEditingController =
-                      //               TextEditingController(text: titleText); // = "";
-                      //           MainView.of(context).documentIdReference = '';
-                      //         });
-                      //       },
-                      //     ),
-                      //   ),
-                      // SizedBox(height: MediaQuery.of(context).size.height / 20),
+                      SizedBox(height: MediaQuery.of(context).size.height / 20),
                     ],
                   ),
                 ),
@@ -1804,30 +1677,5 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         floatingActionButton: speedDial(),
       ), // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
-    // );
   }
 }
-// setState(() {
-//   _isEditingText = true;
-//   buttonText = "Save";
-//   _entryEditingController =
-//       TextEditingController(text: entryText);
-//   _titleEditingController =
-//       TextEditingController(text: titleText);
-//   inkling.activeEntry = null;
-//   ownerId = "";
-//   entryText = "";
-//   titleText = "";
-//   tempTitleText = "";
-//   tempEntryText = "";
-//   _image = null;
-//   _bucketUrl = '';
-//   lastWords = "";
-//   lastError = "";
-//   lastStatus = "";
-//   _currentTrack = null;
-//   _storedTrack = null;
-//   _trackReady = false;
-//   _spotifyUrl = null; // = "";
-//   MainView.of(context).documentIdReference = '';
-// });

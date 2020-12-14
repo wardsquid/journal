@@ -81,7 +81,6 @@ class _TFLiteState extends State<TFLite> {
       model: "assets/mobilenet_v1_1.0_224.tflite",
       labels: "assets/model.txt",
     );
-    print(res);
   }
 
   Future getImage() async {

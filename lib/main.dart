@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if(_user != null) inkling.initializeUserCaching();
 
     return MaterialApp(
       title: 'Inkling',

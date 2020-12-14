@@ -85,8 +85,6 @@ Widget journalTile(
                         deleteJournal);
                   },
                   barrierDismissible: false,
-
-                  // print("renaming / sharing whole diary /delete diary")},
                 ))
         : null,
     title: Text(
@@ -166,10 +164,6 @@ Widget journalSettings(
     Function updateJournalSharingInDB,
     Function updateJournalsListName,
     Function deleteJournal) {
-  // final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  print("here");
-
-  // print(sharingWith);
   return AlertDialog(
     title: Text("$title's Setting page"),
     content: SingleChildScrollView(
@@ -206,7 +200,6 @@ Widget journalSettings(
               ),
               RaisedButton(
                 onPressed: () {
-                  // print(inkling.currentlySharingWith.toString());
                   updateJournalSharingInDB(title);
                   Navigator.of(context).pop();
                 },
@@ -234,9 +227,6 @@ Widget journalSettings(
                         return changeDiaryName(
                             context, title, updateJournalsListName);
                       });
-                  // print(inkling.currentlySharingWith.toString());
-                  // updateJournalSharingInDB(title);
-                  // Navigator.of(context).pop();
                 },
                 color: Colors.purpleAccent,
                 child: Padding(
@@ -285,7 +275,6 @@ Widget addFriendJournalSharing(BuildContext context, String title,
     Map<String, dynamic> friend, Function updateSharingList) {
   return new StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
-    print('called SB');
     List<dynamic> sharingWith = inkling.currentlySharingWith.containsKey(title)
         ? inkling.currentlySharingWith[title]
         : [];
@@ -297,7 +286,6 @@ Widget addFriendJournalSharing(BuildContext context, String title,
             setState(() => {
                   sharingWith.add(friend["email"]),
                   updateSharingList(title, sharingWith),
-                  // print(sharingWith.contains(friend["email"])),
                 })
           }
         else
@@ -305,7 +293,6 @@ Widget addFriendJournalSharing(BuildContext context, String title,
             setState(() => {
                   sharingWith.remove(friend["email"]),
                   updateSharingList(title, sharingWith),
-                  // print(sharingWith),
                 })
           }
       },
@@ -371,7 +358,6 @@ Widget deleteDiary(BuildContext context, String title, Function deleteJournal) {
   );
 }
 
-// }
 /////////////////////////////////////////////
 /// CHANGE DIARY NAME
 /////////////////////////////////////////////
@@ -421,12 +407,6 @@ Widget changeDiaryName(
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             FocusScope.of(context).unfocus();
-
-            // if (_formKey.currentState.validate()) {
-            //   updateJournal(_diaryController.text);
-            //   _formKey.currentState.save();
-            //   Navigator.of(context).pop();
-            // }
           }),
       FlatButton(
           child: Text('Cancel'),

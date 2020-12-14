@@ -93,64 +93,8 @@ class _MainViewState extends State<MainView> {
             editController: editController,
           ),
         ),
-        // Container(
-        //   color: Colors.red,
-        //   alignment: Alignment.center,
-        //   child: Row(
-        //     children: [
-        //       Icon(
-        //         Icons.chevron_left_rounded,
-        //         size: 80.0,
-        //         color: Colors.white,
-        //       )
-        //     ],
-        //   ),
-        // ),
       ],
     );
-    // @override
-    // Widget build(BuildContext context) {
-    //   return SafeArea(
-    //       child: Scaffold(
-    //     body: LiquidSwipe(
-    //       pages: pages,
-    //       enableLoop: false,
-    //       fullTransitionValue: 300,
-    //       //if (pages[i] = pages[pages.length -1]) return false else true;
-    //       enableSlideIcon: true,
-    //       waveType: WaveType.liquidReveal,
-    //       positionSlideIcon: .5,
-    //     ),
-    //   ));
-    // }
-
-    // @override
-    // Widget build(BuildContext context) {
-    //   return PageView(
-    //       controller: _pageController,
-    //       onPageChanged: (index) {
-    //         if (index != 2) {
-    //           FocusScope.of(context).unfocus();
-    //         }
-    //         print(inkling.userProfile.toString());
-    //         print(activeDate);
-    //         print(documentId);
-    //       },
-    //       children: [
-    //         TimeLineView(),
-    //         Calendar(
-    //             title: "Diary Calendar",
-    //             tabController: _pageController,
-    //             activeDate: activeDate,
-    //             documentId: documentId), //index 0
-    //         DiaryEntryView(activeDate: activeDate, documentId: documentId),
-    //         UserProfile(),
-    //         Container(
-    //           color: Colors.red,
-    //         ), //index 2
-    //         //TFLite() TF ML functions may not need
-    //       ]);
-    // }
   }
 }
 

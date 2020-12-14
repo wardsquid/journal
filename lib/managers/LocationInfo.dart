@@ -4,9 +4,7 @@ import 'dart:typed_data';
 import 'package:exif/exif.dart';
 
 Future<List<double>> getExifFromFile(File selectedPhoto) async {
-  print("called");
   if (selectedPhoto == null) {
-    print('none found');
     return null;
   }
   Uint8List bytes = await selectedPhoto.readAsBytes();
