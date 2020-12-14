@@ -82,7 +82,8 @@ class _UserProfile extends State<UserProfile> {
                 );
                 reminderTime = time;
                 isTimeSet = true;
-                print("reminder time set to  " + reminderTime.toString());
+                // debug reminder
+                // print("reminder time set to  " + reminderTime.toString());
                 return DateTimeField.convert(time);
               },
             ),

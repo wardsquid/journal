@@ -11,10 +11,6 @@ final FirebaseStorage _storage = getStorage();
 final Map<DateTime, List> entryParser = {};
 
 Future<QuerySnapshot> fireStoreUserQuery(DateTime today) async {
-  // print(today.toString());
-  // print(
-  //     "less than ${DateTime(today.year, today.month + 1, today.day, today.hour + 1).toString()}");
-  // // print("greater than ${DateTime(today.year, today.month)}");
   return await _entries
       .where('user_id', isEqualTo: _user.uid)
       .where('timestamp',

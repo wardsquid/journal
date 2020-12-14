@@ -32,7 +32,6 @@ Future<void> getReminder() async {
     Timestamp data = documentSnapshot.data()["reminder"];
     if (data != null) {
       reminderTime = DateTime.parse(data.toDate().toString());
-      print("data from snapshot: $reminderTime");
       notificationPlugin.showDailyAtTime(reminderTime);
     }
   }).onError((error) => {print("Error getting reminder: $error")});
@@ -47,6 +46,7 @@ User checkUserLoginStatus() {
 }
 
 Future<FirebaseMessaging> setUpNotifications() async {
+  // ignore: unused_local_variable
   NotificationSettings settings = await _messaging.requestPermission(
     alert: true,
     announcement: false,
@@ -56,8 +56,6 @@ Future<FirebaseMessaging> setUpNotifications() async {
     provisional: false,
     sound: true,
   );
-
-  print('User granted permission: ${settings.authorizationStatus}');
   return _messaging;
 }
 
@@ -94,7 +92,6 @@ Future<void> addUser() async {
       'friends': [],
     }).then((value) async {
       await inkling.initializeUserCaching();
-      print("Successfully added user $currentUser");
     }).catchError((error) => {print("Failed to add user: $error")});
   } else {
     if (inkling.userProfile == null) await inkling.initializeUserCaching();
@@ -137,22 +134,6 @@ getUserProfile() async {
   bool your_variable_name = await checkFriendEmail("insert email string here");
   print("friends exist = ${your_variable_name}");
 */
-
-/////////////////////////////////////////////
-/// ADD NEW JOURNAL
-/////////////////////////////////////////////
-// Future<bool> addNewJournal(String title) async {
-//   CollectionReference users = getFireStoreUsersDB();
-//   User currentUser = checkUserLoginStatus();
-//   try {
-//     users.doc(currentUser.uid).update({
-//       'journals_list': FieldValue.arrayUnion([title])
-//     });
-//     return true;
-//   } catch (error) {
-//     return false;
-//   }
-// }
 
 /////////////////////////////////////////////
 /// ADD NEW JOURNAL
@@ -237,10 +218,8 @@ Future<bool> deleteJournalEntriesCascade(String journalName) async {
     toBeRemoved.docs.forEach((document) {
       Map<String, dynamic> entry = document.data();
       if (entry["content"]["image"] == true) {
-        print('deleting photo associated with ${document.id}');
         deletePhoto(document.id);
       }
-      print('deleting ${document.id}');
       _entries.doc(document.id).delete();
     });
     return true;

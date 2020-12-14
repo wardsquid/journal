@@ -28,6 +28,5 @@ String dateToHumanReadable(DateTime date) {
       (date.minute.toString().length == 1
           ? '0' + date.minute.toString()
           : date.minute.toString());
-  // print(toBeDisplayed.contains(" 12:00"));
   return toBeDisplayed;
 }

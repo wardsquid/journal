@@ -76,7 +76,6 @@ class _TimeLineView extends State<TimeLineView> {
         inkling.orderedList.forEach((element) =>
             inkling.orderedListIDMap[element['id']] =
                 inkling.orderedList.indexOf(element));
-        print(inkling.orderedList.toString());
       });
   }
 
@@ -101,11 +100,7 @@ class _TimeLineView extends State<TimeLineView> {
     sharedRetrievalQuery = fireStoreSharedQuery(date);
     sharedRetrievalQuery.then((value) => {
           value.docs.forEach((element) {
-            // print(element.data());
             Map<String, dynamic> entry = element.data();
-            // if (entry['timestamp'].runtimeType == Timestamp)
-            //   entry['timestamp'] = entry['timestamp'].toDate();
-            // inkling.addToLocalStorage(element.id, entry);
 
             if (entry["content"]["image"] == true && mounted) {
               downloadURLImage(entry["user_id"], element.id).then((value) => {
@@ -129,26 +124,23 @@ class _TimeLineView extends State<TimeLineView> {
 
   void initState() {
     super.initState();
-    print("init");
 
     _spotifyToken = fetchSpotifyToken();
     if (inkling.lastTimelineFetch != null &&
         DateTime.now().difference(inkling.lastTimelineFetch).inMinutes < 5) {
       display = inkling.orderedList;
-      print(DateTime.now().difference(inkling.lastTimelineFetch));
+      // Timer Debug
+      // print(DateTime.now().difference(inkling.lastTimelineFetch));
     } else {
-      print('fetching from DB');
       parseQuery(today);
     }
   }
 
   @override
   void dispose() {
-    print("dispose");
     sharedRetrievalQuery = null;
     userRetrievalQuery = null;
     super.dispose();
-    //_spotifyToken = fetchSpotifyToken();
   }
 
   @override

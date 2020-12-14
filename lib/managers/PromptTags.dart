@@ -67,12 +67,10 @@ Future<String> createTagAlert(BuildContext context, List localList) {
                 elevation: 5.0,
                 child: Text('All Set!'),
                 onPressed: () {
-                  print(selectedTagsList);
                   selectedTagsList.forEach((selectedTag) {
                     selectedTagsString += '$selectedTag\n\n';
                   });
                   Navigator.of(context).pop(selectedTagsString);
-                  print('afternavigator $selectedTagsList.');
                 },
               )
             ],

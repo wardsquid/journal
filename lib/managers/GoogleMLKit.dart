@@ -4,7 +4,6 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 
 Future<Map<String, double>> readLabel(File pickedImage) async {
   Map<String, double> labelMap = {};
-  print('begin analysis');
   FirebaseVisionImage myImage = FirebaseVisionImage.fromFile(pickedImage);
   ImageLabeler labeler = FirebaseVision.instance.imageLabeler();
   List labels = await labeler.processImage(myImage);
@@ -84,9 +83,7 @@ List<String> generateText(Map<String, double> labelMap) {
     'Did you share with anyone?',
   ]);
   //The original labelMap maybe full of useless tags, so we create a new variable to filter out tags with a confidence less than 80%
-  print('Printing the ORIGINAL map $labelMap');
   labelMap.removeWhere((String key, double value) => value < .60);
-  print('Printing the FILTERED map: $labelMap');
   labelMap.forEach((key, value) {
     if (animals.contains(key)) {
       animalPrompts.forEach((prompt) {
@@ -115,36 +112,5 @@ List<String> generateText(Map<String, double> labelMap) {
     }
   });
   generatedTextList = generatedTextList.toSet().toList();
-  print('generated text: $generatedTextList');
   return generatedTextList;
 }
-
-// if (people.contains(key)) {
-//   generatedText +=
-//       'Today I spent time with... . \n They were doing... \n Its been.... since I saw them \n I felt... \n';
-//   people = List.from([]);
-// }
-// if (animals.contains(key)) {
-//   generatedText +=
-//       'Today I took a picture of this $key \n It was so...\n After I felt... \n';
-//   animals = List.from([]);
-// }
-// if (places.contains(key)) {
-//   generatedText +=
-//       'Today I spent time at... $key. \n I went there by...\n It was nice to get out of the house and...\n';
-//   places = List.from([]);
-// }
-// if (events.contains(key)) {
-//   generatedText +=
-//       'Today I went to a $key\n It was ...\n I took this picture...\n I hope';
-//   events = List.from([]);
-// }
-// if (food.contains(key)) {
-//   generatedText += 'Today I enjoyed eating... $key. \n';
-//   food = List.from([]);
-// }
-// if (bento.contains(key)) {
-//   generatedText +=
-//       'Today I laid my eyes upon the most beautiful $key. \n It was the finest, most perfect $key \n NEVER in my life did I ever see such fluffy rice, \n most vividly colorful vegetables, \n ...and juciest meat 😍 \n Can you believe it was only 400 yen?!? Its crazy! \n I knew I must eat it so I fought 40 people and 70 more \n just for the chance of trying the worlds most beautiful bento.';
-//   bento = List.from([]);
-// }
