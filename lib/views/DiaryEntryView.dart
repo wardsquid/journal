@@ -630,6 +630,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
+              _chosenTrack = null;
               _currentTrack = null;
               _storedTrack = null;
               _trackReady = false;
@@ -856,6 +857,15 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
     print(widget.activeDate);
+    if (_spotifyUrl != null) {
+      print('storedTrack');
+      print(_storedTrack);
+      print(_storedTrack.artist);
+      print(_storedTrack.track);
+      print(_storedTrack.imageUrl);
+      print(_storedTrack.url);
+    }
+
     Map<String, dynamic> createdEntry = {
       'user_id': _user.uid,
       'user_name': _user.displayName,
@@ -880,6 +890,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     dynamic newEntry = await entries
         .add(createdEntry)
         .then((value) => {
+              if (_spotifyUrl != null)
+                {
+                  createdEntry["content"]["track"] = _storedTrack.track,
+                  createdEntry["content"]["artist"] = _storedTrack.artist,
+                  createdEntry["content"]["albumImage"] = _storedTrack.imageUrl,
+                  createdEntry["content"]["url"] = _storedTrack.url,
+                },
               setState(() {
                 // inkling.lastTimelineFetch = inkling
                 // inkling.localDocumentStorage[value.id] = createdEntry;
@@ -887,9 +904,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 MainView.of(context).documentIdReference = value.id.toString();
                 ownerId = _user.uid;
                 inkling.activeEntry = createdEntry;
-                print(inkling.activeEntry.toString());
-                print(ownerId);
-                print(widget.documentId);
+                // print(inkling.activeEntry.toString());
+                // print(ownerId);
+                // print(widget.documentId);
                 // print(ownerId);
                 // print(widget.documentId);
               }),
@@ -956,6 +973,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .doc(widget.documentId)
         .update(updatedEntry)
         .then((value) => {
+              if (_storedTrack != null)
+                {
+                  inkling.orderedList[index]["content"]["track"] =
+                      _storedTrack.track,
+                  inkling.orderedList[index]["content"]["artist"] =
+                      _storedTrack.artist,
+                  inkling.orderedList[index]["content"]["albumImage"] =
+                      _storedTrack.imageUrl,
+                  inkling.orderedList[index]["content"]["url"] =
+                      _storedTrack.url,
+                },
               if (_image != null)
                 {
                   // inkling.lastTimelineFetch = null,
@@ -1361,6 +1389,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         lastWords = "";
         lastError = "";
         lastStatus = "";
+        _chosenTrack = null;
         _currentTrack = null;
         _storedTrack = null;
         _trackReady = false;
