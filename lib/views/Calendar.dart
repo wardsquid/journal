@@ -13,12 +13,14 @@ class Calendar extends StatefulWidget {
   LiquidController liquidController;
   DateTime activeDate;
   String documentId;
+  bool editController;
   Calendar(
       {Key key,
       this.documentId,
       this.title,
       this.liquidController,
-      this.activeDate})
+      this.activeDate,
+      this.editController})
       : super(key: key);
 
   @override
@@ -227,6 +229,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
+          MainView.of(context).editController = true,
           widget.liquidController.jumpToPage(page: 3),
         },
         tooltip: 'New Entry',

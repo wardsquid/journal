@@ -14,7 +14,9 @@ import '../../managers/userInfo.dart' as inkling;
 
 class TimeLineView extends StatefulWidget {
   LiquidController liquidController;
-  TimeLineView({Key key, this.liquidController}) : super(key: key);
+  bool editController;
+  TimeLineView({Key key, this.liquidController, this.editController})
+      : super(key: key);
 
   @override
   _TimeLineView createState() => _TimeLineView();
@@ -181,6 +183,7 @@ class _TimeLineView extends State<TimeLineView> {
         heroTag: null,
         onPressed: () => {
           MainView.of(context).documentIdReference = '',
+          MainView.of(context).editController = true,
           MainView.of(context).date = DateTime.now(),
           widget.liquidController.animateToPage(page: 3, duration: 750)
         },
