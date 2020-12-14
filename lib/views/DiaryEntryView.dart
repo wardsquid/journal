@@ -1543,31 +1543,82 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                     ), //chevron icons
                     Container(
                         alignment: Alignment.center,
-                        child: Text(
-                          'Tap new,\n and create a new entry\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 30.0,
-                            shadows: [
-                              Shadow(
-                                  // bottomLeft
-                                  offset: Offset(-1.5, -1.5),
-                                  color: Colors.black),
-                              Shadow(
-                                  // bottomRight
-                                  offset: Offset(1.5, -1.5),
-                                  color: Colors.black),
-                              Shadow(
-                                  // topRight
-                                  offset: Offset(1.5, 1.5),
-                                  color: Colors.black),
-                              Shadow(
-                                  // topLeft
-                                  offset: Offset(-1.5, 1.5),
-                                  color: Colors.black),
-                            ],
+                        child: FlatButton(
+                          onPressed: () {
+                            initSpeechState();
+                            setState(() {
+                              _isEditingText = true;
+                              inkling.activeEntry = {
+                                "title": "### Load More ###",
+                                "timestamp": Timestamp.fromDate(
+                                    DateTime.parse("1900-01-01 13:27:00")),
+                                "content": {
+                                  "image": false,
+                                  'text': "filler",
+                                  "spotify": null,
+                                  "artist": null,
+                                  "track": null,
+                                  "albumImage": null,
+                                  "url": null, // to open in spotify
+                                },
+                                "shared_with": [],
+                                "user_name": "",
+                              };
+                              if (ownerId != "") {
+                                MainView.of(context).date = DateTime.now();
+                              }
+                              ownerId = "";
+                              entryText = "";
+                              titleText = "";
+                              tempTitleText = "";
+                              tempEntryText = "";
+                              _image = null;
+                              _bucketUrl = '';
+                              lastWords = "";
+                              lastError = "";
+                              lastStatus = "";
+                              _currentTrack = null;
+                              _storedTrack = null;
+                              _trackReady = false;
+                              _spotifyUrl = null;
+                              _entryEditingController =
+                                  TextEditingController(text: entryText);
+                              _titleEditingController = TextEditingController(
+                                  text: titleText); // = "";
+                              MainView.of(context).documentIdReference = '';
+                            });
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ), //side: BorderSide(color: Colors.white, width: 4)),
+                          // shape: StadiumBorder(),//Border.all(width: 5.0, color: Colors.white),
+                          color: Colors.orange[300],
+                          child: Text(
+                            'Tap new,\n and create a new entry\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30.0,
+                              shadows: [
+                                Shadow(
+                                    // bottomLeft
+                                    offset: Offset(-1.5, -1.5),
+                                    color: Colors.black),
+                                Shadow(
+                                    // bottomRight
+                                    offset: Offset(1.5, -1.5),
+                                    color: Colors.black),
+                                Shadow(
+                                    // topRight
+                                    offset: Offset(1.5, 1.5),
+                                    color: Colors.black),
+                                Shadow(
+                                    // topLeft
+                                    offset: Offset(-1.5, 1.5),
+                                    color: Colors.black),
+                              ],
+                            ),
                           ),
                         )),
                   ],
