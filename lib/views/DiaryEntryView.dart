@@ -1405,7 +1405,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             // Text("Shared Journal")
             (inkling.activeEntry['user_name'] == null)
                 ? Text("Shared Journal")
-                : Text("Shared by ${inkling.activeEntry['user_name']}")
+                : Text(
+                    "Shared by ${inkling.activeEntry['user_name'].split(" ")[0]}")
             : Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
@@ -1608,7 +1609,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                           0
                                   ? (inkling.activeEntry['user_name'] == null)
                                       ? " - shared entry"
-                                      : " - shared by ${inkling.activeEntry['user_name']}"
+                                      : " - shared by ${inkling.activeEntry['user_name'].split(" ")[0]}"
                                   : ''),
                           textAlign: TextAlign.center,
                         ),
