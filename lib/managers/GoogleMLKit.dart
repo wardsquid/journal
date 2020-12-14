@@ -25,108 +25,96 @@ List<String> generateText(Map<String, double> labelMap) {
   //the array of strings we will pass to the createAlert function
   List<String> generatedTextList = [];
 
-  // List<String> people = List.from(
-  //     ['Team', 'Superman', 'Person', 'Superhero', 'Baby', 'Bride', 'Crowd']);
-  // List<String> animals = List.from([
-  //   'Bird',
-  //   'Shetland sheepdog',
-  //   'Gerbil',
-  //   'Bear',
-  //   'Cat',
-  //   'Penguin',
-  //   'Duck',
-  //   'Turtle',
-  //   'Crocodile',
-  //   'Dog',
-  //   'Butterfly',
-  //   'Pet'
-  // ]);
-  // List<String> places = List.from([
-  //   'Park',
-  //   'Aquarium',
-  //   'Circus',
-  //   'Bridge',
-  //   'Ferris wheel',
-  //   'Stadium',
-  //   'Tower',
-  //   'Skyline'
-  // ]);
-  // List<String> food = List.from([
-  //   'Cheeseburger',
-  //   'Fast food',
-  //   'Hot dog',
-  //   'Meal',
-  //   'Lunch',
-  //   'Sushi',
-  //   'Supper',
-  //   'Vegetable',
-  //   'Cappuccino',
-  //   'Fruit',
-  //   'Pizza',
-  //   'Coffee',
-  //   'Pie',
-  //   'Wine',
-  //   'Bread',
-  //   'Food',
-  //   'Pho',
-  //   'Cake',
-  //   'Alcohol',
-  //   'Gelato'
-  // ]);
-  // List<String> events = List.from([
-  //   'Event',
-  //   'Graduation',
-  //   'Competition',
-  //   'Camping',
-  //   'Picnic',
-  //   'Nightclub',
-  //   'Vacation',
-  //   'Musical',
-  //   'Concert',
-  //   'Casino',
-  //   'Cycling',
-  //   'Dance',
-  //   'Scuba diving',
-  //   'Fishing',
-  //   'Swimming',
-  //   'Running',
-  //   'Sports',
-  //   'Eating',
-  //   'Racing',
-  //   'Sunset',
-  //   'Fireworks',
-  // ]);
-  // List<String> bento = List.from(['bento']);
-  List<String> dogPrompts = List.from([
+  List<String> love = List.from(['Kiss', 'Interaction', 'Love']);
+  List<String> wedding = List.from(['Bride', 'Veil', 'Marriage', 'Groom']);
+  List<String> animals = List.from(['Bird', 'Cat', 'Dog', 'Butterfly', 'Pet']);
+  List<String> food = List.from(['Fast food', 'Cuisine', 'Food']);
+  List<String> places = List.from([
+    'Park',
+    'Field',
+    'Sky',
+    'Mountain',
+    'Prarie',
+    'Desert',
+    'Vacation',
+    'Leisure',
+    'Beach',
+    'Sand',
+    'Circus',
+    'Ferris wheel'
+  ]);
+
+  List<String> animalPrompts = List.from([
+    'Tell me about it`s personality',
     'How did spending time with... make you feel?',
     'How did you spend your time with...?',
     'When do you need ... the most?',
     'What memory did you make with...',
-    'Who is this cutie?!'
+  ]);
+  List<String> lovePrompts = List.from([
+    'How did you two spend time?',
+    'Was today a special anniversary?',
+    'How did you meet',
+    'What memory would you like to share?',
+    'How did they meet',
+    'What is your couple goal'
   ]);
   List<String> parkPrompts = List.from([
-    'The park was so...today',
-    'I went to ... park today',
-    'Its always ... to come here',
-    'I`ve been meaning to come here',
-    'I always thinkg about... when I come here'
+    'How was the park today',
+    'When do you come here?',
+    'Were there any events',
+  ]);
+  List<String> weddingPrompts = List.from([
+    'Was this your Wedding?',
+    'How did you feel today?',
+    'Who `s wedding is this?',
+  ]);
+  List<String> placePrompts = List.from([
+    'How does this place make you feel?',
+    'Do you visit here often?',
+    'Tell me about your best memory here',
+    'How was the park today',
+    'When do you come here?',
+    'Were there any events'
+  ]);
+  List<String> foodPrompts = List.from([
+    'Tell me about this dish!',
+    'How did it come out?',
+    'What was the occasion?',
+    'Did you share with anyone?',
   ]);
   //The original labelMap maybe full of useless tags, so we create a new variable to filter out tags with a confidence less than 80%
   print('Printing the ORIGINAL map $labelMap');
-  labelMap.removeWhere((String key, double value) => value < .80);
+  labelMap.removeWhere((String key, double value) => value < .60);
   print('Printing the FILTERED map: $labelMap');
   labelMap.forEach((key, value) {
-    if (key == 'Dog') {
-      dogPrompts.forEach((prompt) {
+    if (animals.contains(key)) {
+      animalPrompts.forEach((prompt) {
         generatedTextList.add(prompt);
       });
     }
-    if (key == 'Park') {
-      parkPrompts.forEach((prompt) {
+    if (places.contains(key)) {
+      placePrompts.forEach((prompt) {
+        generatedTextList.add(prompt);
+      });
+    }
+    if (wedding.contains(key)) {
+      weddingPrompts.forEach((prompt) {
+        generatedTextList.add(prompt);
+      });
+    }
+    if (love.contains(key)) {
+      lovePrompts.forEach((prompt) {
+        generatedTextList.add(prompt);
+      });
+    }
+    if (food.contains(key)) {
+      foodPrompts.forEach((prompt) {
         generatedTextList.add(prompt);
       });
     }
   });
+  generatedTextList = generatedTextList.toSet().toList();
   print('generated text: $generatedTextList');
   return generatedTextList;
 }
