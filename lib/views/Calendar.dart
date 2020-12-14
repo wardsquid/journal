@@ -37,6 +37,7 @@ class _CalendarState extends State<Calendar> {
   CollectionReference entries = getFireStoreEntriesDB();
 
   Future<void> getCalendarEntries(dateWithMonth) async {
+    // print(dateWithMonth);
     if (!mounted) return;
 
     Map<DateTime, List> entryParser = {};
@@ -111,7 +112,12 @@ class _CalendarState extends State<Calendar> {
     });
     if (mounted)
       setState(() {
-        _selectedDay = DateTime.now();
+        if (dateWithMonth.year == DateTime.now().year &&
+            dateWithMonth.month == DateTime.now().month) {
+          _selectedDay = DateTime.now();
+        } else {
+          _selectedDay = dateWithMonth;
+        }
         _entries = entryParser;
         _selectedEntries = _entryInfos
             .where((entry) =>
@@ -254,6 +260,7 @@ class _CalendarState extends State<Calendar> {
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
     // print(first.toString());
+    // print(first);
     getCalendarEntries(first);
   }
 
