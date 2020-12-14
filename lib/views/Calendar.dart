@@ -335,7 +335,7 @@ class _CalendarState extends State<Calendar> {
                               (event['shared']
                                   ? (event['user_name'] == null)
                                       ? " - shared entry"
-                                      : " - shared by ${event['user_name']}"
+                                      : " - shared by ${event['user_name'].split(" ")[0]}"
                                   : ''),
                         ),
                         onTap: () => {
