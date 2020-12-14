@@ -44,7 +44,12 @@ class DiaryEntryView extends StatefulWidget {
   DateTime activeDate;
   String documentId = "";
   LiquidController liquidController;
-  DiaryEntryView({this.documentId, this.activeDate, this.liquidController});
+  bool editController;
+  DiaryEntryView(
+      {this.documentId,
+      this.activeDate,
+      this.liquidController,
+      this.editController});
   @override
   _DiaryEntryViewState createState() => _DiaryEntryViewState();
 }
@@ -73,6 +78,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   // Controllers
   TextEditingController _entryEditingController;
   TextEditingController _titleEditingController;
+  // FocusNode FocusNode;
 
   // Entry related variables
   String ownerId = "";
@@ -121,6 +127,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       readEntry(widget.documentId); //as DocumentSnapshot;
     } else {
       // _isEditingText = true;
+    }
+    if (widget.editController) {
+      _isEditingText = true;
     }
     entryFocusNode = FocusNode();
     titleFocusNode = FocusNode();
@@ -549,9 +558,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               autofocus: false,
               focusNode: entryFocusNode,
             ),
-            SizedBox(
-              height: 80,
-            )
           ],
         ),
       );
@@ -630,6 +636,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               _entryEditingController = TextEditingController(text: entryText);
               _titleEditingController = TextEditingController(text: titleText);
               _image = null;
+              _chosenTrack = null;
               _currentTrack = null;
               _storedTrack = null;
               _trackReady = false;
@@ -859,6 +866,15 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
     print(widget.activeDate);
+    if (_spotifyUrl != null) {
+      print('storedTrack');
+      print(_storedTrack);
+      print(_storedTrack.artist);
+      print(_storedTrack.track);
+      print(_storedTrack.imageUrl);
+      print(_storedTrack.url);
+    }
+
     Map<String, dynamic> createdEntry = {
       'user_id': _user.uid,
       'user_name': _user.displayName,
@@ -883,6 +899,13 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     dynamic newEntry = await entries
         .add(createdEntry)
         .then((value) => {
+              if (_spotifyUrl != null)
+                {
+                  createdEntry["content"]["track"] = _storedTrack.track,
+                  createdEntry["content"]["artist"] = _storedTrack.artist,
+                  createdEntry["content"]["albumImage"] = _storedTrack.imageUrl,
+                  createdEntry["content"]["url"] = _storedTrack.url,
+                },
               setState(() {
                 // inkling.lastTimelineFetch = inkling
                 // inkling.localDocumentStorage[value.id] = createdEntry;
@@ -890,9 +913,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 MainView.of(context).documentIdReference = value.id.toString();
                 ownerId = _user.uid;
                 inkling.activeEntry = createdEntry;
-                print(inkling.activeEntry.toString());
-                print(ownerId);
-                print(widget.documentId);
+                // print(inkling.activeEntry.toString());
+                // print(ownerId);
+                // print(widget.documentId);
                 // print(ownerId);
                 // print(widget.documentId);
               }),
@@ -959,6 +982,17 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         .doc(widget.documentId)
         .update(updatedEntry)
         .then((value) => {
+              if (_storedTrack != null)
+                {
+                  inkling.orderedList[index]["content"]["track"] =
+                      _storedTrack.track,
+                  inkling.orderedList[index]["content"]["artist"] =
+                      _storedTrack.artist,
+                  inkling.orderedList[index]["content"]["albumImage"] =
+                      _storedTrack.imageUrl,
+                  inkling.orderedList[index]["content"]["url"] =
+                      _storedTrack.url,
+                },
               if (_image != null)
                 {
                   // inkling.lastTimelineFetch = null,
@@ -1201,6 +1235,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   });
                   _getTrackByUrl();
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Song added below.'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }),
             DialogButton(
                 child: Text("Add song"),
@@ -1211,6 +1251,12 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                   });
                   _getTrackByUrl();
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Song added below.'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
                 }),
           ]).show();
     }
@@ -1252,27 +1298,39 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   }
 
   Widget _storedSpotifyTrack() {
-    return ListTile(
-        leading: Image.network(_storedTrack.imageUrl, width: 70, height: 70),
-        title: Text('${_storedTrack.track}'),
-        subtitle: Text('${_storedTrack.artist}'),
-        isThreeLine: true,
-        trailing: _isEditingText
-            ? IconButton(
-                icon: Icon(Icons.delete, color: Color(0xFFf2296a), size: 50.0),
+    return _isEditingText
+        ? ListTile(
+            contentPadding: EdgeInsets.only(right: 80),
+            leading:
+                Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+            title: Text('${_storedTrack.track}'),
+            subtitle: Text('${_storedTrack.artist}'),
+            isThreeLine: true,
+            trailing: IconButton(
+                icon: Icon(Icons.delete, color: Color(0xFFf2296a), size: 30.0),
                 onPressed: () {
                   // remove widget
                   setState(() {
                     _trackReady = false;
                   });
-                })
-            : IconButton(
-                icon: Icon(Icons.play_circle_fill,
-                    color: Colors.green, size: 50.0),
-                onPressed: () {
-                  // play in spotify
-                  _playSpotifyTrack();
-                }));
+                }))
+        : Padding(
+            padding: EdgeInsets.only(bottom: 50),
+            child: ListTile(
+              leading:
+                  Image.network(_storedTrack.imageUrl, width: 70, height: 70),
+              title: Text('${_storedTrack.track}'),
+              subtitle: Text('${_storedTrack.artist}'),
+              isThreeLine: true,
+              trailing: IconButton(
+                  icon: Icon(Icons.play_circle_fill,
+                      color: Colors.green, size: 50.0),
+                  onPressed: () {
+                    // play in spotify
+                    _playSpotifyTrack();
+                  }),
+            ),
+          );
   }
 
   _getTrackByUrl() async {
@@ -1370,6 +1428,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         lastWords = "";
         lastError = "";
         lastStatus = "";
+        _chosenTrack = null;
         _currentTrack = null;
         _storedTrack = null;
         _trackReady = false;
@@ -1412,7 +1471,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
             // Text("Shared Journal")
             (inkling.activeEntry['user_name'] == null)
                 ? Text("Shared Journal")
-                : Text("Shared by ${inkling.activeEntry['user_name']}")
+                : Text(
+                    "Shared by ${inkling.activeEntry['user_name'].split(" ")[0]}")
             : Text(inkling.currentJournal),
         centerTitle: true,
         actions: [
@@ -1474,24 +1534,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                       // ),
                     ),
                     Container(
-                      alignment: Alignment.center,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.chevron_left_rounded,
-                            size: 80.0,
-                            color: Colors.white,
-                          ),
-                          Spacer(),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 80.0,
-                            color: Colors.white,
-                          )
-                        ],
-                      ),
-                    ), //chevron icons
-                    Container(
                         alignment: Alignment.topCenter,
                         child: Text(
                           '\n\n${dateToHumanReadable(widget.activeDate).substring(0, dateToHumanReadable(widget.activeDate).indexOf(' at'))}',
@@ -1504,13 +1546,65 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                         )),
                     Container(
                         alignment: Alignment.center,
-                        child: Text(
-                          'Tap +\n to create a new entry',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22.0,
+                        child: FlatButton(
+                          onPressed: () {
+                            initSpeechState();
+                            setState(() {
+                              _isEditingText = true;
+                              inkling.activeEntry = {
+                                "title": "### Load More ###",
+                                "timestamp": Timestamp.fromDate(
+                                    DateTime.parse("1900-01-01 13:27:00")),
+                                "content": {
+                                  "image": false,
+                                  'text': "filler",
+                                  "spotify": null,
+                                  "artist": null,
+                                  "track": null,
+                                  "albumImage": null,
+                                  "url": null, // to open in spotify
+                                },
+                                "shared_with": [],
+                                "user_name": "",
+                              };
+                              if (ownerId != "") {
+                                MainView.of(context).date = DateTime.now();
+                              }
+                              ownerId = "";
+                              entryText = "";
+                              titleText = "";
+                              tempTitleText = "";
+                              tempEntryText = "";
+                              _image = null;
+                              _bucketUrl = '';
+                              lastWords = "";
+                              lastError = "";
+                              lastStatus = "";
+                              _currentTrack = null;
+                              _storedTrack = null;
+                              _trackReady = false;
+                              _spotifyUrl = null;
+                              _entryEditingController =
+                                  TextEditingController(text: entryText);
+                              _titleEditingController = TextEditingController(
+                                  text: titleText); // = "";
+                              MainView.of(context).documentIdReference = '';
+                            });
+                          },
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(11.0),
+                          ), //side: BorderSide(color: Colors.white, width: 4)),
+                          // shape: StadiumBorder(),//Border.all(width: 5.0, color: Colors.white),
+                          color: Color(0xFFf2296a),
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            'Create a new entry',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 30.0,
+                            ),
                           ),
                         )),
                   ],
@@ -1608,7 +1702,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                                           0
                                   ? (inkling.activeEntry['user_name'] == null)
                                       ? " - shared entry"
-                                      : " - shared by ${inkling.activeEntry['user_name']}"
+                                      : " - shared by ${inkling.activeEntry['user_name'].split(" ")[0]}"
                                   : ''),
                           textAlign: TextAlign.center,
                         ),
@@ -1620,9 +1714,9 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           child: _entryText(),
                         ),
                       ),
-                      SizedBox(height: MediaQuery.of(context).size.height / 20),
-
+                      SizedBox(height: MediaQuery.of(context).size.height / 50),
                       if (_trackReady) _storedSpotifyTrack(),
+                      SizedBox(height: MediaQuery.of(context).size.height / 50),
 
                       // if (_isEditingText == false && ownerId != _user.uid)
                       //   Center(

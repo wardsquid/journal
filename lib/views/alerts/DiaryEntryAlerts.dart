@@ -44,6 +44,12 @@ Widget journalDrawer(
             );
           },
         ),
+        ListTile(
+          title: Text("Close"),
+          onTap: () {
+            Navigator.pop(context);
+          },
+        ),
       ],
     ),
   );

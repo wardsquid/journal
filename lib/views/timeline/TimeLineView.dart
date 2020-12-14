@@ -14,7 +14,9 @@ import '../../managers/userInfo.dart' as inkling;
 
 class TimeLineView extends StatefulWidget {
   LiquidController liquidController;
-  TimeLineView({Key key, this.liquidController}) : super(key: key);
+  bool editController;
+  TimeLineView({Key key, this.liquidController, this.editController})
+      : super(key: key);
 
   @override
   _TimeLineView createState() => _TimeLineView();
@@ -181,29 +183,14 @@ class _TimeLineView extends State<TimeLineView> {
           child: Stack(
         children: <Widget>[
           createListView(context, display),
-          Container(
-            alignment: Alignment.center,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.chevron_left_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                ),
-                Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                )
-              ],
-            ),
-          ),
         ],
       )),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: () => {
           MainView.of(context).documentIdReference = '',
+          MainView.of(context).editController = true,
+          MainView.of(context).date = DateTime.now(),
           widget.liquidController.animateToPage(page: 3, duration: 750)
         },
         child: Icon(Icons.add),
@@ -228,14 +215,15 @@ class _TimeLineView extends State<TimeLineView> {
         return new Container(
           child: Padding(
             padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-            child: timeLineCard(context, entries[index]),
+            child: timeLineCard(context, entries[index], index),
           ),
         );
       },
     );
   }
 
-  Widget timeLineCard(BuildContext context, Map<String, dynamic> entry) {
+  Widget timeLineCard(
+      BuildContext context, Map<String, dynamic> entry, int index) {
     if (!mounted) return null;
     if (entry['imageUrl'] == '') {
       downloadURLImage(entry["user_id"], entry["doc_id"]).then((value) => {
@@ -266,6 +254,7 @@ class _TimeLineView extends State<TimeLineView> {
               splashColor: Colors.pink[300],
               focusColor: Colors.pink[300],
               hoverColor: Colors.pink[300],
+              heroTag: null,
               onPressed: () {
                 if (mounted)
                   setState(() {
@@ -304,7 +293,7 @@ class _TimeLineView extends State<TimeLineView> {
                             entry['shared_with'].length > 0
                         ? (entry['user_name'] == null)
                             ? " - shared entry"
-                            : " - shared by ${entry['user_name']}"
+                            : " - shared by ${entry['user_name'].split(" ")[0]}"
                         : ''),
               ),
             ),

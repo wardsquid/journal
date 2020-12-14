@@ -253,17 +253,17 @@ Future<void> loadTodaysTracks() async {
 
   if (response.statusCode == 200) {
     print("Recently played tracks found");
-    num length = jsonDecode(response.body).length;
+    num length = jsonDecode(response.body)["items"].length;
+    // print(jsonDecode(response.body));
     print("length: $length");
 
     for (var i = 0; i < length; i++) {
       _todaysTracks.add(TodayTrack.fromJson(jsonDecode(response.body), i));
       await _todaysTracks[i].getImage();
-      print("TODAY'S track: ${_todaysTracks[i].track}");
-      print("artist: ${_todaysTracks[i].artist}");
+      // print("TODAY'S track: ${_todaysTracks[i].track}");
+      // print("artist: ${_todaysTracks[i].artist}");
       // print("url: ${_todaysTracks[i].url}");
       // print("href: ${_todaysTracks[i].href}");
-      print("uri: ${_todaysTracks[i].uri}");
       // print("image: ${_todaysTracks[i].imageUrl}");
     }
   } else {

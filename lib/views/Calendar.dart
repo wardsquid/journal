@@ -13,12 +13,14 @@ class Calendar extends StatefulWidget {
   LiquidController liquidController;
   DateTime activeDate;
   String documentId;
+  bool editController;
   Calendar(
       {Key key,
       this.documentId,
       this.title,
       this.liquidController,
-      this.activeDate})
+      this.activeDate,
+      this.editController})
       : super(key: key);
 
   @override
@@ -37,6 +39,7 @@ class _CalendarState extends State<Calendar> {
   CollectionReference entries = getFireStoreEntriesDB();
 
   Future<void> getCalendarEntries(dateWithMonth) async {
+    // print(dateWithMonth);
     if (!mounted) return;
 
     Map<DateTime, List> entryParser = {};
@@ -111,7 +114,12 @@ class _CalendarState extends State<Calendar> {
     });
     if (mounted)
       setState(() {
-        _selectedDay = DateTime.now();
+        if (dateWithMonth.year == DateTime.now().year &&
+            dateWithMonth.month == DateTime.now().month) {
+          _selectedDay = DateTime.now();
+        } else {
+          _selectedDay = dateWithMonth;
+        }
         _entries = entryParser;
         _selectedEntries = _entryInfos
             .where((entry) =>
@@ -192,7 +200,7 @@ class _CalendarState extends State<Calendar> {
           highlightColor: Colors.orange[300],
           hoverColor: Colors.orange[300],
           onPressed: () {
-            widget.liquidController.jumpToPage(page: 2);
+            widget.liquidController.animateToPage(page: 2, duration: 750);
           },
         ),
         title: Text("Calendar"),
@@ -204,7 +212,7 @@ class _CalendarState extends State<Calendar> {
               highlightColor: Colors.orange[300],
               hoverColor: Colors.orange[300],
               onPressed: () {
-                widget.liquidController.jumpToPage(page: 3);
+                widget.liquidController.animateToPage(page: 3, duration: 750);
               }),
         ],
       ),
@@ -218,27 +226,10 @@ class _CalendarState extends State<Calendar> {
               Expanded(child: _buildEntryList()),
             ],
           ),
-          Container(
-            alignment: Alignment.center,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.chevron_left_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                ),
-                Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                )
-              ],
-            ),
-          ),
         ],
       )),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'calendarNewEntry',
         backgroundColor: Color(0xFFFA6164),
         label: Text("New Entry"),
         splashColor: Colors.orange[300],
@@ -247,6 +238,7 @@ class _CalendarState extends State<Calendar> {
         onPressed: () => {
           MainView.of(context).date = _selectedDay,
           MainView.of(context).documentIdReference = "",
+          MainView.of(context).editController = true,
           widget.liquidController.jumpToPage(page: 3),
         },
         tooltip: 'New Entry',
@@ -263,6 +255,7 @@ class _CalendarState extends State<Calendar> {
   void _onVisibleDaysChanged(
       DateTime first, DateTime last, CalendarFormat format) {
     // print(first.toString());
+    // print(first);
     getCalendarEntries(first);
   }
 
@@ -278,6 +271,7 @@ class _CalendarState extends State<Calendar> {
         events: _entries,
         availableGestures: AvailableGestures.verticalSwipe,
         startingDayOfWeek: StartingDayOfWeek.monday,
+        initialCalendarFormat: CalendarFormat.twoWeeks,
         calendarStyle: CalendarStyle(
           selectedColor: Color(0xFFFA6164),
           todayColor: Colors.deepOrange[200],
@@ -337,7 +331,7 @@ class _CalendarState extends State<Calendar> {
                               (event['shared']
                                   ? (event['user_name'] == null)
                                       ? " - shared entry"
-                                      : " - shared by ${event['user_name']}"
+                                      : " - shared by ${event['user_name'].split(" ")[0]}"
                                   : ''),
                         ),
                         onTap: () => {

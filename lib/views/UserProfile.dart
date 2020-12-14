@@ -243,7 +243,7 @@ class _UserProfile extends State<UserProfile> {
             IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () {
-                  widget.liquidController.animateToPage(page: 4, duration: 750);
+                  widget.liquidController.animateToPage(page: 3, duration: 750);
                 }),
           ],
         ),
@@ -371,16 +371,6 @@ class _UserProfile extends State<UserProfile> {
                       ],
                     ),
                   ),
-                ),
-              ),
-              Container(
-                alignment: Alignment.center,
-                child: Row(
-                  children: [
-                    Spacer(),
-                    Icon(Icons.chevron_right_rounded,
-                        size: 80.0, color: Colors.white)
-                  ],
                 ),
               ),
               Container(
