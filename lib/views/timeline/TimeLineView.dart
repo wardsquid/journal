@@ -196,8 +196,10 @@ class _TimeLineView extends State<TimeLineView> {
         ],
       )),
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: () => {
           MainView.of(context).documentIdReference = '',
+          MainView.of(context).date = DateTime.now(),
           widget.liquidController.animateToPage(page: 3, duration: 750)
         },
         child: Icon(Icons.add),
@@ -220,14 +222,15 @@ class _TimeLineView extends State<TimeLineView> {
         return new Container(
           child: Padding(
             padding: const EdgeInsets.only(left: 5.0, right: 5.0),
-            child: timeLineCard(context, entries[index]),
+            child: timeLineCard(context, entries[index], index),
           ),
         );
       },
     );
   }
 
-  Widget timeLineCard(BuildContext context, Map<String, dynamic> entry) {
+  Widget timeLineCard(
+      BuildContext context, Map<String, dynamic> entry, int index) {
     if (!mounted) return null;
     if (entry['imageUrl'] == '') {
       downloadURLImage(entry["user_id"], entry["doc_id"]).then((value) => {
@@ -255,6 +258,7 @@ class _TimeLineView extends State<TimeLineView> {
             height: 30,
           ),
           FloatingActionButton.extended(
+              heroTag: null,
               onPressed: () {
                 if (mounted)
                   setState(() {
