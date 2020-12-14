@@ -44,6 +44,12 @@ Widget journalDrawer(
             );
           },
         ),
+        ListTile(
+          title: Text("Close"),
+          onTap: () {
+            Navigator.pop(context);
+          },
+        ),
       ],
     ),
   );
@@ -410,7 +416,8 @@ Widget changeDiaryName(
             List<dynamic> journalsList = inkling.userProfile["journals_list"];
             int titleIndex = journalsList.indexOf(title);
             journalsList[titleIndex] = _nameChangeController.text;
-            updateJournalsListName(journalsList, title, _nameChangeController.text);
+            updateJournalsListName(
+                journalsList, title, _nameChangeController.text);
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             FocusScope.of(context).unfocus();
