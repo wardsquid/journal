@@ -195,7 +195,7 @@ class _CalendarState extends State<Calendar> {
         leading: IconButton(
           icon: Icon(Icons.home),
           onPressed: () {
-            widget.liquidController.jumpToPage(page: 2);
+            widget.liquidController.animateToPage(page: 2, duration: 750);
           },
         ),
         title: Text("Calendar"),
@@ -204,7 +204,7 @@ class _CalendarState extends State<Calendar> {
           IconButton(
               icon: Icon(Icons.edit),
               onPressed: () {
-                widget.liquidController.jumpToPage(page: 3);
+                widget.liquidController.animateToPage(page: 3, duration: 750);
               }),
         ],
       ),
@@ -217,24 +217,6 @@ class _CalendarState extends State<Calendar> {
               _buildTableCalendar(),
               Expanded(child: _buildEntryList()),
             ],
-          ),
-          Container(
-            alignment: Alignment.center,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.chevron_left_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                ),
-                Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                )
-              ],
-            ),
           ),
         ],
       )),
@@ -276,6 +258,7 @@ class _CalendarState extends State<Calendar> {
         events: _entries,
         availableGestures: AvailableGestures.verticalSwipe,
         startingDayOfWeek: StartingDayOfWeek.monday,
+        initialCalendarFormat: CalendarFormat.twoWeeks,
         calendarStyle: CalendarStyle(
           selectedColor: Color(0xFFFA6164),
           todayColor: Colors.deepOrange[200],

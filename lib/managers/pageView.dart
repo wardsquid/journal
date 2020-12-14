@@ -81,19 +81,19 @@ class _MainViewState extends State<MainView> {
             liquidController: _liquidController,
           ),
         ),
-        Container(
-          color: Colors.red,
-          alignment: Alignment.center,
-          child: Row(
-            children: [
-              Icon(
-                Icons.chevron_left_rounded,
-                size: 80.0,
-                color: Colors.white,
-                )                        
-            ],
-          ),
-        ),
+        // Container( // THE red container******
+        //   color: Colors.red,
+        //   alignment: Alignment.center,
+        //   child: Row(
+        //     children: [
+        //       Icon(
+        //         Icons.chevron_left_rounded,
+        //         size: 80.0,
+        //         color: Colors.white,
+        //         )                        
+        //     ],
+        //   ),
+        // ),
       ],
     );
     // @override

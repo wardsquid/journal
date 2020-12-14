@@ -175,24 +175,6 @@ class _TimeLineView extends State<TimeLineView> {
           child: Stack(
         children: <Widget>[
           createListView(context, display),
-          Container(
-            alignment: Alignment.center,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.chevron_left_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                ),
-                Spacer(),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 80.0,
-                  color: Colors.black,
-                )
-              ],
-            ),
-          ),
         ],
       )),
       floatingActionButton: FloatingActionButton(
