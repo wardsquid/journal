@@ -133,6 +133,7 @@ class _UserProfile extends State<UserProfile> {
       return users.doc(_user.uid).update({
         'friends': FieldValue.arrayUnion([friend])
       }).then((value) => {
+            // add user to local copy
             _getNewFriends(),
             showDialog<void>(
               context: context,

@@ -185,9 +185,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
         ),
       );
       setState(() {
-        print(inkling.userProfile['journals_list']);
         inkling.userProfile['journals_list'] = newList;
-        print(inkling.userProfile['journals_list']);
         changeActiveJournal('Personal');
         MainView.of(context).documentId = '';
       });
@@ -418,13 +416,10 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
     inkling.orderedListIDMap
         .forEach((key, value) => print('index $value, docid $key'));
     if (inkling.orderedListIDMap.containsKey(documentId)) {
-      print('inkling.orderedListIDMap.containsKey(documentId)');
       readEntryFromLocalStorage((inkling.orderedListIDMap[documentId]));
-      print('called from localList');
       return;
     }
 
-    print('fetching from DB');
     entries.doc(documentId).get().then((DocumentSnapshot documentSnapshot) {
       if (!documentSnapshot.exists)
         print('Document does not exist on the database');
@@ -460,10 +455,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// RETRIEVE ENTRY FROM LOCAL STORAGE
 ///////////////////////////////////////////////////////////////////////
   Future<void> readEntryFromLocalStorage(int index) async {
-    print('fetching from Local Storage');
-
     Map<String, dynamic> document = inkling.orderedList[index];
-    print(document.toString());
     // if (!mounted) return;
     if (document["content"]["image"] == true &&
         document["imageUrl"].length > 0 &&
@@ -841,7 +833,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                           label: 'Report Entry',
                           onTap: () => {
                                 launch(_emailLaunchUri.toString()),
-                                print('Report Functionality'),
                               })
                     ]
                   : [])),
@@ -867,16 +858,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
   /// ADDS A NEW ENTRY
 ///////////////////////////////////////////////////////////////////////
   Future<void> _addNewEntry() async {
-    print(widget.activeDate);
-    if (_spotifyUrl != null) {
-      print('storedTrack');
-      print(_storedTrack);
-      print(_storedTrack.artist);
-      print(_storedTrack.track);
-      print(_storedTrack.imageUrl);
-      print(_storedTrack.url);
-    }
-
     Map<String, dynamic> createdEntry = {
       'user_id': _user.uid,
       'user_name': _user.displayName,
@@ -1034,7 +1015,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       List<String> generatedText = generateText(labelMap);
       //converts the array of related prompt strings into the prompt tags to be displayed in the alert box
       List tags = mlTagConverter(generatedText);
-      print("TAGS: $tags");
       //renders an alertDialog populated with the prompt strings and allows the user to choose prompts. returns
       String selectedTagsString = await createTagAlert(context, tags);
       if (mounted)
@@ -1151,7 +1131,7 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
       });
 
     if (_spotifyToken != null) {
-      print("updating for token $_spotifyToken");
+      // print("updating for token $_spotifyToken");
       if (mounted)
         setState(() {
           _todaysTracks = [];
@@ -1192,7 +1172,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
               setState(() {
                 _chosenTrack = item;
               });
-              print("chosen track: ${item.track}");
             },
             itemBuilder: (context, item) {
               return new ListTile(
@@ -1209,7 +1188,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
                 onPressed: () {
                   Random random = new Random();
                   int _randomIndex = random.nextInt(_todaysTracks.length - 1);
-                  print("random index: $_randomIndex");
                   setState(() {
                     _spotifyUrl = _todaysTracks[_randomIndex].href;
                   });
@@ -1443,7 +1421,8 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
           }
         })(),
         title: ownerId != _user.uid &&
-                inkling.activeEntry['shared_with'].length > 0
+                inkling.activeEntry['shared_with'].length > 0 &&
+                widget.documentId != ''
             ? (inkling.activeEntry['user_name'] == null)
                 ? Text("Shared Journal")
                 : Text(
