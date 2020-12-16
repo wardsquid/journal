@@ -165,13 +165,13 @@ Widget journalSettings(
     Function updateJournalsListName,
     Function deleteJournal) {
   return AlertDialog(
-    title: Text("$title's Setting page"),
+    title: Text("$title: Settings"),
     content: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-              Text("Control your sharing settings"),
+              Text("Manage your sharing settings"),
               inkling.userProfile["friends"].length > 0
                   ? Container(
                       height: MediaQuery.of(context).size.height / 3,
