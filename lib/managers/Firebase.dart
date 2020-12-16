@@ -110,10 +110,9 @@ Future<bool> checkUserExists() async {
       print('User does not exist on the database');
       exists = false;
     }
+    return (exists);
   }).catchError(
       (error) => {print('Error occured while checking for user $currentUser')});
-
-  return (exists);
 }
 
 dynamic checkFriendEmail(String email) async {
