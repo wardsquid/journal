@@ -139,7 +139,7 @@ class _UserProfile extends State<UserProfile> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: Text('Successfully Added!'),
+                  title: Text('Friend added!'),
                   actions: <Widget>[
                     FlatButton(
                       child: Text('Close'),
@@ -158,11 +158,11 @@ class _UserProfile extends State<UserProfile> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('The Email address does not exist.'),
+            title: Text('Email does not exist.'),
             content: SingleChildScrollView(
               child: ListBody(
                 children: <Widget>[
-                  Text('Please input correctly.'),
+                  Text('Please enter a valid email.'),
                 ],
               ),
             ),
@@ -584,7 +584,7 @@ class _UserProfile extends State<UserProfile> {
 
   Widget _buildDeleteFriendForm() {
     return AlertDialog(
-      title: Text("Are you sure to delete $_selectedFriendName ?"),
+      title: Text("Are you sure you want to delete $_selectedFriendName?"),
       contentPadding: EdgeInsets.all(0.0),
       actions: <Widget>[
         FlatButton(

@@ -104,7 +104,7 @@ Widget createJournal(BuildContext context, Function updateJournal) {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   return AlertDialog(
-    title: Text('Create a new Journal'),
+    title: Text('Create a new journal'),
     content: Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -119,7 +119,7 @@ Widget createJournal(BuildContext context, Function updateJournal) {
           _diaryController.clear();
         },
         decoration: InputDecoration(
-          hintText: "Journal's name",
+          hintText: "Journal name",
           suffixIcon: IconButton(
             onPressed: () => _diaryController.clear(),
             icon: Icon(Icons.clear),
