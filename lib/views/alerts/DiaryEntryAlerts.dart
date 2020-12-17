@@ -176,19 +176,17 @@ Widget journalSettings(
                   ? Container(
                       height: MediaQuery.of(context).size.height / 3,
                       width: double.maxFinite,
-                      child: Expanded(
-                        child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: inkling.userProfile["friends"].length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return addFriendJournalSharing(
-                                context,
-                                title,
-                                inkling.userProfile["friends"][index],
-                                updateSharingList,
-                              );
-                            }),
-                      ),
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: inkling.userProfile["friends"].length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return addFriendJournalSharing(
+                              context,
+                              title,
+                              inkling.userProfile["friends"][index],
+                              updateSharingList,
+                            );
+                          }),
                     )
                   : SizedBox(
                       height: 0,
