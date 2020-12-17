@@ -57,7 +57,7 @@ Future<String> createTagAlert(BuildContext context, List localList) {
                         selectedTagsList.add(currentItem.title),
                       }
                     else if (selectedTagsList.contains(currentItem.title))
-                      {selectedTagsList.removeAt(index)}
+                      {selectedTagsList.remove(currentItem.title)}
                   },
                 );
               },
