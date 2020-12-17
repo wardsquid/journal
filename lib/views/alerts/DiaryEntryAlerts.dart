@@ -104,7 +104,7 @@ Widget createJournal(BuildContext context, Function updateJournal) {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   return AlertDialog(
-    title: Text('Create a new Journal'),
+    title: Text('Create a new journal'),
     content: Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -119,7 +119,7 @@ Widget createJournal(BuildContext context, Function updateJournal) {
           _diaryController.clear();
         },
         decoration: InputDecoration(
-          hintText: "Journal's name",
+          hintText: "Journal name",
           suffixIcon: IconButton(
             onPressed: () => _diaryController.clear(),
             icon: Icon(Icons.clear),
@@ -165,13 +165,13 @@ Widget journalSettings(
     Function updateJournalsListName,
     Function deleteJournal) {
   return AlertDialog(
-    title: Text("$title's Setting page"),
+    title: Text("$title: Settings"),
     content: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-              Text("Control your sharing settings"),
+              Text("Manage your sharing settings"),
               inkling.userProfile["friends"].length > 0
                   ? Container(
                       height: MediaQuery.of(context).size.height / 3,
