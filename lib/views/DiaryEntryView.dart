@@ -489,7 +489,6 @@ class _DiaryEntryViewState extends State<DiaryEntryView> {
 ///////////////////////////////////////////////////////////////////////
   Widget _entryText() {
     if (_isEditingText) {
-      initSpeechState();
       return Form(
         key: _formKey,
         autovalidateMode: AutovalidateMode.onUserInteraction,
