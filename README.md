@@ -51,7 +51,7 @@ Inkling is available for 13000+ Android devices on the [Google Play Store](https
 <a href= "https://github.com/Yoshi106">Yoshiaki Aibara <b>Full-Stack Engineer</b></a>
 <br>
 <br>
-<a href="https://github.com/Jaymontojo">Jay Montojo <b>PFull-Stack Engineer</b></a>
+<a href="https://github.com/Jaymontojo">Jay Montojo <b>Full-Stack Engineer</b></a>
 
 
 ## License
