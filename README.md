@@ -7,7 +7,6 @@
 # Table of Contents
   * [Introduction](#Introduction)
   * [Download](#Download)
-  * [Usage](#Usage)
   * [Developers Corner](#Developers_Corner)
   * [Issues](#Issues)
   * [The Team](#The_Team)
@@ -40,6 +39,7 @@ Inkling is available for 13000+ Android devices on the [Google Play Store](https
 <b>Update 12.12.2020.v2.0.0</b>
 <br>
  Due to issues with the microphone permissions, text-to-speech is not available on Android >11
+
 ## The Team
 
 <a href= "https://github.com/heysivani" >Sivani <b>Tech Lead & Full-Stack Engineer</b></a>
