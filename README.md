@@ -20,10 +20,7 @@
 
 ## Download our app:
 
-Inkling is available for 13000 Android devices on the [Google Play Store](https://play.google.com/store/apps/details?id=com.wardsquid.inkling)
-
-## Usage
-
+Inkling is available for 13000+ Android devices on the [Google Play Store](https://play.google.com/store/apps/details?id=com.wardsquid.inkling).
 
 ## Developers Corner
 
@@ -38,10 +35,6 @@ Inkling is available for 13000 Android devices on the [Google Play Store](https:
 * Google Geolocation & Maps API
 * Google ML-Kit
 
-
-#### Getting Started
-
-
 ## Issues
 
 <b>Update 12.12.2020.v2.0.0</b>
@@ -49,7 +42,7 @@ Inkling is available for 13000 Android devices on the [Google Play Store](https:
  Due to issues with the microphone permissions, text-to-speech is not available on Android >11
 ## The Team
 
-<a href= "https://github.com/heysivani" >Sivani<b>Tech Lead & Full-Stack Engineer</b></a>
+<a href= "https://github.com/heysivani" >Sivani <b>Tech Lead & Full-Stack Engineer</b></a>
 <br>
 <br>
 <a href= "https://github.com/dius00">Antonio De Rinaldis <b>Full-Stack Engineer</b></a>
