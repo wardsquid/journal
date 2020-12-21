@@ -15,7 +15,6 @@
 ## Introduction
 
 ><b>Inkling</b> is your journaling partner. Utilizing the latent data you collect during the day, Inkling makes building a long-term journaling habit easier, and more enjoyable. Inkling is powered by machine learning, Spotify, and sharing functionality. We make journaling easy for you and your loved ones, so you can focus on what's important: recording your precious thoughts and memories from day-to-day.
-#### Compatibility
 
 ## Download our app:
 
