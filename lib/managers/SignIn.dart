@@ -34,7 +34,7 @@ Future<User> signInWithGoogle() async {
     // bool userExists = await checkUserExists();
     // if (!userExists) {
     await addUser();
-    await inkling.initializeUserCaching();
+    // await inkling.initializeUserCaching();
     // }
 
     return currentUser;

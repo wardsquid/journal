@@ -83,37 +83,42 @@ CollectionReference getFireStoreUsersDB() {
 Future<void> addUser() async {
   CollectionReference users = getFireStoreUsersDB();
   User currentUser = checkUserLoginStatus();
-  final bool doesUserExist = await checkUserExists();
-  if (doesUserExist == false) {
-    users.doc(currentUser.uid).set({
-      'journals_list': ["Personal"],
-      'reminder': null,
-      'sharing_info': {},
-      'friends': [],
-    }).then((value) async {
-      await inkling.initializeUserCaching();
-    }).catchError((error) => {print("Failed to add user: $error")});
-  } else {
-    if (inkling.userProfile == null) await inkling.initializeUserCaching();
-  }
+  users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) => {
+        if (documentSnapshot.exists)
+          {
+            if (inkling.userProfile == null) inkling.initializeUserCaching(),
+          }
+        else
+          {
+            print('User does not exist on the database'),
+            users.doc(currentUser.uid).set({
+              'journals_list': ["Personal"],
+              'reminder': null,
+              'sharing_info': {},
+              'friends': [],
+            }).then((value) async {
+              await inkling.initializeUserCaching();
+            }).catchError((error) => {print("Failed to add user: $error")}),
+          }
+      });
 }
 
-Future<bool> checkUserExists() async {
-  bool exists = false;
-  CollectionReference users = getFireStoreUsersDB();
-  User currentUser = checkUserLoginStatus();
-  users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) {
-    if (documentSnapshot.exists) {
-      print('User exists');
-      exists = true;
-    } else {
-      print('User does not exist on the database');
-      exists = false;
-    }
-    return (exists);
-  }).catchError(
-      (error) => {print('Error occured while checking for user $currentUser')});
-}
+// Future<bool> checkUserExists() async {
+//   bool exists = false;
+//   CollectionReference users = getFireStoreUsersDB();
+//   User currentUser = checkUserLoginStatus();
+//   users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) {
+//     if (documentSnapshot.exists) {
+//       print('User exists'),
+//       exists = true,
+//     } else {
+//       print('User does not exist on the database'),
+//       exists = false,
+//     }
+//     return exists;
+//   }).catchError(
+//       (error) => {print('Error occured while checking for user $currentUser')});
+// }
 
 dynamic checkFriendEmail(String email) async {
   final HttpsCallable httpsCallable =
