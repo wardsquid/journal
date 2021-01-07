@@ -31,11 +31,11 @@ Future<User> signInWithGoogle() async {
     assert(user.uid == currentUser.uid);
 
     // Check if user already exists in FireStore
-    bool userExists = await checkUserExists();
-    if (!userExists) {
-      await addUser();
-      await inkling.initializeUserCaching();
-    }
+    // bool userExists = await checkUserExists();
+    // if (!userExists) {
+    await addUser();
+    // await inkling.initializeUserCaching();
+    // }
 
     return currentUser;
   }
