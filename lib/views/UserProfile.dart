@@ -353,6 +353,7 @@ class _UserProfile extends State<UserProfile> {
                           onPressed: () {
                             inkling.orderedListIDMap = {};
                             inkling.orderedList = [];
+                            inkling.lastTimelineFetch = null;
                             signOutGoogle();
                             Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(builder: (context) {
