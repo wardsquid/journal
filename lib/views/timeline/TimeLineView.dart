@@ -80,6 +80,7 @@ class _TimeLineView extends State<TimeLineView> {
   }
 
   void parseQuery(DateTime date) {
+    int dispLenght = display.length;
     if (date == null) date = today;
     userRetrievalQuery = fireStoreUserQuery(date);
     userRetrievalQuery.then((value) => {
@@ -113,7 +114,7 @@ class _TimeLineView extends State<TimeLineView> {
               pushToList(entry);
             }
           }),
-          if (mounted)
+          if (mounted && dispLenght < display.length)
             {
               inkling.lastTimelineFetch = DateTime.now(),
             }
