@@ -5,12 +5,12 @@ import '../managers/Firebase.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-final User _user = checkUserLoginStatus();
 final CollectionReference _entries = getFireStoreEntriesDB();
 final FirebaseStorage _storage = getStorage();
 final Map<DateTime, List> entryParser = {};
 
 Future<QuerySnapshot> fireStoreUserQuery(DateTime today) async {
+  final User _user = checkUserLoginStatus();
   return await _entries
       .where('user_id', isEqualTo: _user.uid)
       .where('timestamp',
@@ -26,6 +26,7 @@ Future<QuerySnapshot> fireStoreUserQuery(DateTime today) async {
 }
 
 Future<QuerySnapshot> fireStoreSharedQuery(DateTime today) async {
+  final User _user = checkUserLoginStatus();
   return await _entries
       .where('shared_with', arrayContains: _user.email)
       .where('timestamp',
