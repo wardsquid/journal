@@ -86,7 +86,7 @@ Future<void> addUser() async {
   users.doc(currentUser.uid).get().then((DocumentSnapshot documentSnapshot) => {
         if (documentSnapshot.exists)
           {
-            if (inkling.userProfile == null) inkling.initializeUserCaching(),
+            inkling.initializeUserCaching(),
           }
         else
           {

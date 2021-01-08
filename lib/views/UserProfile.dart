@@ -351,6 +351,9 @@ class _UserProfile extends State<UserProfile> {
                           highlightColor: Colors.orange[300],
                           hoverColor: Colors.orange[300],
                           onPressed: () {
+                            inkling.orderedListIDMap = {};
+                            inkling.orderedList = [];
+                            inkling.lastTimelineFetch = null;
                             signOutGoogle();
                             Navigator.of(context).pushAndRemoveUntil(
                                 MaterialPageRoute(builder: (context) {
